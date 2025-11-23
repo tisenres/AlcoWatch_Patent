@@ -1,0 +1,22 @@
+// Top-level build file for AlcoWatch Wear OS Application
+
+buildscript {
+    ext {
+        kotlin_version = '1.9.20'
+        compose_version = '1.5.4'
+        wear_compose_version = '1.2.1'
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.google.dagger:hilt-android-gradle-plugin:2.48'
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

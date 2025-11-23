@@ -1,0 +1,102 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ML Models - Large files
+*.h5
+*.keras
+*.tflite
+*.pb
+*.ckpt
+*.safetensors
+saved_model/
+checkpoints/
+models/*.h5
+models/*.keras
+models/*.tflite
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# PyCharm
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Android Studio
+*.iml
+.gradle
+local.properties
+.idea/
+*.apk
+*.ap_
+*.aab
+build/
+captures/
+*.jks
+
+# Wear OS App build outputs
+wear_os_app/app/build/
+wear_os_app/.gradle/
+wear_os_app/local.properties
+
+# Virtual environments
+ml_model/venv/
+venv/
+ENV/
+
+# Large document files
+*.docx
+*.doc
+*.pdf
+
+# Image files (if large)
+*.png
+*.jpg
+*.jpeg
+
+# Datasets (can be large)
+ml_model/data/raw/
+ml_model/data/processed/
+*.csv
+*.npy
+*.npz
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
