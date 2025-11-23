@@ -142,7 +142,7 @@ AlcoWatch/
 ## 📞 Contact
 
 **For Collaboration & Licensing:**
-- **Lead Developer:** Anastasiia Shaposhnikova | +998940186722
+- **Lead Developer:** Anastasiia Shaposhnikova | tisenres@gmail.com | +998940186722
 - **Research Supervisor:** Dr. Sudhanshu Tripathi | stripathi@amity.uz | +971778652
 - **Institution:** DITE, Amity University Tashkent
 - **Patent Holder:** Amity University Uttar Pradesh
