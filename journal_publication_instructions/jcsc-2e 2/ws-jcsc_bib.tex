@@ -1,0 +1,89 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Trim Size: 9.75in x 6.5in
+%% Text Area: 8in (include Runningheads) x 5in
+%% ws-jcsc_bib.tex :	01-04-2024
+%% Tex file to use with ws-jcsc.cls written in Latex2E.
+%% The content, structure, format and layout of this style file is the
+%% property of World Scientific Publishing Co. Pte. Ltd.
+%% Copyright 2024 by World Scientific Publishing Co.
+%% All rights are reserved.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+
+\documentclass{ws-jcsc}
+\usepackage{url,overcite}
+\usepackage{xcolor}
+\usepackage[verbose]{hyperref}
+\hypersetup{colorlinks=false,allbordercolors=blue,pdfborderstyle={/S/U/W 1}}
+\urlstyle{rm}
+
+\begin{document}
+
+\title{Bib\TeX ing\\ in\\ WSPC Bib Style}
+
+\markboth{WSPC}{Using World Scientific's Bib\TeX\/ Style File}
+
+\maketitle
+
+\section{Usage}
+
+\begin{verbatim}
+\documentclass{ws-jcsc}
+\usepackage{url,natbib}
+\urlstyle{rm}
+\begin{document}
+\section{Output}
+Sample output using ws-ijtaf bibliography style file ...
+text \cite{best,pier,jame} ...
+\bibliographystyle{ws-jcsc}
+\bibliography{sample}
+\end{document}
+\end{verbatim}
+
+\section{Output}
+Sample output using ws-jcsc bibliography style file
+
+\begin{enumerate}
+
+\item article: text\cite{best,pier,jame}
+
+\item proceedings: text\cite{Weiss94}
+
+\item inproceedings: text\cite{conftypical,Moss94}
+
+\item book: text\cite{ArmsRace1}
+
+\item edition: text\cite{ComplexVariables}
+
+\item editor: text\cite{ColBenh:93}
+
+\item series: text\cite{inbook}
+
+\item tech report: text\cite{hobby1992,CSTR116}
+
+\item unpublished: text\cite{VoQS}
+
+\item phd thesis: text\cite{Brown:1988:IEL}
+
+\item masters thesis: text\cite{segms}
+
+\item incollection: text\cite{Jones:Phoneme}
+
+\item booklet: text\cite{URW:kerning}
+
+\item misc: see Ref.~\refcite{netpbm} for examples
+
+\end{enumerate}
+
+%% USE BIBSTYLE:-
+\bibliographystyle{ws-jcsc}   %%link to ws-jcsc.bst
+\bibliography{sample}       %%link to pattern2.bib
+
+\end{document}
+
+%% STEPS TO GENERATE OUT:-
+(1) latex ws-jcsc_bib   (twice)
+(2) bibtex ws-jcsc_bib
+(3) latex ws-jcsc_bib   (twice)
+
+

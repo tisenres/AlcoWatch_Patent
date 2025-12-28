@@ -1,0 +1,15 @@
+\begin{tikzpicture}[node distance=0.35cm, >=Latex, font=\scriptsize]
+\tikzstyle{block} = [draw, rounded corners, align=center, text width=1.8cm, minimum height=0.8cm, inner sep=2pt]
+\tikzstyle{link} = [->, line width=0.6pt]
+
+\node[block] (watch) {Wear OS\\sensors};
+\node[block, right=of watch] (ml) {ML inference\\+ calibration};
+\node[block, right=of ml] (ble) {BLE status\\packet};
+\node[block, right=of ble] (vehicle) {Vehicle control\\FSM};
+\node[block, right=of vehicle] (relay) {Ignition\\relay};
+
+\draw[link] (watch) -- (ml);
+\draw[link] (ml) -- (ble);
+\draw[link] (ble) -- (vehicle);
+\draw[link] (vehicle) -- (relay);
+\end{tikzpicture}

@@ -1,0 +1,285 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Trim Size: 9.75in x 6.5in
+%% Text Area: 8in (include Runningheads) x 5in
+%% ws-jcsc.tex : 01-04-2024
+%% Tex file to use with ws-jcsc.cls written in Latex2E.
+%% The content, structure, format and layout of this style file is the
+%% property of World Scientific Publishing Co. Pte. Ltd.
+%% Copyright 2024 by World Scientific Publishing Co.
+%% All rights are reserved.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+
+%\documentclass[wsdraft]{ws-jcsc}
+\documentclass{ws-jcsc}
+\usepackage{xcolor}
+\usepackage[verbose]{hyperref}
+\hypersetup{colorlinks=false,allbordercolors=blue,pdfborderstyle={/S/U/W 1}}
+% \label, \ref and \cite commands are highly recommended
+
+\begin{document}
+
+\markboth{Authors' Names}{Instructions for Typesetting Manuscripts (Condensed Title for the Paper)}
+
+%%%%%%%%%%%%%%%%%%%%% Publisher's Area please ignore %%%%%%%%%%%%%%%
+%
+\catchline{}{}{}{}{}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Instructions for Typesetting Manuscripts\\
+Using \LaTeX\footnote{For the
+title, try not to use more than 3 lines.
+Typeset the title in 10~pt Times roman, boldface with the first letter of important words capitalized.}}
+
+\author{First Author\footnote{Typeset names in
+8~pt Roman. Use the footnote to indicate the
+present or permanent address of the author.}}
+
+\address{University Department, University Name, Address,\\
+City, State ZIP/Zone,
+Country\footnote{State completely without abbreviations, the
+affiliation and mailing address, including country. Typeset in
+8~pt Times Italic.}\\
+$^\dag$firstauthor\_id@domain\_name}
+
+\author{Second Author$^\S$}
+
+\address{Group, Laboratory, Address,\\
+City, State ZIP/Zone, Country\\
+$^\S$secondauthor\_id@domain\_name}
+
+\maketitle
+
+\begin{history}
+\received{(Day Month Year)}
+\revised{(Day Month Year)}
+\accepted{(Day Month Year)}
+\published{(Day Month Year)}
+%\comby{(xxxxxxxxxx)}
+\end{history}
+
+\begin{abstract}
+The abstract should summarize the context, content and conclusions of
+the paper in less than 200 words. It should not contain any references
+or displayed equations.
+Typeset the abstract in 8 pt Times Roman with baselineskip of 10 pt,
+making an indentation of 0.25 inches on the left and right margins.
+Typeset similarly for keywords below.
+\end{abstract}
+
+\keywords{Keyword1; keyword2; keyword3.}
+
+%\ccode{2020 Mathematics Subject Classification: 22E46, 53C35, 57S20}
+
+\section{General Appearance}
+Contributions to {\it Journal of Circuits, Systems, and Computers} are to be in American English.
+Authors are encouraged to have their contribution checked for grammar.
+American spelling should be used.
+Abbreviations are allowed but should be spelt out in full when first used.
+Integers ten and below are to be spelt out.
+Italicize foreign language phrases (e.g.,~Latin, French).
+Upon acceptance, authors are required to submit their data source file including postscript files for figures.
+
+The text is to be typeset in 10 pt Times Roman, single spaced with baselineskip of 13~pt.
+Text area (including copyright block) is 8 inches high and 5 inches wide for the first page.
+Text area (excluding running title) is 7.7 inches high and 5 inches wide for subsequent pages.
+Final pagination and insertion of running titles will be done by the publisher.
+
+\section{Major Headings}
+Major headings should be typeset in boldface with the first letter of important words capitalized.
+
+\subsection{Sub-headings}
+Sub-headings should be typeset in boldface italic and capitalize
+the first letter of the first word only. Section number to be in
+boldface roman.
+
+\subsubsection{Sub-subheadings}
+Typeset sub-subheadings in medium face italic and capitalize the
+first letter of the first word only. Section number to be in roman.
+
+\subsection{Numbering and spacing}
+Sections, sub-sections and sub-subsections are numbered in Arabic.
+Use double spacing before all section headings, and single spacing after section headings.
+Flush left all paragraphs that follow after section headings.
+
+\subsection{Lists of items}
+Items may be numbered in lowercase Roman numerals: One can define
+the following list formats to be new environments.
+
+\begin{romanlist}[(ii)]
+\item item one
+\item item two
+	\begin{alphlist}[(b)]
+	\item lists within lists can be numbered with lowercase
+              roman letters,
+	\item second item.
+	\end{alphlist}
+\end{romanlist}
+
+\section{Equations}
+Displayed equations should be numbered consecutively in the paper,
+with the number set flush right and enclosed in parentheses.
+\begin{equation}
+\mu(n, t) = \frac{\sum^\infty_{i=1} 1(d_i < t, N(d_i) = n)}{
+\int^t_{\sigma=0} 1(N(\sigma) = n)d\sigma}\,. \label{eq1}
+\end{equation}
+
+Equations should be referred to in abbreviated form, e.g.,~``Eq.~(\ref{eq1})''.
+In multiple-line equations, the number should be given on the last line.
+
+Displayed equations are to be centered on the page width.
+Standard English letters like x are to appear as $x$ (italicized)
+in the text if they are used as mathematical symbols.
+Punctuation marks are used at the end of equations as if they appeared
+directly in the text.
+
+For multiline equations, prefer using \verb|align| or \verb|align*| instead of \verb|eqnarray|.
+\begin{align}
+    g(x) & = \sum_{k=1}^{N} y_k g(x_k) \nonumber\\
+& = \sum_{k=1}^{N} y_k \sum_{l=1}^{M} b_{kl} w_l \nonumber\\
+& = \sum_{k=1}^{N} \sum_{l=1}^{M} b_{kl} y_k w_l
+\end{align}
+
+\begin{theorem}
+Theorems, lemmas, etc. are to be numbered consecutively in the paper.
+Use double spacing before and after theorems, lemmas, etc.
+\end{theorem}
+
+\begin{proof}
+Proofs should end with square box.
+\end{proof}
+
+\section{Illustrations and Photographs}
+Figures are to be inserted in the text nearest their first reference.
+If the author requires the publisher to reduce the figures, ensure that
+the figures (including letterings and numbers) are large enough
+to be clearly seen after reduction. If\break photographs are to be
+used, only black and white ones are acceptable.
+
+\begin{figure}[th]
+\centerline{\includegraphics[width=2.0in]{jcscf1}}
+\vspace*{6pt}
+\caption{A schematic illustration of dissociative recombination. The
+direct mechanism, 4m$^2_\pi$ is initiated when the
+molecular ion $S_{L}$ captures an electron with kinetic energy.}
+\end{figure}
+
+Figures are to be sequentially numbered in Arabic numerals.
+The caption must be placed below the figure.
+Typeset in 8 pt Times Roman with baselineskip of 10~pt.
+Use double spacing between a caption and the text that follows immediately.
+
+Previously published material must be accompanied by written permission from the author and publisher.
+
+\section{Tables}
+Tables should be inserted in the text as close to the point of reference as possible.
+Some space should be left above and below the table.
+
+\begin{table}[ht]
+\tbl{Comparison of acoustic for frequencies for piston-cylinder problem.}
+{\begin{tabular}{@{}cccc@{}} \toprule
+Piston mass & Analytical frequency & TRIA6-$S_1$ model &
+\% Error \\
+& (Rad/s) & (Rad/s) \\ \colrule
+1.0\hphantom{00} & \hphantom{0}281.0 & \hphantom{0}280.81 & 0.07 \\
+0.1\hphantom{00} & \hphantom{0}876.0 & \hphantom{0}875.74 & 0.03 \\
+0.01\hphantom{0} & 2441.0 & 2441.0\hphantom{0} & 0.0\hphantom{0} \\
+0.001 & 4130.0 & 4129.3\hphantom{0} & 0.16\\ \botrule
+\end{tabular}}
+\begin{tabnote}
+Table notes
+\end{tabnote}
+\begin{tabfootnote}
+\tabmark{a} Table footnote A\\
+\tabmark{b} Table footnote B
+\end{tabfootnote}
+\end{table}
+
+\noindent
+Tables should be numbered sequentially in the text in Arabic numerals.
+Captions are to be centralized above the tables.
+Typeset tables and captions in 8 pt Times Roman with baselineskip of 10~pt.
+
+If tables need to extend over to a second page, the continuation
+of the table should be preceded by a caption,
+e.g.,~``Table~1 ({\it Continued\/}).''
+
+\section{References}
+References in the text are to be numbered consecutively in Arabic
+numerals, in the order of first appearance.  They are to be typed
+in superscripts after punctuation marks, e.g.,~``$\ldots$ in the
+statement''.\cite{1}
+
+\section{Footnotes}
+Footnotes should be numbered sequentially in superscript
+lowercase Roman letters.\footnote{Footnotes should be
+typeset in 8 pt Times Roman at the bottom of the page.}
+
+\section*{Acknowledgments}
+This section should come before the References.
+Funding information may also be included here.
+
+\section*{ORCID}
+You are encouraged to include in your user information the ORCID (\url{https://orcid.org/})
+or register for one if you don't have it.
+This ID will help to identify you in the researcher community and make it easier to keep track of all your publications.
+Please provide a valid ORCID here, e.g.,
+
+\noindent Josiah Carberry - \url{https://orcid.org/0000-0002-1825-0097}
+
+\noindent Rajesh Babu - \url{https://orcid.org/0009-0006-0415-6880}
+
+\appendix
+
+\section{Appendices}
+Appendices should be used only when absolutely necessary.
+They should come before the References. If there is more than one
+appendix, number them alphabetically. Number displayed equations
+occurring in the Appendix in this way, e.g.,~(\ref{appeqn}), (A.2), etc.
+\begin{equation}
+\mu(n, t) = {\sum^\infty_{i=1} 1(d_i < t, N(d_i) = n) \over
+\int^t_{\sigma=0} 1(N(\sigma) = n)d\sigma}\,.
+\label{appeqn}
+\end{equation}
+
+\section*{References}
+References are to be listed in the order cited in the text. Use
+the style shown in the following examples. For journal names, use
+the standard abbreviations. Typeset references in 9 pt Times
+Roman.
+
+\begin{thebibliography}{0}
+
+\bibitem{1} R. Lorentz and D. B. Benson, Deterministic and
+nondeterministic flow-chart interpretations, {\it J. Comput.
+Syst. Sci.} {\bf 27} (1983) 400--433, \url{https://doi.org/10.1016/0022-0000(83)90050-8}.
+
+\bibitem{2} M. J. Beeson, {\it Foundations of Constructive Mathematics}
+(Springer, Berlin, 1985), p.~210.
+
+\bibitem{3} K. L. Clark, Negations as failure, {\it Logic and Data
+Bases}, eds. H. Gallaire and J. Winker (Plenum Press, New York,
+1973), pp.~293--306.
+
+\bibitem{4} M. Joliat, A simple technique for partial elimination
+of unit productions from LR($k$) parsers, {\it IEEE Trans.
+Comput.} {\bf 27} (1976) 753--764, \url{https://doi.org/10.1109/TC.1976.1674686}.
+
+\bibitem{5} D. Dolve, Unanimity in an unknown and
+unreliable environment, {\it Proc. 22nd Annual Symp.
+Foundations of Computer Science}, Nashville, TN, October 1981,
+pp.~159--168, \url{https://doi.org/10.1109/SFCS.1981.53}.
+
+\bibitem{6} R. Tamassia, C. Batini and M. Talamo, An algorithm for
+automatic layout of entity relationship diagrams,
+{\it Entity-Relationship Approach to Software Engineering,
+Proc. 3rd Int. Conf. Entity-Relationship Approach},
+eds. C. G. Davis, S. Jajodia, P. A. Ng and R. T. Yeh
+(North-Holland, Amsterdam, 1983), pp.~421--439.
+
+\bibitem{7} W. L. Gewirtz, Investigations in the theory of
+descriptive complexity, Ph.D. thesis, New York University (1974).
+\end{thebibliography}
+
+\end{document} 
