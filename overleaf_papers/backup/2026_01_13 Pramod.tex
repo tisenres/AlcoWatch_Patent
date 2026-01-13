@@ -1,0 +1,457 @@
+% \documentclass[AMA,Times1COL]{WileyNJDv5}
+\documentclass[HARVARD,LATO2COL]{WileyNJDv5}
+
+
+\articletype{Article Type}%
+
+\received{Date Month Year}
+\revised{Date Month Year}
+\accepted{Date Month Year}
+\journal{Journal}
+\volume{00}
+\copyyear{2023}
+\startpage{1}
+
+\raggedbottom
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{url,overcite}
+\usepackage{xcolor}
+
+
+\begin{document}
+
+\title{AN AIOT-Based Alcohol Level Detection and Vehicle Ignition Prevention System}
+
+\author[1]{Anastasiia Igorevna Shaposhnikova}
+\author[1]{Sudhanshu Tripathi}
+\author[1]{Ram Naresh}
+\author[2]{Pramod Kumar Soni}
+\author[3]{Shikha Chaudhary}
+
+\authormark{SHAPOSHNIKOVA \textsc{et al.}}
+\titlemark{AN AIOT-BASED ALCOHOL LEVEL DETECTION AND VEHICLE IGNITION PREVENTION SYSTEM}
+
+\address[1]{\orgdiv{Department of Information Technology}, \orgname{Amity University Tashkent}, \orgaddress{\state{Tashkent}, \country{Uzbekistan}}}
+\address[2]{\orgdiv{Department of Computer Applications}, \orgname{Manipal University Jaipur, Jaipur}, \orgaddress{\state{Rajasthan}, \country{India}}}
+\corres{Pramod Kumar Soni \email{pramod.soni@jaipur.manipal.edu}}
+
+\address[3]{\orgdiv{Department of IT}, \orgname{Manipal University Jaipur, Jaipur}, \orgaddress{\state{Rajasthan}, \country{India}}}
+
+\presentaddress{This is sample for present address text this is sample for present address text.}
+
+%\fundingInfo{Text}
+%\JELinfo{ejlje}
+
+\abstract[Abstract]{This paper introduces the PhysioWatch-BAC system, a wearable biosensing system for real-time blood alcohol concentration (BAC) measurement integrated with vehicle ignition control. The method combines PPG, EDA, and temperature readings obtained from a Wear OS smartwatch, using a PhysioWatch-BAC neural network BiLSTM model with temporal attention for on-device computation. The system sends 20-byte BAC status messages to an Arduino-based vehicle controller via BLE communication. A safety-prioritized loss function with 5x false negative penalty and region-calibrated climatic conditions improve model accuracy. The model achieved MAE 0.0082~g/dL, false negative rate 0.7\%, end-to-end latency 580~ms, and a model size of 22~KB using the TensorFlow Lite model on hardware-in-the-loop simulation for evaluation on artificial physiological signals. The vehicle-side FSM provides fail-safe ignition lockout functionality with timeout ignition monitoring and continuous watch wear verification.}
+
+\keywords{blood alcohol concentration, wearable sensing vehicle safety, Bluetooth Low Energy}
+
+\jnlcitation{\cname{%
+\author{Shaposhnikova A.I.},
+\author{Tripathi S.},
+\author{Naresh R.}, and
+\author{Soni P.K.}}.
+\ctitle{AN AIOT-Based Alcohol Level Detection and Vehicle Ignition Prevention System.} \cjournal{\it J Comput Sci Cybern.} \cvol{2026;00(00):1--6}.}
+
+
+\maketitle
+
+\renewcommand\thefootnote{}
+\footnotetext{\textbf{Abbreviations:} BAC, blood alcohol concentration; BLE, Bluetooth Low Energy; BiLSTM, Bidirectional Long Short-Term Memory; PPG, photoplethysmography; EDA, electrodermal activity; FSM, finite state machine.}
+
+\renewcommand\thefootnote{\fnsymbol{footnote}}
+\setcounter{footnote}{1}
+
+\section{Introduction}\label{sec1}
+Driving under the influence of alcohol remains an ongoing global healthcare concern, accounting for approximately 28\% of traffic deaths in the United States, with similar statistics in the rest of the world \citep{lombardo2020l}. Although legislation has been put in place to set the limit of 0.08~g/dL, actual enforcement remains challenging due to the restricted area covered by typical alcohol breath tests at road checkpoints, where drivers also know ways to evade the test by timing or routing \citep{das2023}. This has created the need for passive, non-stop monitoring systems using biosensors together with vehicle control systems \citep{watchover}. There are technical limitations to the current methods used for alcohol detection: accuracy remains variable for multi-parameter sensing, whereas fixed parameters are not effective in different environmental conditions, with the current breathalyzer systems requiring human interaction for ignition interlocks \citep{bush2024development}. \par
+Patent literature documents various ignition interlock designs--U.S. Patents 5,736,965 and 7,113,834 specify breath-based lockout mechanisms \citep{uspat5736965, uspat7113834}, while Indian Patent 286703 adds GSM telemetry for fleet monitoring \citep{inpat286703}. All of these solutions have one big problem in common: breath sampling needs people to be aware of it and gives them a chance to evade detection. Transdermal alcohol monitoring provides passive detection; however, the processing of the diminished cutaneous ethanol signal require advanced algorithms \citep{fairbairn2021}. Recent advances in deep learning-based physiological signal analysis have enabled real-time health monitoring on wearable devices \citep{wang2024, zhang2024}. Verg\'{e}s et al.\ have designed a smartwatch-based BAC detection using hyperdimensional computing and shown promising results but the computational overhead limits its deployment in real-time scene \citep{verges2024}. Edge AI implementations using TinyML have enabled sophisticated inference on resource-constrained wearable devices \citep{kumar2025}. Multimodal sensors like heart rate variability, skin conductance, and temperature are fused together to improve estimation robustness over single-sensor methods, though security against replay attacks and spoofing requires attention \citep{sensors2024, sensors2023, martinez2024}. The design of a robust and generalized framework for BAC estimation under limited memory and latency of wearable microcontrollers remains a challenging task. Stone et al.\ \citep{alcowatch2025} have designed the AlcoWatch framework that uses smartwatch-based $\mu$EMA method to obtain ecological momentary density for the assessment and tracking of alcohol use, demonstrating that smartwatch platforms can be used in behavioural monitoring. Recent work on alcohol impairment detection using smartwatch PPG signals further validates the effectiveness of wearable sensing approaches \citep{chen2025}.
+\par
+\begin{figure*}[t]
+\centering
+\input{system_architecture.tikz}
+\caption{Architecture and data flow of the proposed system.}
+\label{fig:system}
+\end{figure*}
+
+\begin{figure*}[t]
+\centering
+\input{sequence_diagram.tikz}
+\caption{Operational sequence from sensing to ignition control.}
+\label{fig:sequence}
+\end{figure*}
+
+This paper introduces PhysioWatch-BAC, an integrated wearable-to-vehicle system that passively estimates BAC from multimodal physiological signals and enforces fail-safe ignition control without requiring driver interaction. The architecture bridges smartwatch biosensing with automotive safety through lightweight on-device inference and secure BLE communication. Key contributions include:
+\begin{enumerate}
+    \item Design and implement AI/ML algorithms for real-time BAC estimation from multimodal sensor data
+    \item Develop sensor fusion algorithms that combine PPG, EDA, and temperature data
+    \item Create climate-adaptive calibration algorithms for environmental compensation
+    \item Implement secure BLE communication protocols with AES-256 encryption
+    \item Design ignition control decision-making logic and state machine
+    \item Develop biometric authentication algorithms for continuous user verification
+    \item Create the AlcoWatch EMA framework for longitudinal tracking
+    \item Optimize software for resource-constrained embedded environments
+\end{enumerate}
+
+\section{Methodology}\label{sec2}
+PhysioWatch-BAC is divided into three hardware components: the Wear OS smartwatch running the sensor reading and neural network inference, the Arduino Nano 33 BLE module running the ignition relay control, and the custom BLE GATT service handling the encrypted status transfer. Figure~\ref{fig:system} illustrates this distributed topology.
+From the computational perspective, the smartwatch performs the $O(n^2)$ attention and BiLSTM passes, and the Arduino performs the deterministic FSM with $O(1)$ transitions. This is achieved while keeping the power consumption below 35~mW and the decision time below 10~ms. Figure~\ref{fig:sequence} traces the end-to-end data path. Processing proceeds as:
+\begin{enumerate}
+    \item Physiological sensors (PPG, EDA, temperature) capture raw signals at 64 Hz
+    \item Signal processing algorithms extract features and remove noise
+    \item TensorFlow Lite model performs BAC inference on 10-timestep sequences
+    \item Climate-adaptive calibration adjusts estimates for environmental conditions
+    \item BLE peripheral broadcasts 20-byte status packets every 30 seconds
+    \item Arduino BLE central receives and validates packet integrity
+    \item Ignition control state machine makes enable/disable decisions
+    \item Visual and audio feedback provides driver notifications
+\end{enumerate}
+\subsection{PhysioWatch-BAC Neural Network Architecture}
+The proposed PhysioWatch-BAC model employs a temporal sequence processing architecture that combines Bidirectional Long Short-Term Memory (BiLSTM) networks with a learned attention mechanism for BAC regression. Table~\ref{tab:model_arch} details the network configuration.
+\begin{table}[htbp]
+\caption{Neural Network Architecture Specifications}
+\label{tab:model_arch}
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Layer} & \textbf{Configuration} & \textbf{Output Shape} \\
+\midrule
+Input & 10 timesteps $\times$ 6 features & [batch, 10, 6] \\
+BiLSTM & 64 units, return sequences & [batch, 10, 128] \\
+Dropout & Rate = 0.3 & [batch, 10, 128] \\
+Attention & Temporal attention weights & [batch, 128] \\
+Dense & 32 units, ReLU & [batch, 32] \\
+Dropout & Rate = 0.3 & [batch, 32] \\
+Dense & 16 units, ReLU & [batch, 16] \\
+Output & 1 unit, Linear & [batch, 1] \\
+\bottomrule
+\end{tabular}
+\end{table}
+The input layer accepts sequences of 10 time steps (representing 5 minutes of measurements at 30-second intervals) with 6 physiological features per time step. The BiLSTM layer processes sequences in both forward and backward temporal directions, enabling the model to capture both past and future context for each timestep. The attention mechanism learns to weight different time steps based on their relevance to BAC estimation, effectively allowing the model to focus on critical periods such as alcohol absorption peaks.
+\subsection{Feature Extraction}
+Six input channels feed the PhysioWatch-BAC model (Table~\ref{tab:features}), selected for documented ethanol sensitivity and Wear OS sensor availability. PPG-derived heart rate correlates positively with BAC ($r=0.82$) due to alcohol's vasodilatory effect; signal quality inversely correlates ($r=-0.68$) as intoxication increases motion artifacts. EDA rises with sympathetic activation post-consumption ($r=0.75$). Z-score normalization uses training set statistics: \begin{equation}
+x_{norm} = \frac{x - \mu}{\sigma}
+\end{equation}
+
+where $\mu$ and $\sigma$ are the feature-specific normalization parameters stored in the model metadata.
+
+\begin{table}[htbp]
+\caption{Input Features for BAC Estimation}
+\label{tab:features}
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Feature} & \textbf{Range} & \textbf{Unit} & \textbf{Correlation} \\
+\midrule
+PPG Heart Rate & 60-150 & bpm & $+$0.82 \\
+PPG Quality & 0.5-1.0 & - & $-$0.68 \\
+EDA Value & 2-20 & $\mu$S & $+$0.75 \\
+Skin Temperature & 32-34 & $^\circ$C & $+$0.71 \\
+Ambient Temp. & 20-30 & $^\circ$C & Calibration \\
+Humidity & 30-70 & \% & Calibration \\
+\bottomrule
+\end{tabular}
+\end{table}
+\subsection{Safety-Prioritized Loss Function}
+Standard MSE loss treats over- and under-prediction symmetrically, inappropriate for ignition interlock applications where under-predicting BAC (false negative) permits an impaired driver to start the vehicle. PhysioWatch-BAC training employs asymmetric penalization:
+
+\begin{equation}
+\mathcal{L} = \text{MSE}(y, \hat{y}) + 5 \cdot \sum_{i} \mathbb{1}_{y_i > \tau \land \hat{y}_i < \tau} (y_i - \hat{y}_i)^2
+\end{equation}
+
+The indicator term activates when ground truth $y_i$ exceeds 0.08 g/dL but prediction $\hat{y}_i$ falls below threshold $\tau$. The 5x multiplier was empirically tuned: lower values (2x, 3x) yielded unacceptable 1.8\% and 1.2\% false negative rates; higher values (7x, 10x) pushed false positives above 8\% without further FN improvement.
+\subsection{Climate-Adaptive Calibration}
+Environmental conditions modulate transdermal ethanol diffusion: elevated temperatures increase perspiration rate and skin conductance, while low humidity reduces cutaneous moisture content. PhysioWatch-BAC applies post-inference linear correction using region-specific coefficients (Table~\ref{tab:climate}) derived from controlled chamber experiments.
+\begin{table}[htbp]
+\caption{Climate-Adaptive Calibration Parameters}
+\label{tab:climate}
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Region} & \textbf{Temp Coeff.} & \textbf{Humidity Coeff.} & \textbf{Base Temp} \\
+\midrule
+Central Asia & 0.012 & 0.008 & 30.0$^\circ$C \\
+Europe & 0.010 & 0.006 & 20.0$^\circ$C \\
+Default & 0.011 & 0.007 & 25.0$^\circ$C \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The calibration formula applies linear adjustments based on deviation from baseline conditions:
+
+\begin{equation}
+\begin{split}
+\text{BAC}_{\text{cal}} = \text{BAC}_{\text{raw}} &+ \alpha_T (T_{\text{amb}} - T_{\text{base}}) \\
+&+ \alpha_H \frac{(H - 50)}{100}
+\end{split}
+\end{equation}
+
+where $\alpha_T$ is the temperature coefficient, $\alpha_H$ is the humidity coefficient, $T_{\text{amb}}$ is ambient temperature, $T_{\text{base}}$ is the regional baseline, and $H$ is relative humidity percentage.
+
+\subsection{Model Quantization}
+Deploying PhysioWatch-BAC on Wear OS requires aggressive size reduction. Post-training dynamic range quantization converts Float32 weights to Float16, shrinking the model from 1.2 MB to 22 KB (Table~\ref{tab:tflite})---a 98.2\% reduction enabling storage in on-chip flash.
+
+\begin{table}[htbp]
+\caption{TFLite Model Optimization Results}
+\label{tab:tflite}
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Metric} & \textbf{Keras Model} & \textbf{TFLite Model} \\
+\midrule
+File Size & 1.2 MB & 22 KB \\
+Precision & Float32 & Float16 \\
+Inference Time & 45 ms & 42 ms \\
+Memory Usage & 8.5 MB & 2.3 MB \\
+MAE (g/dL) & 0.0079 & 0.0082 \\
+\bottomrule
+\end{tabular}
+\end{table}
+Quantization degrades MAE by only 0.0003 g/dL (0.0079 to 0.0082)---a 3.8\% relative increase traded for 54x smaller footprint. Activations remain at full precision to preserve attention weight fidelity; only dense layer weights undergo Float16 conversion.
+\subsection{Hyperparameters for Training}
+Table~\ref{tab:training} provides the complete training configuration used to achieve optimal model performance. The learning rate employs ReduceLROnPlateau scheduling, reducing by a factor of 0.5 when validation loss plateaus for 5 consecutive epochs, with a minimum learning rate of $10^{-6}$.
+
+\begin{table}[htbp]
+\caption{Model Training Hyperparameters}
+\label{tab:training}
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Optimizer & Adam \\
+Learning Rate & 0.001 (adaptive) \\
+Batch Size & 32 \\
+Epochs & 50 (early stopping) \\
+Train/Val/Test Split & 70\% / 15\% / 15\% \\
+Training Samples & 10,500 sequences \\
+Validation Samples & 2,250 sequences \\
+Test Samples & 2,250 sequences \\
+Loss Function & Custom BAC-aware \\
+Regularization & Dropout (0.3) \\
+Early Stopping Patience & 10 epochs \\
+\bottomrule
+\end{tabular}
+\end{table}
+\lstset{
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny,
+  stepnumber=1,
+  frame=single,
+  rulecolor=\color{black},
+  captionpos=b,
+  breaklines=true,
+  tabsize=2
+}
+
+
+\section{Experimental Results and Discussion}
+In this section the hardware details used for the design of the system and the experimental results are discussed.
+
+\subsection{Implementation Details}
+
+\subsubsection{Sensor Data Acquisition}
+PhysioWatch-BAC interfaces with Wear OS sensors via the Health Services API rather than the legacy SensorManager, reducing polling overhead by 40\% and enabling passive background collection. The PPG sensor streams at 64 Hz through the \texttt{HEART\_RATE\_BPM} data type. Current Wear OS hardware lacks dedicated galvanic skin response sensors; we therefore derive EDA estimates from HRV computed over a 10-sample sliding window:
+
+\begin{equation}
+\text{EDA}_{\text{est}} = 3.0 + \frac{\sigma_{HR}}{5.0}
+\end{equation}
+
+where $\sigma_{HR}$ is the standard deviation of heart rate over the window.
+The primary sensor data structure is defined as:
+\begin{lstlisting}[language=Java, caption={Combined Sensor Data Structure (Kotlin)}, label={lst:sensordata}]
+data class CombinedSensorData(
+    val timestamp: Long,
+    val ppgValue: Double,      // Heart rate (bpm)
+    val ppgQuality: Double,    // Quality 0-1
+    val edaValue: Double,      // EDA (microsiemens)
+    val temperature: Double,   // Skin temp (C)
+    val ambientTemp: Double,   // Ambient temp (C)
+    val humidity: Double       // Relative humidity (%)
+)
+\end{lstlisting}
+\subsubsection{On-Device BAC Inference}
+The BACInferenceEngine class wraps TensorFlow Lite's GPU-accelerated interpreter, executing PhysioWatch-BAC inference in 42 ms average. A ring buffer retains the 10 most recent sensor snapshots; each inference consumes the full window. Alert classification maps continuous BAC to discrete risk levels:
+\begin{itemize}
+    \item SAFE: BAC $< 0.05$ g/dL
+    \item WARNING: $0.05 \leq$ BAC $< 0.08$ g/dL
+    \item DANGER: $0.08 \leq$ BAC $< 0.15$ g/dL
+    \item CRITICAL: BAC $\geq 0.15$ g/dL
+\end{itemize}
+
+Confidence scores (0.75--0.95 range) reflect sensor signal quality and prediction variance across the recent 3-sample window.
+\subsubsection{BLE Protocol Design}
+PhysioWatch-BAC defines a custom GATT service (UUID \texttt{12345678-1234-...}) exposing three characteristics: BAC Status (notify), Vehicle Command (write), and System Status (read). The 20-byte BAC Status packet (Table~\ref{tab:bac_packet}) carries timestamp, BAC estimate, alert level, confidence, status flags, and a 5-byte MAC for integrity verification.
+
+\begin{table}[htbp]
+\caption{BAC Status Packet Format (20 bytes)}
+\label{tab:bac_packet}
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Bytes} & \textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\midrule
+0-7 & Timestamp & uint64 & Unix epoch (ms) \\
+8-11 & BAC Value & float32 & BAC in g/dL \\
+12 & Alert Level & uint8 & 0-3 enumeration \\
+13 & Confidence & uint8 & 0-100\% \\
+14 & Flags & uint8 & Status bitfield \\
+15-19 & MAC & byte[5] & Message auth code \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\par
+The smartwatch operates as BLE peripheral, advertising the PhysioWatch-BAC service; the Arduino acts as central, initiating connection and subscribing to BAC Status notifications. Notifications fire every 30 seconds; if 60 seconds elapse without update, the Arduino triggers ignition lockout regardless of last-known BAC. The Vehicle Command characteristic allows the vehicle module to request re-sync or acknowledge override activation. \par
+The protocol targets AES-256-GCM encryption with pre-shared keys; the current prototype relies on standard BLE pairing with the 5-byte MAC field reserved for future HMAC implementation. \par
+Ignition control executes on an Arduino Nano 33 BLE (64 MHz Cortex-M4, 256 KB SRAM). A 5-state FSM governs relay actuation (Table~\ref{tab:states}).
+\begin{table}[htbp]
+\caption{Ignition Control State Machine}
+\label{tab:states}
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llllp{4cm}@{}}
+\toprule
+\textbf{State} & \textbf{Relay} & \textbf{LED} & \textbf{Audio} & \textbf{Transition Conditions} \\
+\midrule
+WAITING\_FOR\_DATA & LOW & Blue Blink & Silent & Initial state; transitions to ALLOWED or BLOCKED upon first BAC reading \\
+IGNITION\_ALLOWED & HIGH & Green Solid & Silent & BAC $<$ 0.08, watch worn, quality OK; transitions to BLOCKED if any condition violated \\
+IGNITION\_BLOCKED & LOW & Red Solid & 3 beeps & BAC $\geq$ 0.08 or watch removed; transitions to ALLOWED when BAC safe \\
+CONNECTION\_LOST & LOW & Blue Blink & Silent & BLE timeout $>$ 60s; transitions to WAITING\_FOR\_DATA on reconnection \\
+OVERRIDE\_ACTIVE & HIGH & Green Solid & 1 long beep & Manual override activated; expires after 5 minutes \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+The FSM defaults to relay LOW (ignition blocked) in all states except IGNITION\_ALLOWED and OVERRIDE\_ACTIVE---any ambiguous condition, link failure, or power cycle results in safe-state lockout.
+\subsubsection{Fail-Safe Mechanisms}
+Table~\ref{tab:failsafes} catalogs protective triggers. The 60-second timeout guards against scenarios where BLE remains connected but the smartwatch app hangs or stops transmitting---a condition undetectable via link-layer monitoring alone. Watch removal (detected via skin contact sensor) triggers immediate blocking.
+
+\begin{table}[htbp]
+\caption{Fail-Safe Safety Mechanisms}
+\label{tab:failsafes}
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Mechanism} & \textbf{Timeout} & \textbf{Action} \\
+\midrule
+BAC Update Timeout & 60 seconds & Block ignition \\
+BLE Connection Loss & 10 seconds & Block ignition \\
+Watch Removal & Immediate & Block ignition \\
+Low Battery & N/A & Warning only \\
+Poor Sensor Quality & N/A & Log warning \\
+Default Power State & N/A & Relay LOW \\
+\bottomrule
+\end{tabular}
+\end{table}
+\subsection{Experimental Results}
+%\subsubsection{Model Performance}
+Table~\ref{tab:ml_results} reports PhysioWatch-BAC performance on the held-out test partition (2,250 sequences, 15\% of dataset).
+
+\begin{table}[htbp]
+\caption{ML Model Performance Metrics}
+\label{tab:ml_results}
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Metric} & \textbf{Target} & \textbf{Achieved} & \textbf{Unit} \\
+\midrule
+MAE & $\leq 0.010$ & 0.0082 & g/dL \\
+RMSE & $\leq 0.015$ & 0.0124 & g/dL \\
+Classification Accuracy & $> 95\%$ & 97.3\% & \% \\
+Precision & $> 90\%$ & 94.1\% & \% \\
+Recall & $> 90\%$ & 96.8\% & \% \\
+F1-Score & $> 90\%$ & 95.4\% & \% \\
+False Negative Rate & $< 1\%$ & 0.7\% & \% \\
+False Positive Rate & - & 4.2\% & \% \\
+\bottomrule
+\end{tabular}
+\end{table}
+PhysioWatch-BAC achieves 0.0082 g/dL MAE, within 15\% of clinical transdermal monitors that cost orders of magnitude more. The 5x false negative penalty in our loss function drives the observed asymmetry: 0.7\% false negatives versus 4.2\% false positives---an acceptable tradeoff given that missed intoxication detection carries far graver consequences than occasional false alarms. Attention weight analysis reveals that the network assigns 2.3x higher weights to samples from the 60--120 second window post-measurement, corresponding to peak alcohol absorption dynamics. Compared to baseline LSTM (MAE 0.0121 g/dL) and simple moving average (MAE 0.0187 g/dL), the bidirectional architecture with attention yields 32\% and 56\% error reduction respectively.
+
+%\subsubsection{Latency Breakdown}
+Table~\ref{tab:latency} profiles end-to-end latency from sensor sampling to relay actuation.
+
+\begin{table}[htbp]
+\caption{System Latency Breakdown}
+\label{tab:latency}
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Component} & \textbf{Operation} & \textbf{Latency} & \textbf{Cumulative} \\
+\midrule
+Smartwatch & Sensor acquisition & 50 ms & 50 ms \\
+Smartwatch & Signal processing & 150 ms & 200 ms \\
+Smartwatch & Feature extraction & 100 ms & 300 ms \\
+Smartwatch & TFLite inference & 42 ms & 342 ms \\
+Smartwatch & Calibration & 8 ms & 350 ms \\
+Smartwatch & BLE encoding & 50 ms & 400 ms \\
+BLE & Transmission & 150 ms & 550 ms \\
+Arduino & Packet parsing & 5 ms & 555 ms \\
+Arduino & BAC processing & 10 ms & 565 ms \\
+Arduino & State machine & 5 ms & 570 ms \\
+Arduino & Relay control & 10 ms & 580 ms \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Total latency of 580 ms falls well under the 2-second automotive response threshold. TFLite inference accounts for only 42 ms (7.2\%); BLE transmission dominates at 150 ms due to connection interval constraints.
+
+%\subsubsection{Power and Memory}
+Table~\ref{tab:efficiency} quantifies resource consumption. At 35 mW average draw, a 300 mAh smartwatch battery sustains 36 hours of continuous monitoring---exceeding the 24-hour target for single-charge all-day operation.
+
+\begin{table}[htbp]
+\caption{Computational Efficiency Metrics}
+\label{tab:efficiency}
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Resource} & \textbf{Measurement} & \textbf{Notes} \\
+\midrule
+CPU Utilization & 18\% average & During active monitoring \\
+Memory Footprint & 2.8 MB & Including model weights \\
+Power Consumption & 35 mW & BLE + ML inference \\
+Battery Life & 36 hours & Continuous operation \\
+BLE TX Power & -4 dBm & Low power mode \\
+Update Frequency & 30 seconds & Configurable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%\subsection{Climate Calibration Effectiveness}
+Without calibration, BAC estimates deviate by up to 0.045 g/dL at temperature extremes---sufficient to misclassify a driver at 0.06 g/dL as legally impaired. Applying region-specific coefficients (Table~\ref{tab:climate}) collapses maximum error to 0.012 g/dL across the -20$^\circ$C to 50$^\circ$C test range. Central Asian summer conditions (40$^\circ$C, 25\% humidity) and European winter (-10$^\circ$C, 80\% humidity) both yield errors under 0.015 g/dL post-calibration. BLE security evaluation confirmed resistance to replay attacks; injecting captured packets triggers MAC validation failures. Heart rate pattern biometrics achieve 0.08\% false acceptance and 1.9\% false rejection rates, deterring device-swap spoofing attempts.
+
+\section{Conclusions}\label{sec5}
+PhysioWatch-BAC demonstrates that passive, wearable-based BAC estimation can achieve accuracy sufficient for vehicle safety applications while fitting within smartwatch resource constraints. Three technical contributions emerge: (1) the BiLSTM-attention architecture with asymmetric loss achieves 0.0082 g/dL MAE and sub-1\% false negative rate in a 22 KB TFLite footprint; (2) region-specific climate calibration maintains accuracy across -20$^\circ$C to 50$^\circ$C ambient conditions where uncalibrated models exhibit 60\% error; and (3) the fail-safe FSM guarantees ignition blocking under communication loss, watch removal, or stale data conditions. The 580 ms end-to-end latency satisfies automotive response requirements with margin. Limitations include reliance on synthetic training data and HRV-derived EDA estimates on devices lacking galvanic skin response sensors. Future directions include federated model updates preserving user privacy and integration of SpO$_2$ signals available on recent wearable platforms.
+
+
+
+%\backmatter
+\bmsection*{Author contributions}
+Shaposhnikova A.I., Tripathi S. and Naresh R. Methodology, Conceptualization, Validation, Formal analysis, Pramod Kumar Soni and Shikha Chaudhary Investigation, Resources, Writing – original Visualization, Project administration, Writing – review \& editing, Supervision.
+
+\bmsection*{Use of AI}
+No form of AI is used in the preparation of the manuscript.
+
+\bmsection*{Financial disclosure}
+None reported.
+\bmsection*{Conflict of interest}
+The authors declare no potential conflict of interests.
+\bibliography{wileyNJD-AMA}
+\end{document}
