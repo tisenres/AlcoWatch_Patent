@@ -4,6 +4,7 @@ Complete training pipeline for AlcoWatch BAC estimation model
 
 import sys
 import os
+import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from data.dataset_loader import AlcoholDatasetLoader
@@ -137,6 +138,13 @@ def main():
     )
     print("   ✓ Training completed")
 
+    # Save training history to JSON for figure generation
+    history_path = 'models/training_history.json'
+    history_data = {k: [float(v) for v in vals] for k, vals in history.history.items()}
+    with open(history_path, 'w') as f:
+        json.dump(history_data, f, indent=2)
+    print(f"   ✓ Training history saved to {history_path}")
+
     # Step 4: Evaluate model
     print("\n[4/6] Evaluating model on test set...")
     metrics = model.evaluate(X_test, y_test)
@@ -152,25 +160,45 @@ def main():
     print(f"   • False Negatives (Dangerous): {metrics['false_negatives']}")
     print(f"   • False Positives (Inconvenient): {metrics['false_positives']}")
 
-    # Step 5: Convert to TensorFlow Lite
-    print("\n[5/6] Converting to TensorFlow Lite...")
-    model.convert_to_tflite(
-        output_path='models/bac_model.tflite',
-        quantize=True
-    )
-    print("   ✓ TFLite model saved")
+    # Save evaluation metrics to JSON for figure generation
+    metrics_path = 'models/evaluation_metrics.json'
+    with open(metrics_path, 'w') as f:
+        json.dump({k: float(v) if isinstance(v, (np.floating, float)) else int(v)
+                    for k, v in metrics.items()}, f, indent=2)
+    print(f"   ✓ Evaluation metrics saved to {metrics_path}")
 
-    # Also save full model
-    model.model.save('models/bac_model_full.h5')
-    print("   ✓ Full model saved to models/bac_model_full.h5")
-
-    # Step 6: Generate visualizations
-    print("\n[6/6] Generating visualizations...")
+    # Step 5: Generate visualizations and save predictions
+    print("\n[5/6] Generating visualizations...")
     plot_training_history(history)
 
     # Make predictions on test set
     y_pred = model.predict(X_test)
     plot_predictions(y_test, y_pred)
+
+    # Save predictions for additional figure generation
+    predictions_path = 'models/predictions_data.json'
+    with open(predictions_path, 'w') as f:
+        json.dump({
+            'y_true': [float(v) for v in y_test],
+            'y_pred': [float(v) for v in y_pred.flatten()],
+        }, f)
+    print(f"   ✓ Predictions data saved to {predictions_path}")
+
+    # Step 6: Convert to TensorFlow Lite
+    print("\n[6/6] Converting to TensorFlow Lite...")
+    try:
+        model.convert_to_tflite(
+            output_path='models/bac_model.tflite',
+            quantize=True
+        )
+        print("   ✓ TFLite model saved")
+    except Exception as e:
+        print(f"   ⚠ TFLite conversion failed: {e}")
+        print("   (This does not affect training results or figure generation)")
+
+    # Also save full model
+    model.model.save('models/bac_model_full.h5')
+    print("   ✓ Full model saved to models/bac_model_full.h5")
 
     # Test climate-adaptive calibration
     print("\n" + "=" * 70)

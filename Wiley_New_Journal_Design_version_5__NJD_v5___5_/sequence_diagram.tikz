@@ -1,0 +1,18 @@
+\begin{tikzpicture}[x=1cm,y=1cm,font=\scriptsize,>=Latex]
+\node[draw, rounded corners, align=center, minimum width=2.6cm] (sw) at (1.3,0) {Smartwatch\\sensors};
+\node[draw, rounded corners, align=center, minimum width=2.6cm] (ml) at (4.5,0) {BAC\\inference};
+\node[draw, rounded corners, align=center, minimum width=2.6cm] (ble) at (7.7,0) {BLE\\link};
+\node[draw, rounded corners, align=center, minimum width=2.6cm] (veh) at (10.9,0) {Vehicle\\module};
+
+\draw[dashed] (1.3,-0.6) -- (1.3,-6.3);
+\draw[dashed] (4.5,-0.6) -- (4.5,-6.3);
+\draw[dashed] (7.7,-0.6) -- (7.7,-6.3);
+\draw[dashed] (10.9,-0.6) -- (10.9,-6.3);
+
+\draw[->] (1.3,-1.2) -- (4.5,-1.2) node[midway, above]{1. sensor window};
+\draw[->] (4.5,-2.0) -- (7.7,-2.0) node[midway, above]{2. BAC estimate};
+\draw[->] (7.7,-2.8) -- (10.9,-2.8) node[midway, above]{3. status packet};
+\draw[->] (10.9,-3.6) -- (7.7,-3.6) node[midway, above]{4. allow/block};
+\draw[->] (7.7,-4.4) -- (1.3,-4.4) node[midway, above]{5. command/verify};
+\draw[->] (1.3,-5.2) -- (7.7,-5.2) node[midway, above]{6. ack/update};
+\end{tikzpicture}
