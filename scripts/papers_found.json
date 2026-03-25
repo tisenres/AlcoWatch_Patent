@@ -1,0 +1,2551 @@
+[
+  {
+    "paperId": "440d248d148f7e36dad232e48f1c5c1cbc556d86",
+    "externalIds": {
+      "DBLP": "conf/kdd/SuZNLSP19",
+      "MAG": "2950361482",
+      "DOI": "10.1145/3292500.3330672",
+      "CorpusId": 196175745
+    },
+    "url": "https://www.semanticscholar.org/paper/440d248d148f7e36dad232e48f1c5c1cbc556d86",
+    "title": "Robust Anomaly Detection for Multivariate Time Series through Stochastic Recurrent Neural Network",
+    "year": 2019,
+    "citationCount": 1660,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1145/3292500.3330672?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1145/3292500.3330672, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Book",
+      "Conference"
+    ],
+    "journal": {
+      "name": "Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining"
+    },
+    "authors": [
+      {
+        "authorId": "2117999736",
+        "name": "Ya Su"
+      },
+      {
+        "authorId": "3022584",
+        "name": "Youjian Zhao"
+      },
+      {
+        "authorId": "113760187",
+        "name": "Chenhao Niu"
+      },
+      {
+        "authorId": "2112430424",
+        "name": "Rong Liu"
+      },
+      {
+        "authorId": "102717934",
+        "name": "Wei Sun"
+      },
+      {
+        "authorId": "1784745",
+        "name": "Dan Pei"
+      }
+    ],
+    "abstract": "Industry devices (i.e., entities) such as server machines, spacecrafts, engines, etc., are typically monitored with multivariate time series, whose anomaly detection is critical for an entity's service quality management. However, due to the complex temporal dependence and stochasticity of multivariate time series, their anomaly detection remains a big challenge. This paper proposes OmniAnomaly, a stochastic recurrent neural network for multivariate time series anomaly detection that works well robustly for various devices. Its core idea is to capture the normal patterns of multivariate time series by learning their robust representations with key techniques such as stochastic variable connection and planar normalizing flow, reconstruct input data by the representations, and use the reconstruction probabilities to determine anomalies. Moreover, for a detected entity anomaly, OmniAnomaly can provide interpretations based on the reconstruction probabilities of its constituent univariate time series. The evaluation experiments are conducted on two public datasets from aerospace and a new server machine dataset (collected and released by us) from an Internet company. OmniAnomaly achieves an overall F1-Score of 0.86 in three real-world datasets, signicantly outperforming the best performing baseline method by 0.09. The interpretation accuracy for OmniAnomaly is up to 0.89.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 1660
+  },
+  {
+    "paperId": "db9507cdd3e2d7d9c90ed185bd831e55c62dcec9",
+    "externalIds": {
+      "DBLP": "journals/sigmobile/LinTTYXH24",
+      "ArXiv": "2306.00978",
+      "DOI": "10.1145/3714983.3714987",
+      "CorpusId": 258999941
+    },
+    "url": "https://www.semanticscholar.org/paper/db9507cdd3e2d7d9c90ed185bd831e55c62dcec9",
+    "title": "AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration",
+    "year": 2023,
+    "citationCount": 1155,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/2306.00978, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "GetMobile: Mobile Computing and Communications",
+      "pages": "12 - 17",
+      "volume": "28"
+    },
+    "authors": [
+      {
+        "authorId": "46698300",
+        "name": "Ji Lin"
+      },
+      {
+        "authorId": "2214687479",
+        "name": "Jiaming Tang"
+      },
+      {
+        "authorId": "150127950",
+        "name": "Haotian Tang"
+      },
+      {
+        "authorId": "2202210853",
+        "name": "Shang Yang"
+      },
+      {
+        "authorId": "2219266839",
+        "name": "Xingyu Dang"
+      },
+      {
+        "authorId": "2115659426",
+        "name": "Song Han"
+      }
+    ],
+    "abstract": "Large language models (LLMs) have transformed numerous AI applications. On-device LLM is becoming increasingly important: running LLMs locally on edge devices can reduce cloud computing costs and protect users' privacy. However, the astronomical model size and the limited hardware resources pose significant deployment challenges. To solve these issues, we propose Activation-aware Weight Quantization (AWQ) and TinyChat, an algorithm-system full-stack solution for efficient on-device LLM deployment. AWQ is a novel quantization method that identifies and protects salient weights based on activation distribution, significantly reducing model size while preserving performance. TinyChat, an optimized inference framework, translates AWQ's theoretical memory savings into practical speedups through techniques such as on-the-fly dequantization, SIMD-aware weight packing, and kernel fusion. Together, they enable 4x model size reduction and 3-4x acceleration across various edge platforms, from high-end desktop GPUs to resource-constrained IoT devices. This solution democratizes on-device LLM deployment, offering privacy-preserving, low-latency AI capabilities across a wide range of applications.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 1160
+  },
+  {
+    "paperId": "1a9e7cbc9efdd232d511cfd3201ecdadcce8baa3",
+    "externalIds": {
+      "MAG": "2964006806",
+      "DOI": "10.1007/s11600-019-00330-1",
+      "CorpusId": 200028655
+    },
+    "url": "https://www.semanticscholar.org/paper/1a9e7cbc9efdd232d511cfd3201ecdadcce8baa3",
+    "title": "Long short-term memory (LSTM) recurrent neural network for low-flow hydrological time series forecasting",
+    "year": 2019,
+    "citationCount": 271,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s11600-019-00330-1?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s11600-019-00330-1, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": null,
+    "journal": {
+      "name": "Acta Geophysica",
+      "pages": "1471 - 1481",
+      "volume": "67"
+    },
+    "authors": [
+      {
+        "authorId": "31949931",
+        "name": "B. B. Sahoo"
+      },
+      {
+        "authorId": "144311862",
+        "name": "R. Jha"
+      },
+      {
+        "authorId": "50286082",
+        "name": "Anshuman Singh"
+      },
+      {
+        "authorId": "2116414493",
+        "name": "Deepak Kumar"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 271
+  },
+  {
+    "paperId": "e177f4a4b613b56564d0e9c658445c34bf39f5b6",
+    "externalIds": {
+      "DBLP": "journals/computers/LiLM23",
+      "DOI": "10.3390/computers12030060",
+      "CorpusId": 257513218
+    },
+    "url": "https://www.semanticscholar.org/paper/e177f4a4b613b56564d0e9c658445c34bf39f5b6",
+    "title": "Model Compression for Deep Neural Networks: A Survey",
+    "year": 2023,
+    "citationCount": 238,
+    "openAccessPdf": {
+      "url": "https://www.mdpi.com/2073-431X/12/3/60/pdf?version=1678783805",
+      "status": "GOLD",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.3390/computers12030060?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.3390/computers12030060, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Review"
+    ],
+    "journal": {
+      "name": "Comput.",
+      "pages": "60",
+      "volume": "12"
+    },
+    "authors": [
+      {
+        "authorId": "2141335447",
+        "name": "Zhuo Li"
+      },
+      {
+        "authorId": "2153612494",
+        "name": "Hengyi Li"
+      },
+      {
+        "authorId": "2164766926",
+        "name": "Lin Meng"
+      }
+    ],
+    "abstract": "Currently, with the rapid development of deep learning, deep neural networks (DNNs) have been widely applied in various computer vision tasks. However, in the pursuit of performance, advanced DNN models have become more complex, which has led to a large memory footprint and high computation demands. As a result, the models are difficult to apply in real time. To address these issues, model compression has become a focus of research. Furthermore, model compression techniques play an important role in deploying models on edge devices. This study analyzed various model compression methods to assist researchers in reducing device storage space, speeding up model inference, reducing model complexity and training costs, and improving model deployment. Hence, this paper summarized the state-of-the-art techniques for model compression, including model pruning, parameter quantization, low-rank decomposition, knowledge distillation, and lightweight model design. In addition, this paper discusses research challenges and directions for future work.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 243
+  },
+  {
+    "paperId": "b66dbe3efc266230fe3ffa82c8a25665809665af",
+    "externalIds": {
+      "MAG": "3023775155",
+      "DOI": "10.1016/j.gsf.2020.04.011",
+      "CorpusId": 219015752
+    },
+    "url": "https://www.semanticscholar.org/paper/b66dbe3efc266230fe3ffa82c8a25665809665af",
+    "title": "Machine learning for pore-water pressure time-series prediction: Application of recurrent neural networks",
+    "year": 2021,
+    "citationCount": 177,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1016/j.gsf.2020.04.011",
+      "status": "HYBRID",
+      "license": "CCBYNCND",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.gsf.2020.04.011?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.gsf.2020.04.011, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": null,
+    "journal": {
+      "name": "Geoscience frontiers",
+      "pages": "453-467",
+      "volume": "12"
+    },
+    "authors": [
+      {
+        "authorId": "1490743064",
+        "name": "Xin Wei"
+      },
+      {
+        "authorId": "2156144012",
+        "name": "Lulu Zhang"
+      },
+      {
+        "authorId": "2115537302",
+        "name": "Hao-Qing Yang"
+      },
+      {
+        "authorId": "2152827013",
+        "name": "L. Zhang"
+      },
+      {
+        "authorId": "2142036983",
+        "name": "Yang-ping Yao"
+      }
+    ],
+    "abstract": "Abstract Knowledge of pore-water pressure (PWP) variation is fundamental for slope stability. A precise prediction of PWP is difficult due to complex physical mechanisms and in situ natural variability. To explore the applicability and advantages of recurrent neural networks (RNNs) on PWP prediction, three variants of RNNs, i.e., standard RNN, long short-term memory (LSTM) and gated recurrent unit (GRU) are adopted and compared with a traditional static artificial neural network (ANN), i.e., multi-layer perceptron (MLP). Measurements of rainfall and PWP of representative piezometers from a fully instrumented natural slope in Hong Kong are used to establish the prediction models. The coefficient of determination (R2) and root mean square error (RMSE) are used for model evaluations. The influence of input time series length on the model performance is investigated. The results reveal that MLP can provide acceptable performance but is not robust. The uncertainty bounds of RMSE of the MLP model range from 0.24 kPa to 1.12 kPa for the selected two piezometers. The standard RNN can perform better but the robustness is slightly affected when there are significant time lags between PWP changes and rainfall. The GRU and LSTM models can provide more precise and robust predictions than the standard RNN. The effects of the hidden layer structure and the dropout technique are investigated. The single-layer GRU is accurate enough for PWP prediction, whereas a double-layer GRU brings extra time cost with little accuracy improvement. The dropout technique is essential to overfitting prevention and improvement of accuracy.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 177
+  },
+  {
+    "paperId": "9ea883e5ec2806f60f3126958444026f67cdcd92",
+    "externalIds": {
+      "DBLP": "journals/iotj/LinLWZMZ26",
+      "ArXiv": "2308.11200",
+      "DOI": "10.1109/JIOT.2025.3647705",
+      "CorpusId": 261064627
+    },
+    "url": "https://www.semanticscholar.org/paper/9ea883e5ec2806f60f3126958444026f67cdcd92",
+    "title": "SegRNN: Segment Recurrent Neural Network for Long-Term Time-Series Forecasting",
+    "year": 2023,
+    "citationCount": 132,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/2308.11200, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Internet of Things Journal",
+      "pages": "9861-9871",
+      "volume": "13"
+    },
+    "authors": [
+      {
+        "authorId": "2230088607",
+        "name": "Shengsheng Lin"
+      },
+      {
+        "authorId": "2154072278",
+        "name": "Weiwei Lin"
+      },
+      {
+        "authorId": "3414155",
+        "name": "Wentai Wu"
+      },
+      {
+        "authorId": "2091850372",
+        "name": "Feiyu Zhao"
+      },
+      {
+        "authorId": "1398103308",
+        "name": "Ruichao Mo"
+      },
+      {
+        "authorId": "2214826143",
+        "name": "Haotong Zhang"
+      }
+    ],
+    "abstract": "With the proliferation of the Internet of Things (IoT) applications, advanced time-series forecasting techniques have become increasingly critical for managing and responding to complex temporal dynamics. However, traditional recurrent neural network (RNN)-based methods have faced challenges in the long-term time-series forecasting (LTSF) domain when dealing with excessively long look-back windows and forecast horizons. Consequently, the dominance in this domain has shifted toward Transformer, multilayer perceptron (MLP), and convolutional neural network (CNN) approaches. The substantial number of recurrent iterations is the fundamental reason behind the limitations of RNNs in LTSF. To address these issues, we propose two novel strategies to reduce the number of iterations in RNNs for LTSF tasks: segment-wise iterations and parallel multistep forecasting (PMF). RNNs that combine these strategies, called SegRNN, significantly reduce the required recurrent iterations for LTSF, resulting in notable improvements in forecast accuracy and inference speed. Extensive experiments demonstrate that SegRNN not only outperforms state-of-the-art Transformer-based models but also reduces runtime and memory usage by more than 78%, making it highly suitable for resource-constrained IoT scenarios. These achievements provide strong evidence that RNNs continue to excel in LTSF tasks and encourage further exploration of this domain with more RNN-based approaches. The code is available at: https://github.com/lss-1138/SegRNN.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 137
+  },
+  {
+    "paperId": "980c1b7c06498645ce945b91ba1e5850e7f5d752",
+    "externalIds": {
+      "MAG": "2896998982",
+      "DOI": "10.1080/01431161.2018.1516313",
+      "CorpusId": 134610736
+    },
+    "url": "https://www.semanticscholar.org/paper/980c1b7c06498645ce945b91ba1e5850e7f5d752",
+    "title": "Using long short-term memory recurrent neural network in land cover classification on Landsat and Cropland data layer time series",
+    "year": 2018,
+    "citationCount": 137,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1080/01431161.2018.1516313?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1080/01431161.2018.1516313, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": null,
+    "journal": {
+      "name": "International Journal of Remote Sensing",
+      "pages": "593 - 614",
+      "volume": "40"
+    },
+    "authors": [
+      {
+        "authorId": "2402114",
+        "name": "Ziheng Sun"
+      },
+      {
+        "authorId": "31082471",
+        "name": "L. Di"
+      },
+      {
+        "authorId": "1737796837",
+        "name": "Hui Fang"
+      }
+    ],
+    "abstract": "ABSTRACT Land cover maps are significant in assisting agricultural decision making. However, the existing workflow of producing land cover maps is very complicated and the result accuracy is ambiguous. This work builds a long short-term memory (LSTM) recurrent neural network (RNN) model to take advantage of the temporal pattern of crops across image time series to improve the accuracy and reduce the complexity. An end-to-end framework is proposed to train and test the model. Landsat scenes are used as Earth observations, and some field-measured data together with CDL (Cropland Data Layer) datasets are used as reference data. The network is thoroughly trained using state-of-the-art techniques of deep learning. Finally, we tested the network on multiple Landsat scenes to produce five-class and all-class land cover maps. The maps are visualized and compared with ground truth, CDL, and the results of SegNet CNN (convolutional neural network). The results show a satisfactory overall accuracy (> 97% for five-class and > 88% for all-class) and validate the feasibility of the proposed method. This study paves a promising way for using LSTM RNN in the classification of remote sensing image time series.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 137
+  },
+  {
+    "paperId": "e167421841c80c54e60c2621dd6df2bbc54d0d51",
+    "externalIds": {
+      "DOI": "10.2139/ssrn.4103968",
+      "CorpusId": 248716229
+    },
+    "url": "https://www.semanticscholar.org/paper/e167421841c80c54e60c2621dd6df2bbc54d0d51",
+    "title": "Prediction of Remaining Useful Life and State of Health of Lithium Batteries Based on Time Series Feature and Savitzky-Golay Filter Combined with Gated Recurrent Unit Neural Network",
+    "year": 2023,
+    "citationCount": 129,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.2139/ssrn.4103968?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.2139/ssrn.4103968, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": null,
+    "journal": {
+      "name": "SSRN Electronic Journal"
+    },
+    "authors": [
+      {
+        "authorId": "2154981541",
+        "name": "Fei Guo"
+      },
+      {
+        "authorId": "12177469",
+        "name": "Xiongwei Wu"
+      },
+      {
+        "authorId": "2149366900",
+        "name": "Lili Liu"
+      },
+      {
+        "authorId": "2116475016",
+        "name": "Jilei Ye"
+      },
+      {
+        "authorId": null,
+        "name": "Tao Wang"
+      },
+      {
+        "authorId": "50660596",
+        "name": "L. Fu"
+      },
+      {
+        "authorId": "2145026174",
+        "name": "Yuping Wu"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 134
+  },
+  {
+    "paperId": "6ab0ef7ba747c7e15e308f31a110fb2af753f235",
+    "externalIds": {
+      "DBLP": "conf/embc/HaradalHU18",
+      "MAG": "2810632432",
+      "DOI": "10.1109/EMBC.2018.8512396",
+      "CorpusId": 53093513,
+      "PubMed": "30440412"
+    },
+    "url": "https://www.semanticscholar.org/paper/6ab0ef7ba747c7e15e308f31a110fb2af753f235",
+    "title": "Biosignal Data Augmentation Based on Generative Adversarial Networks",
+    "year": 2018,
+    "citationCount": 109,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/EMBC.2018.8512396?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/EMBC.2018.8512396, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Conference"
+    ],
+    "journal": {
+      "name": "2018 40th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC)",
+      "pages": "368-371"
+    },
+    "authors": [
+      {
+        "authorId": "46304074",
+        "name": "S. Harada"
+      },
+      {
+        "authorId": "1381961694",
+        "name": "Hideaki Hayashi"
+      },
+      {
+        "authorId": "1809705",
+        "name": "S. Uchida"
+      }
+    ],
+    "abstract": "In this paper, we propose a synthetic generationmethod for time-series data based on generative adversarial networks (GANs) and apply it to data augmentation for biosinal classification. GANs are a recently proposed framework for learning a generative model, where two neural networks, one generating synthetic data and the other discriminating synthetic and real data, are trained while competing with each other. In the proposed method, each neural network in GANs is developed based on a recurrent neural network using long short-term memories, thereby allowing the adaptation of the GANs framework to time-series data generation. In the experiments, we confirmed the capability of the proposed method for generating synthetic biosignals using the electrocardiogram and electroencephalogram datasets. We also showed the effectiveness of the proposed method for data augmentation in the biosignal classification problem.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 109
+  },
+  {
+    "paperId": "7f98ef93e6487e3f34fb3c7daf77aba06cfea822",
+    "externalIds": {
+      "DOI": "10.3390/math11010224",
+      "CorpusId": 255734948
+    },
+    "url": "https://www.semanticscholar.org/paper/7f98ef93e6487e3f34fb3c7daf77aba06cfea822",
+    "title": "A Combined Model Based on Recurrent Neural Networks and Graph Convolutional Networks for Financial Time Series Forecasting",
+    "year": 2023,
+    "citationCount": 97,
+    "openAccessPdf": {
+      "url": "https://www.mdpi.com/2227-7390/11/1/224/pdf?version=1672902198",
+      "status": "GOLD",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.3390/math11010224?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.3390/math11010224, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": null,
+    "journal": {
+      "name": "Mathematics"
+    },
+    "authors": [
+      {
+        "authorId": "113874560",
+        "name": "Ana Lazcano"
+      },
+      {
+        "authorId": "2200667972",
+        "name": "Pedro Javier Herrera"
+      },
+      {
+        "authorId": "116505949",
+        "name": "M. Monge"
+      }
+    ],
+    "abstract": "Accurate and real-time forecasting of the price of oil plays an important role in the world economy. Research interest in forecasting this type of time series has increased considerably in recent decades, since, due to the characteristics of the time series, it was a complicated task with inaccurate results. Concretely, deep learning models such as Convolutional Neural Networks (CNNs) and Recurrent Neural Networks (RNNs) have appeared in this field with promising results compared to traditional approaches. To improve the performance of existing networks in time series forecasting, in this work two types of neural networks are brought together, combining the characteristics of a Graph Convolutional Network (GCN) and a Bidirectional Long Short-Term Memory (BiLSTM) network. This is a novel evolution that improves existing results in the literature and provides new possibilities in the analysis of time series. The results confirm a better performance of the combined BiLSTM-GCN approach compared to the BiLSTM and GCN models separately, as well as to the traditional models, with a lower error in all the error metrics used: the Root Mean Squared Error (RMSE), the Mean Squared Error (MSE), the Mean Absolute Percentage Error (MAPE) and the R-squared (R2). These results represent a smaller difference between the result returned by the model and the real value and, therefore, a greater precision in the predictions of this model.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 102
+  },
+  {
+    "paperId": "cb3ea7ed3e6c6f532e1fe531a93210d86782a76f",
+    "externalIds": {
+      "MAG": "3046711798",
+      "DBLP": "journals/npl/HuWZZZX20",
+      "DOI": "10.1007/s11063-020-10319-3",
+      "CorpusId": 220881069
+    },
+    "url": "https://www.semanticscholar.org/paper/cb3ea7ed3e6c6f532e1fe531a93210d86782a76f",
+    "title": "Time Series Prediction Method Based on Variant LSTM Recurrent Neural Network",
+    "year": 2020,
+    "citationCount": 87,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s11063-020-10319-3?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s11063-020-10319-3, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural Processing Letters",
+      "pages": "1485 - 1500",
+      "volume": "52"
+    },
+    "authors": [
+      {
+        "authorId": "2112300343",
+        "name": "Jiaojiao Hu"
+      },
+      {
+        "authorId": "2108503405",
+        "name": "Xiaofeng Wang"
+      },
+      {
+        "authorId": "2153391393",
+        "name": "Ying Zhang"
+      },
+      {
+        "authorId": "2109954967",
+        "name": "Depeng Zhang"
+      },
+      {
+        "authorId": "2153209222",
+        "name": "Meng Zhang"
+      },
+      {
+        "authorId": "2067733526",
+        "name": "Jia-nan Xue"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 87
+  },
+  {
+    "paperId": "8138735e51785944fff1006c3d7715377e7b8a45",
+    "externalIds": {
+      "DBLP": "journals/nca/SilkaWW22",
+      "DOI": "10.1007/s00521-022-06949-4",
+      "CorpusId": 246425921
+    },
+    "url": "https://www.semanticscholar.org/paper/8138735e51785944fff1006c3d7715377e7b8a45",
+    "title": "Recurrent neural network model for high-speed train vibration prediction from time series",
+    "year": 2022,
+    "citationCount": 71,
+    "openAccessPdf": {
+      "url": "https://link.springer.com/content/pdf/10.1007/s00521-022-06949-4.pdf",
+      "status": "HYBRID",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s00521-022-06949-4?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s00521-022-06949-4, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural Computing and Applications",
+      "pages": "13305 - 13318",
+      "volume": "34"
+    },
+    "authors": [
+      {
+        "authorId": "1879289685",
+        "name": "Jakub Si\u0142ka"
+      },
+      {
+        "authorId": "114210786",
+        "name": "Micha\u0142 Wieczorek"
+      },
+      {
+        "authorId": "144433006",
+        "name": "M. Wo\u017aniak"
+      }
+    ],
+    "abstract": "In this article, we want to discuss the use of deep learning model to predict potential vibrations of high-speed trains. In our research, we have tested and developed deep learning model to predict potential vibrations from time series of recorded vibrations during travel. We have tested various training models, different time steps and potential error margins to examine how well we are able to predict situation on the track. Summarizing, in our article we have used the RNN-LSTM neural network model with hyperbolic tangent in hidden layers and rectified linear unit gate at the final layer in order to predict future values from the time series data. Results of our research show the our system is able to predict vibrations with Accuracy of above 99% in series of values forward.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 71
+  },
+  {
+    "paperId": "7082035ee96954a668a19e322e4353e4c93d4b0f",
+    "externalIds": {
+      "DOI": "10.1109/ICECA63461.2024.10800856",
+      "CorpusId": 275020840
+    },
+    "url": "https://www.semanticscholar.org/paper/7082035ee96954a668a19e322e4353e4c93d4b0f",
+    "title": "Enhancing Road Safety with Connected Internet of Things (IoT) based Vehicle Technology using Cooperative Hazard Awareness and Avoidance Scheme",
+    "year": 2024,
+    "citationCount": 41,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/ICECA63461.2024.10800856?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/ICECA63461.2024.10800856, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Conference"
+    ],
+    "journal": {
+      "name": "2024 8th International Conference on Electronics, Communication and Aerospace Technology (ICECA)",
+      "pages": "352-358"
+    },
+    "authors": [
+      {
+        "authorId": "49168367",
+        "name": "G. Ramkumar"
+      },
+      {
+        "authorId": "113898154",
+        "name": "M. Tamilselvi"
+      },
+      {
+        "authorId": "32652221",
+        "name": "J. Giri"
+      },
+      {
+        "authorId": "2312044270",
+        "name": "M. Kanan"
+      }
+    ],
+    "abstract": "The increasing demand for road safety in modern transportation systems has led to the integration of Internet of Things (IoT)-based vehicle technology. This paper proposes a Cooperative Hazard Awareness and Avoidance (CHAA) scheme that leverages IoT, reinforcement learning (RL), and gradient boosting machines (GBM) to enhance realtime hazard detection and avoidance. The system integrates multiple sensors, including LiDAR, RADAR, and cameras, to collect real-time data on road conditions, surrounding vehicles, and pedestrians. The proposed RL+GBM model is compared with nine existing machine learning models, such as CNN, LSTM, and XGBoost. The proposed model achieves an accuracy of $94.8 \\%$, outperforming the next-best model, CNN, which achieved $91.2 \\%$ accuracy. Precision, recall, and F1-score were also higher for the proposed model, with values of $92.4 \\%$, $\\mathbf{9 1 . 6 \\%}$, and $\\mathbf{9 2 . 0 \\%}$, respectively. Additionally, the model demonstrates superior energy efficiency and lower latency, making it well-suited for IoT environments where real-time processing is critical. These results indicate that the CHAA system is a robust solution for enhancing road safety, offering significant improvements over existing methods in terms of accuracy, responsiveness, and energy consumption.",
+    "_section": "vehicle_interlock",
+    "_query": "vehicle safety IoT wearable integration",
+    "_score": 56
+  },
+  {
+    "paperId": "23e206b1aa5c89d8b31efabf61d7a297c26fff0c",
+    "externalIds": {
+      "DOI": "10.4271/2024-01-2426",
+      "CorpusId": 269075829
+    },
+    "url": "https://www.semanticscholar.org/paper/23e206b1aa5c89d8b31efabf61d7a297c26fff0c",
+    "title": "Sequence Training and Data Shuffling to Enhance the Accuracy of Recurrent Neural Network Based Battery Voltage Models",
+    "year": 2024,
+    "citationCount": 38,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.4271/2024-01-2426?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.4271/2024-01-2426, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": null,
+    "journal": {
+      "name": "SAE Technical Paper Series"
+    },
+    "authors": [
+      {
+        "authorId": "2225489585",
+        "name": "Junran Chen"
+      },
+      {
+        "authorId": "9445403",
+        "name": "P. Kollmeyer"
+      },
+      {
+        "authorId": "2296126542",
+        "name": "Satyam Panchal"
+      },
+      {
+        "authorId": "2296188871",
+        "name": "Yasaman Masoudi"
+      },
+      {
+        "authorId": "2089601561",
+        "name": "Oliver Gross"
+      },
+      {
+        "authorId": "2249500323",
+        "name": "Ali Emadi"
+      }
+    ],
+    "abstract": "Battery terminal voltage modelling is crucial for various applications, including electric vehicles, renewable energy systems, and portable electronics. Terminal voltage models are used to determine how a battery will respond under load and can be used to calculate run-time, power capability, and heat generation and as a component of state estimation approaches, such as for state of charge. Previous studies have shown better voltage modelling accuracy for long short-term memory (LSTM) recurrent neural networks than other traditional methods (e.g., equivalent circuit and electrochemical models). This study presents two new approaches \u2013 sequence training and data shuffling \u2013 to improve LSTM battery voltage models further, making them an even better candidate for the high-accuracy modelling of lithium-ion batteries. Because the LSTM memory captures information from past time steps, it must typically be trained using one series of continuous data. Instead, the proposed sequence training approach feeds a fixed window of prior data (e.g., 100 seconds) into the LSTM at each time step to initialize the memory states properly and then only uses the output at the current time step. With this method, the LSTM just requires the prior data window to be continuous, thereby allowing the handling of discontinuities. This also means that during the training process, the data can be shuffled randomly, enabling mini-batches to speed up the training significantly. When these approaches were applied, LSTM voltage estimation error was reduced by 22%, from 28.5 mV to 22.3 mV RMS error over four drive cycles and temperatures from -20 to 25\u00b0C.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 53
+  },
+  {
+    "paperId": "0a0a7ebbc88626ab014aefeda5c3f2dc961c083e",
+    "externalIds": {
+      "DOI": "10.1109/SmartTechCon57526.2023.10391431",
+      "CorpusId": 267045691
+    },
+    "url": "https://www.semanticscholar.org/paper/0a0a7ebbc88626ab014aefeda5c3f2dc961c083e",
+    "title": "IoT Enabled Wearable Technology Jacket for Tracking Patient Health and Safety System",
+    "year": 2023,
+    "citationCount": 44,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/SmartTechCon57526.2023.10391431?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/SmartTechCon57526.2023.10391431, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Conference"
+    ],
+    "journal": {
+      "name": "2023 Second International Conference On Smart Technologies For Smart Nation (SmartTechCon)",
+      "pages": "918-922"
+    },
+    "authors": [
+      {
+        "authorId": "2279940422",
+        "name": "Dr. M.Santhanalakshmi"
+      },
+      {
+        "authorId": "2271225712",
+        "name": "S. Dhanalakshmi"
+      },
+      {
+        "authorId": "2279923837",
+        "name": "M. Radhika"
+      },
+      {
+        "authorId": "2373620963",
+        "name": "Dr. G. Kavitha"
+      },
+      {
+        "authorId": "1749272713",
+        "name": "G. E. Visuvanathan"
+      },
+      {
+        "authorId": "2279912340",
+        "name": "C. Srinivasan"
+      }
+    ],
+    "abstract": "Over the years, there have been ongoing efforts to use clothing as a vehicle for distributing digital capabilities. Information technology (IT) is being incorporated into garments to enable people to work more quickly. Because of their increasing availability, accessibility, and, most significantly, cost, wireless body area networks (WBANs) will undoubtedly be used in healthcare to enhance medical data utilization. Whether it has to do with post-operative recovery or Monitoring, applications for their function in the medical field are already being looked into. Wearable technology allows users to complete activities more efficiently by enhancing one or more of their senses with artificial information. The system proposes a method that displays critical information for doctors on a particular cloud for data analysis. In this concept, sensors are attached to someone's coat to collect real-time data. This data is analyzed, uploaded to the cloud using IoT Medium, and notified in the case of an alarming condition. The data access to real-time data, a website built into this module, and an alert notification system to warn the hospital and the family if the numbers are abnormal. A live stream is recorded using the camera, while the GPS module tracks the location. The doctor can take the proper step based on the patient's health.",
+    "_section": "vehicle_interlock",
+    "_query": "vehicle safety IoT wearable integration",
+    "_score": 49
+  },
+  {
+    "paperId": "e89747ab31e36678750f9d5b6e41eb5c8924bfcb",
+    "externalIds": {
+      "DBLP": "journals/tnn/TanYMYYWY21",
+      "MAG": "3092657637",
+      "DOI": "10.1109/TNNLS.2020.3025813",
+      "CorpusId": 222841606,
+      "PubMed": "33055037"
+    },
+    "url": "https://www.semanticscholar.org/paper/e89747ab31e36678750f9d5b6e41eb5c8924bfcb",
+    "title": "Explainable Uncertainty-Aware Convolutional Recurrent Neural Network for Irregular Medical Time Series",
+    "year": 2020,
+    "citationCount": 44,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/TNNLS.2020.3025813?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/TNNLS.2020.3025813, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Transactions on Neural Networks and Learning Systems",
+      "pages": "4665-4679",
+      "volume": "32"
+    },
+    "authors": [
+      {
+        "authorId": "118358810",
+        "name": "Qingxiong Tan"
+      },
+      {
+        "authorId": "2676247",
+        "name": "Mang Ye"
+      },
+      {
+        "authorId": "38624848",
+        "name": "A. J. Ma"
+      },
+      {
+        "authorId": "7324583",
+        "name": "Baoyao Yang"
+      },
+      {
+        "authorId": "8605396",
+        "name": "T. Yip"
+      },
+      {
+        "authorId": "2281426625",
+        "name": "G. Wong"
+      },
+      {
+        "authorId": "1768574",
+        "name": "P. Yuen"
+      }
+    ],
+    "abstract": "Influenced by the dynamic changes in the severity of illness, patients usually take examinations in hospitals irregularly, producing a large volume of irregular medical time-series data. Performing diagnosis prediction from the irregular medical time series is challenging because the intervals between consecutive records significantly vary along time. Existing methods often handle this problem by generating regular time series from the irregular medical records without considering the uncertainty in the generated data, induced by the varying intervals. Thus, a novel Uncertainty-Aware Convolutional Recurrent Neural Network (UA-CRNN) is proposed in this article, which introduces the uncertainty information in the generated data to boost the risk prediction. To tackle the complex medical time series with subseries of different frequencies, the uncertainty information is further incorporated into the subseries level rather than the whole sequence to seamlessly adjust different time intervals. Specifically, a hierarchical uncertainty-aware decomposition layer (UADL) is designed to adaptively decompose time series into different subseries and assign them proper weights in accordance with their reliabilities. Meanwhile, an Explainable UA-CRNN (eUA-CRNN) is proposed to exploit filters with different passbands to ensure the unity of components in each subseries and the diversity of components in different subseries. Furthermore, eUA-CRNN incorporates with an uncertainty-aware attention module to learn attention weights from the uncertainty information, providing the explainable prediction results. The extensive experimental results on three real-world medical data sets illustrate the superiority of the proposed method compared with the state-of-the-art methods.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 44
+  },
+  {
+    "paperId": "13654a6fd8bd5c12fd2de27d0580e3f8b7b59fe7",
+    "externalIds": {
+      "DBLP": "journals/tnn/LiGM22",
+      "DOI": "10.1109/TNNLS.2021.3061432",
+      "CorpusId": 232169883,
+      "PubMed": "33687850"
+    },
+    "url": "https://www.semanticscholar.org/paper/13654a6fd8bd5c12fd2de27d0580e3f8b7b59fe7",
+    "title": "Probabilistic, Recurrent, Fuzzy Neural Network for Processing Noisy Time-Series Data",
+    "year": 2021,
+    "citationCount": 35,
+    "openAccessPdf": {
+      "url": "https://pure.qub.ac.uk/files/238002039/PFNN_R.pdf",
+      "status": "GREEN",
+      "license": "other-oa",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/TNNLS.2021.3061432?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/TNNLS.2021.3061432, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Transactions on Neural Networks and Learning Systems",
+      "pages": "4851-4860",
+      "volume": "33"
+    },
+    "authors": [
+      {
+        "authorId": "2154404561",
+        "name": "Yong Li"
+      },
+      {
+        "authorId": "2285119070",
+        "name": "Ieee Richard Gault Member"
+      },
+      {
+        "authorId": "2273783215",
+        "name": "Ieee T. Martin McGinnity Senior Member"
+      },
+      {
+        "authorId": "67319717",
+        "name": "T. McGinnity"
+      }
+    ],
+    "abstract": "The rapidly increasing volumes of data and the need for big data analytics have emphasized the need for algorithms that can accommodate incomplete or noisy data. The concept of recurrency is an important aspect of signal processing, providing greater robustness and accuracy in many situations, such as biological signal processing. Probabilistic fuzzy neural networks (PFNN) have shown potential in dealing with uncertainties associated with both stochastic and nonstochastic noise simultaneously. Previous research work on this topic has addressed either the fuzzy-neural aspects or alternatively the probabilistic aspects, but currently a probabilistic fuzzy neural algorithm with recurrent feedback does not exist. In this article, a PFNN with a recurrent probabilistic generation module (designated PFNN-R) is proposed to enhance and extend the ability of the PFNN to accommodate noisy data. A back-propagation-based mechanism, which is used to shape the distribution of the probabilistic density function of the fuzzy membership, is also developed. The objective of the work was to develop an approach that provides an enhanced capability to accommodate various types of noisy data. We apply the algorithm to a number of benchmark problems and demonstrate through simulation results that the proposed technique incorporating recurrency advances the ability of PFNNs to model time-series data with high intensity, random noise.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 35
+  },
+  {
+    "paperId": "9dcd7a5a13dd43401cf4eb40f60726a7b963a454",
+    "externalIds": {
+      "DBLP": "conf/ijcnn/CeschiniRP22",
+      "DOI": "10.1109/IJCNN55064.2022.9892441",
+      "CorpusId": 252626491
+    },
+    "url": "https://www.semanticscholar.org/paper/9dcd7a5a13dd43401cf4eb40f60726a7b963a454",
+    "title": "Hybrid Quantum-Classical Recurrent Neural Networks for Time Series Prediction",
+    "year": 2022,
+    "citationCount": 32,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/IJCNN55064.2022.9892441?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/IJCNN55064.2022.9892441, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Conference"
+    ],
+    "journal": {
+      "name": "2022 International Joint Conference on Neural Networks (IJCNN)",
+      "pages": "1-8"
+    },
+    "authors": [
+      {
+        "authorId": "101524023",
+        "name": "Andrea Ceschini"
+      },
+      {
+        "authorId": "8024606",
+        "name": "A. Rosato"
+      },
+      {
+        "authorId": "36359915",
+        "name": "M. Panella"
+      }
+    ],
+    "abstract": "This paper aims at solving time series prediction problems by means of a hybrid quantum-classical recurrent neural network. We propose a novel architecture based on stacked Long Short-Term Memory layers and a variational quantum layer. The latter employs a quantum feature map to embed input data into quantum states, which are then processed by a circuit ansatz. Finally, the expectation value of the circuit's outcome is taken over Pauli observables. Quantum properties such as superposition and entanglement are exploited to perform computations efficiently in a high-dimensional feature space. The proposed hybrid quantum-classical neural network is applied to a real-life challenging problem pertaining to the prediction of renewable energy time series. The comparison between the proposed approach and the classical counterpart shows that the former achieves better results in terms of prediction error, thus demonstrating better approximation of stochastic fluctuations and an overall effectiveness of the quantum variational approach also for prediction tasks.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 32
+  },
+  {
+    "paperId": "55f85cd6c2a43429f8f38d145d27730952bc9d15",
+    "externalIds": {
+      "DBLP": "journals/nca/WaheebG20",
+      "MAG": "2972733886",
+      "DOI": "10.1007/s00521-019-04474-5",
+      "CorpusId": 203071703
+    },
+    "url": "https://www.semanticscholar.org/paper/55f85cd6c2a43429f8f38d145d27730952bc9d15",
+    "title": "A novel error-output recurrent neural network model for time series forecasting",
+    "year": 2019,
+    "citationCount": 31,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s00521-019-04474-5?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s00521-019-04474-5, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural Computing and Applications",
+      "pages": "9621 - 9647",
+      "volume": "32"
+    },
+    "authors": [
+      {
+        "authorId": "1850361",
+        "name": "Waddah Saeed"
+      },
+      {
+        "authorId": "145076248",
+        "name": "Rozaida Ghazali"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 31
+  },
+  {
+    "paperId": "5bdd91533fc5dbbb7d1b4e89d19e0df909f43ef7",
+    "externalIds": {
+      "PubMedCentral": "11762382",
+      "DOI": "10.3390/bioengineering12010004",
+      "CorpusId": 275027917,
+      "PubMed": "39851278"
+    },
+    "url": "https://www.semanticscholar.org/paper/5bdd91533fc5dbbb7d1b4e89d19e0df909f43ef7",
+    "title": "Edge-AI Enabled Wearable Device for Non-Invasive Type 1 Diabetes Detection Using ECG Signals",
+    "year": 2024,
+    "citationCount": 16,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC11762382, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Bioengineering",
+      "volume": "12"
+    },
+    "authors": [
+      {
+        "authorId": "2279841964",
+        "name": "Maria Gragnaniello"
+      },
+      {
+        "authorId": "16063378",
+        "name": "V. R. Marrazzo"
+      },
+      {
+        "authorId": "2078349866",
+        "name": "A. Borghese"
+      },
+      {
+        "authorId": "8405875",
+        "name": "L. Maresca"
+      },
+      {
+        "authorId": "2309420252",
+        "name": "Giovanni Breglio"
+      },
+      {
+        "authorId": "32608925",
+        "name": "M. Riccio"
+      }
+    ],
+    "abstract": "Diabetes is a chronic condition, and traditional monitoring methods are invasive, significantly reducing the quality of life of the patients. This study proposes the design of an innovative system based on a microcontroller that performs real-time ECG acquisition and evaluates the presence of diabetes using an Edge-AI solution. A spectrogram-based preprocessing method is combined with a 1-Dimensional Convolutional Neural Network (1D-CNN) to analyze the ECG signals directly on the device. By applying quantization as an optimization technique, the model effectively balances memory usage and accuracy, achieving an accuracy of 89.52% with an average precision and recall of 0.91 and 0.90, respectively. These results were obtained with a minimal memory footprint of 347 kB flash and 23 kB RAM, showcasing the system\u2019s suitability for wearable embedded devices. Furthermore, a custom PCB was developed to validate the system in a real-world scenario. The hardware integrates high-performance electronics with low power consumption, demonstrating the feasibility of deploying Edge-AI for non-invasive, real-time diabetes detection in resource-constrained environments. This design represents a significant step forward in improving the accessibility and practicality of diabetes monitoring.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 31
+  },
+  {
+    "paperId": "c87187dea0bba16c6f56c7fc5234f2abd07d31de",
+    "externalIds": {
+      "PubMedCentral": "10498325",
+      "DOI": "10.1001/jamanetworkopen.2023.33182",
+      "CorpusId": 261694600,
+      "PubMed": "37698861"
+    },
+    "url": "https://www.semanticscholar.org/paper/c87187dea0bba16c6f56c7fc5234f2abd07d31de",
+    "title": "Phosphatidylethanol vs Transdermal Alcohol Monitoring for Detecting Alcohol Consumption Among Adults",
+    "year": 2023,
+    "citationCount": 24,
+    "openAccessPdf": {
+      "url": "https://jamanetwork.com/journals/jamanetworkopen/articlepdf/2809197/hahn_2023_oi_230960_1693507884.80211.pdf",
+      "status": "GOLD",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC10498325, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "JAMA Network Open",
+      "volume": "6"
+    },
+    "authors": [
+      {
+        "authorId": "2242638177",
+        "name": "Judith A. Hahn"
+      },
+      {
+        "authorId": "2075040",
+        "name": "Robin Fatch"
+      },
+      {
+        "authorId": "2237980734",
+        "name": "Nancy P. Barnett"
+      },
+      {
+        "authorId": "2239074217",
+        "name": "Gregory M Marcus"
+      }
+    ],
+    "abstract": "Key Points Question What is the best cutoff for phosphatidylethanol (PEth), a blood biomarker, to objectively detect prior month heavy alcohol use? Findings In this diagnostic study of 64 persons of middle age and older with paroxysmal atrial fibrillation, PEth was highly sensitive (84%) and specific (73%) for heavy alcohol use in the prior 4 weeks compared with readings from a continuous ankle monitoring to detect alcohol excreted in sweat. The optimal cutoff for heavy alcohol consumption was 18.5 ng/mL. Meaning These findings suggest that PEth with this cutoff value (or rounded to the recommended cutoff of 20 ng/mL for significant alcohol consumption in the general population) could be used to accurately capture heavy alcohol use in middle-age and older men in clinical care.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 29
+  },
+  {
+    "paperId": "2ba6fd4c25c361b7a7849ae7556873ac7ee35e9b",
+    "externalIds": {
+      "ArXiv": "2409.02134",
+      "DBLP": "journals/corr/abs-2409-02134",
+      "DOI": "10.48550/arXiv.2409.02134",
+      "CorpusId": 272397797
+    },
+    "url": "https://www.semanticscholar.org/paper/2ba6fd4c25c361b7a7849ae7556873ac7ee35e9b",
+    "title": "Edge AI: Evaluation of Model Compression Techniques for Convolutional Neural Networks",
+    "year": 2024,
+    "citationCount": 14,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/2409.02134, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "ArXiv",
+      "volume": "abs/2409.02134"
+    },
+    "authors": [
+      {
+        "authorId": "2319602975",
+        "name": "Samer Francy"
+      },
+      {
+        "authorId": "2115502473",
+        "name": "Raghubir Singh"
+      }
+    ],
+    "abstract": "This work evaluates the compression techniques on ConvNeXt models in image classification tasks using the CIFAR-10 dataset. Structured pruning, unstructured pruning, and dynamic quantization methods are evaluated to reduce model size and computational complexity while maintaining accuracy. The experiments, conducted on cloud-based platforms and edge device, assess the performance of these techniques. Results show significant reductions in model size, with up to 75% reduction achieved using structured pruning techniques. Additionally, dynamic quantization achieves a reduction of up to 95% in the number of parameters. Fine-tuned models exhibit improved compression performance, indicating the benefits of pre-training in conjunction with compression techniques. Unstructured pruning methods reveal trends in accuracy and compression, with limited reductions in computational complexity. The combination of OTOV3 pruning and dynamic quantization further enhances compression performance, resulting 89.7% reduction in size, 95% reduction with number of parameters and MACs, and 3.8% increase with accuracy. The deployment of the final compressed model on edge device demonstrates high accuracy 92.5% and low inference time 20 ms, validating the effectiveness of compression techniques for real-world edge computing applications.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 29
+  },
+  {
+    "paperId": "09e860351b9af8306777d2d67a986d700f3bc48e",
+    "externalIds": {
+      "DBLP": "conf/edge/RachmantoSNSJK24",
+      "DOI": "10.1109/EDGE62653.2024.00023",
+      "CorpusId": 271333806
+    },
+    "url": "https://www.semanticscholar.org/paper/09e860351b9af8306777d2d67a986d700f3bc48e",
+    "title": "Characterizing Deep Learning Model Compression with Post-Training Quantization on Accelerated Edge Devices",
+    "year": 2024,
+    "citationCount": 12,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/EDGE62653.2024.00023?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/EDGE62653.2024.00023, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Conference"
+    ],
+    "journal": {
+      "name": "2024 IEEE International Conference on Edge Computing and Communications (EDGE)",
+      "pages": "110-120"
+    },
+    "authors": [
+      {
+        "authorId": "2312395940",
+        "name": "Rakandhiya D. Rachmanto"
+      },
+      {
+        "authorId": "2088496692",
+        "name": "Zaki Sukma"
+      },
+      {
+        "authorId": "2312395447",
+        "name": "Ahmad N. L. Nabhaan"
+      },
+      {
+        "authorId": "50156644",
+        "name": "Arief Setyanto"
+      },
+      {
+        "authorId": "2317918414",
+        "name": "Ting Jiang"
+      },
+      {
+        "authorId": "2152587582",
+        "name": "In Kee Kim"
+      }
+    ],
+    "abstract": "Edge AI has increasingly been adopted due to the rapid development of deep learning and AI. At the same time, as AI models quickly grow in size and complexity, resource-constrained edge devices face significant challenges in executing such complex models. Model compression, particularly post-training quantization, offers a viable approach by reducing model size and resource demands, making these models more suitable for the deployment on edge devices. However, despite its significance, the effects of model compression on edge devices have yet to be thoroughly explored. We address this gap by thoroughly characterizing post-training quantization on accelerated edge devices. We use six different deep learning models with varied sizes (in MB) and resource demands. We first characterize on-device post-training quantization on edge devices. Subsequently, we perform a detailed characterization of the performance and behaviors of quantized deep learning models with different precision modes. We discuss the benefits of post-training quantization, including reduced model size, improved inference latency, and decreased resource consumption. We also provide a detailed analysis of the downside of the quantized models, focusing on the reduction of their inference accuracy.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 27
+  },
+  {
+    "paperId": "1af42602e26a7af614caefc5e6f7ef3f12d54abd",
+    "externalIds": {
+      "DOI": "10.1109/ICCSC66714.2025.11135279",
+      "CorpusId": 281151916
+    },
+    "url": "https://www.semanticscholar.org/paper/1af42602e26a7af614caefc5e6f7ef3f12d54abd",
+    "title": "A Survey of Model Compression Techniques for TinyML Applications",
+    "year": 2025,
+    "citationCount": 11,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/ICCSC66714.2025.11135279?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/ICCSC66714.2025.11135279, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Conference",
+      "Review"
+    ],
+    "journal": {
+      "name": "2025 International Conference on Circuit, Systems and Communication (ICCSC)",
+      "pages": "1-6"
+    },
+    "authors": [
+      {
+        "authorId": "2303720946",
+        "name": "Ismail Lamaakal"
+      },
+      {
+        "authorId": "2376197552",
+        "name": "Chaymae Yahyati"
+      },
+      {
+        "authorId": "9247412",
+        "name": "Ibrahim Ouahbi"
+      },
+      {
+        "authorId": "8573253",
+        "name": "K. Makkaoui"
+      },
+      {
+        "authorId": "2266989415",
+        "name": "Yassine Maleh"
+      }
+    ],
+    "abstract": "The convergence of embedded systems and artificial intelligence has led to the rapid growth of TinyML, which enables ML inference on highly resource-constrained devices. However, deploying modern DL models in these environments poses signif-icant challenges due to limited memory, processing power, and energy availability. Model compression techniques have emerged as essential tools to bridge this gap, allowing for the deployment of efficient, low-latency, and accurate models at the edge. This survey provides a comprehensive and structured review of key model compression strategies-including low-rank factorization, neural architecture search, pruning, quantization, knowledge distillation, and other emerging methods-highlighting their principles, mathematical formulations, and application relevance to TinyML. We also discuss the trade-offs and challenges as-sociated with these methods, such as accuracy loss, hardware-software co-design, and deployment constraints. Our goal is to equip researchers and practitioners with a practical reference that informs the design of lightweight AI solutions suitable for the next generation of intelligent edge devices.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 26
+  },
+  {
+    "paperId": "738403916d60e09d5bf2e762ab2d0c15bd595a5d",
+    "externalIds": {
+      "DBLP": "journals/nn/PiaoZBTGSWL25",
+      "ArXiv": "2402.16230",
+      "DOI": "10.48550/arXiv.2402.16230",
+      "CorpusId": 267938668,
+      "PubMed": "39929068"
+    },
+    "url": "https://www.semanticscholar.org/paper/738403916d60e09d5bf2e762ab2d0c15bd595a5d",
+    "title": "GARNN: An Interpretable Graph Attentive Recurrent Neural Network for Predicting Blood Glucose Levels via Multivariate Time Series",
+    "year": 2024,
+    "citationCount": 10,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/2402.16230, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural networks : the official journal of the International Neural Network Society",
+      "pages": "\n          107229\n        ",
+      "volume": "185"
+    },
+    "authors": [
+      {
+        "authorId": "2277442589",
+        "name": "Chengzhe Piao"
+      },
+      {
+        "authorId": "51169745",
+        "name": "Taiyu Zhu"
+      },
+      {
+        "authorId": "4877818",
+        "name": "S. Baldeweg"
+      },
+      {
+        "authorId": "2286892739",
+        "name": "Paul Taylor"
+      },
+      {
+        "authorId": "2209305525",
+        "name": "Pantelis Georgiou"
+      },
+      {
+        "authorId": "2287173577",
+        "name": "Jiahao Sun"
+      },
+      {
+        "authorId": "2287061979",
+        "name": "Jun Wang"
+      },
+      {
+        "authorId": "2271874240",
+        "name": "Kezhi Li"
+      }
+    ],
+    "abstract": "Accurate prediction of future blood glucose (BG) levels can effectively improve BG management for people living with type 1 or 2 diabetes, thereby reducing complications and improving quality of life. The state of the art of BG prediction has been achieved by leveraging advanced deep learning methods to model multimodal data, i.e., sensor data and self-reported event data, organized as multi-variate time series (MTS). However, these methods are mostly regarded as \"black boxes\" and not entirely trusted by clinicians and patients. In this paper, we propose interpretable graph attentive recurrent neural networks (GARNNs) to model MTS, explaining variable contributions via summarizing variable importance and generating feature maps by graph attention mechanisms instead of post-hoc analysis. We evaluate GARNNs on four datasets, representing diverse clinical scenarios. Upon comparison with fifteen well-established baseline methods, GARNNs not only achieve the best prediction accuracy but also provide high-quality temporal interpretability, in particular for postprandial glucose levels as a result of corresponding meal intake and insulin injection. These findings underline the potential of GARNN as a robust tool for improving diabetes care, bridging the gap between deep learning technology and real-world healthcare solutions.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 25
+  },
+  {
+    "paperId": "481897b3a0fe1de6f7cbe359a5d5f561efecf1ce",
+    "externalIds": {
+      "DBLP": "journals/nca/DingLQ21",
+      "MAG": "3081872580",
+      "DOI": "10.1007/s00521-020-05276-w",
+      "CorpusId": 225260770
+    },
+    "url": "https://www.semanticscholar.org/paper/481897b3a0fe1de6f7cbe359a5d5f561efecf1ce",
+    "title": "A self-organizing recurrent fuzzy neural network based on multivariate time series analysis",
+    "year": 2020,
+    "citationCount": 23,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s00521-020-05276-w?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s00521-020-05276-w, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural Computing and Applications",
+      "pages": "5089 - 5109",
+      "volume": "33"
+    },
+    "authors": [
+      {
+        "authorId": "2088907671",
+        "name": "Haixu Ding"
+      },
+      {
+        "authorId": "2108954822",
+        "name": "Wenjing Li"
+      },
+      {
+        "authorId": "1723689",
+        "name": "J. Qiao"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 23
+  },
+  {
+    "paperId": "383990af087cd16cfb27b2455e4356834b931205",
+    "externalIds": {
+      "DOI": "10.3390/electronics14040687",
+      "CorpusId": 276332661
+    },
+    "url": "https://www.semanticscholar.org/paper/383990af087cd16cfb27b2455e4356834b931205",
+    "title": "Deployment of TinyML-Based Stress Classification Using Computational Constrained Health Wearable",
+    "year": 2025,
+    "citationCount": 8,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.3390/electronics14040687?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.3390/electronics14040687, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Electronics"
+    },
+    "authors": [
+      {
+        "authorId": "1410408095",
+        "name": "Asma\u2019 Abu-Samah"
+      },
+      {
+        "authorId": "2311623359",
+        "name": "Dalilah Ghaffa"
+      },
+      {
+        "authorId": "2340239484",
+        "name": "Nor Fadzilah Abdullah"
+      },
+      {
+        "authorId": "37108054",
+        "name": "N. Kamal"
+      },
+      {
+        "authorId": "145641122",
+        "name": "R. Nordin"
+      },
+      {
+        "authorId": "2332410296",
+        "name": "Jennifer C. Dela Cruz"
+      },
+      {
+        "authorId": "2404489776",
+        "name": "Glenn V. Magwili"
+      },
+      {
+        "authorId": "2345261013",
+        "name": "R. J. Mercado"
+      }
+    ],
+    "abstract": "Stress has become a common mental health issue in modern society, causing individuals to experience acute behavioral changes. Exposure to prolonged stress without proper prevention and treatment may cause severe damage to one\u2019s physiological and psychological health. Researchers around the world have been working to find and create solutions for early stress detection using machine learning (ML). This paper investigates the possibility of utilizing Tiny Machine Learning (TinyML) in developing a wearable device, comparable to a smartwatch, that is equipped with both physiological and psychological data detection system to enable edge computing and give immediate feedback for stress prediction. The main challenge of this study was to fit a trained ML model into the microcontroller\u2019s limited memory without compromising the model\u2019s accuracy. A TinyML-based framework using a Raspberry Pi Pico RP2040 on a customized board equipped with several health sensors was proposed to predict stress levels by utilizing accelerations, body temperature, heart rate, and electrodermal activity from a public health dataset. Moreover, a few selected machine learning models underwent hyperparameter tuning before a porting library was used to translate them from Python to C/C++ for deployment. This approach led to an optimized XGBoost model with 86.0% accuracy and only 1.12 MB in size, hence perfectly fitting into the 2 MB constraint of RP2040. The prediction of stress on the edge device was then tested and validated using a separate sub-dataset. This trained model on TinyML can also be used to obtain an immediate reading from the calibrated health sensors for real-time stress predictions.",
+    "_section": "edge_ai",
+    "_query": "TinyML health monitoring wearable deployment",
+    "_score": 23
+  },
+  {
+    "paperId": "86a551c735dc61353762d529203a6ec906bf124b",
+    "externalIds": {
+      "DOI": "10.1002/smll.202504059",
+      "CorpusId": 279592614,
+      "PubMed": "40556600"
+    },
+    "url": "https://www.semanticscholar.org/paper/86a551c735dc61353762d529203a6ec906bf124b",
+    "title": "Flexible Field-Effect Transistor Sensors for Next-Generation Health Monitoring: Materials to Advanced Applications.",
+    "year": 2025,
+    "citationCount": 7,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1002/smll.202504059?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1002/smll.202504059, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Review",
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Small",
+      "pages": "\n          e2504059\n        "
+    },
+    "authors": [
+      {
+        "authorId": "2306346289",
+        "name": "Yaxin Li"
+      },
+      {
+        "authorId": "2324221601",
+        "name": "Hui Hu"
+      },
+      {
+        "authorId": "2303534323",
+        "name": "Jian Shu"
+      },
+      {
+        "authorId": "2368470204",
+        "name": "Guo-Jun Zhang"
+      }
+    ],
+    "abstract": "Flexible field-effect transistor (FET) sensors have emerged as a promising technology for human health monitoring, driven by breakthroughs in materials, device design, and fabrication processes. Their unique advantages, including multi-parametric detection, intrinsic signal amplification, low power consumption, and scalable production, position them at the forefront of wearable and implantable biosensing systems. This review outlines the structural design and operational principles of flexible FET sensors, systematically summarizing material innovations for critical components (substrates, dielectrics, semiconductor channels, and electrodes) and strategies to harmonize electrical performance with mechanical robustness. It analyzes evaluation methods and optimization strategies for enhancing mechanical stability under repetitive strain, a pivotal challenge for practical deployment. Additionally, it highlights cutting-edge applications in physiological signal monitoring and biological fluid analysis, demonstrating their potential for real-time diagnostics. Finally, the review discusses the current limitations of flexible FET sensors and provides an outlook on their future opportunities in personalized health management, intelligent diagnostic systems, and next-generation medical technologies.",
+    "_section": "edge_ai",
+    "_query": "TinyML health monitoring wearable deployment",
+    "_score": 22
+  },
+  {
+    "paperId": "619f4b1617af4566195feb1ac74af89833e6b95f",
+    "externalIds": {
+      "MAG": "2790172508",
+      "DOI": "10.1016/j.addbeh.2018.01.033",
+      "CorpusId": 3376896,
+      "PubMed": "29397211"
+    },
+    "url": "https://www.semanticscholar.org/paper/619f4b1617af4566195feb1ac74af89833e6b95f",
+    "title": "Translating transdermal alcohol monitoring procedures for contingency management among adults recently arrested for DWI.",
+    "year": 2018,
+    "citationCount": 21,
+    "openAccessPdf": {
+      "url": "https://www.sciencedirect.com/science/article/am/pii/S0306460318300467",
+      "status": "BRONZE",
+      "license": "publisher-specific-oa",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.addbeh.2018.01.033?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.addbeh.2018.01.033, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Addictive behaviors",
+      "pages": "\n          56-63\n        ",
+      "volume": "83"
+    },
+    "authors": [
+      {
+        "authorId": "4789791",
+        "name": "C. Mathias"
+      },
+      {
+        "authorId": "1403001211",
+        "name": "N. Hill-Kapturczak"
+      },
+      {
+        "authorId": "1399319684",
+        "name": "Tara E. Karns-Wright"
+      },
+      {
+        "authorId": "30544286",
+        "name": "J. Mullen"
+      },
+      {
+        "authorId": "6451645",
+        "name": "J. Roache"
+      },
+      {
+        "authorId": "3658115",
+        "name": "J. Fell"
+      },
+      {
+        "authorId": "8231720",
+        "name": "D. Dougherty"
+      }
+    ],
+    "abstract": "Recent developments in alcohol monitoring devices have made it more feasible to use contingency management (CM) procedures to reduce alcohol use. A growing body of literature is demonstrating the effectiveness of CM to reduce alcohol use among community recruited adults wearing transdermal alcohol concentration (TAC) monitoring devices. This article describes the quality improvement process aimed at adapting TAC-informed CM aimed at minimizing alcohol use and maximizing treatment completion. This extends literature to a high-risk population; adults arrested and awaiting trial (pretrial) for criminal charge of driving while intoxicated (DWI). Participants were enrolled during their orientation to pretrial supervision conditions of DWI bond release. At enrollment, participants completed a screening, brief intervention, and referral to treatment; those with high risk alcohol histories were enrolled in an 8-week CM procedure to avoid TAC readings. Four Plan-Do-Study-Act (PDSA) quality improvement cycles were conducted where the TAC cutoff for determining alcohol use, the quantity of reinforcer, and handling of tampers on the transdermal alcohol monitor were manipulated. Across four PDSA cycles, the retention for the full 8-weeks of treatment was increased. The proportion of weeks with alcohol use was not decreased across cycles, the peak TAC values observed during drinking weeks were significantly lower in Cycles 1 and 4 than 3. CM may be developed as a tool for pretrial supervision to be used to increase bond compliance of those arrested for DWI and for others as a method to identify the need for additional judicial services.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 21
+  },
+  {
+    "paperId": "20ff7175ae1d125e6f2aa0051c993a04e837c3bc",
+    "externalIds": {
+      "MAG": "2808199786",
+      "DOI": "10.1016/j.addbeh.2018.06.006",
+      "CorpusId": 49273330,
+      "PubMed": "29910035"
+    },
+    "url": "https://www.semanticscholar.org/paper/20ff7175ae1d125e6f2aa0051c993a04e837c3bc",
+    "title": "The correspondence between transdermal alcohol monitoring and daily self-reported alcohol consumption.",
+    "year": 2018,
+    "citationCount": 21,
+    "openAccessPdf": {
+      "url": "https://europepmc.org/articles/pmc6454572?pdf=render",
+      "status": "GREEN",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.addbeh.2018.06.006?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.addbeh.2018.06.006, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Review"
+    ],
+    "journal": {
+      "name": "Addictive behaviors",
+      "pages": "\n          147-152\n        ",
+      "volume": "85"
+    },
+    "authors": [
+      {
+        "authorId": "1399319684",
+        "name": "Tara E. Karns-Wright"
+      },
+      {
+        "authorId": "8231720",
+        "name": "D. Dougherty"
+      },
+      {
+        "authorId": "1403001211",
+        "name": "N. Hill-Kapturczak"
+      },
+      {
+        "authorId": "4789791",
+        "name": "C. Mathias"
+      },
+      {
+        "authorId": "6451645",
+        "name": "J. Roache"
+      }
+    ],
+    "abstract": "Alcohol consumption is typically assessed via self-report methods, though there are concerns over the accuracy of this information. Transdermal alcohol monitoring can passively and continuously measure alcohol consumption with minimal interference in daily life. The current study examines the correspondence between daily self-reported alcohol consumption and transdermal alcohol monitors. Thirty-two healthy men (n\u202f=\u202f16) and women (n\u202f=\u202f16) wore a transdermal alcohol monitor for 28\u202fdays. Participants were instructed to drink as they usually do and prompted daily with a survey link to report yesterday's drinking. Data analyses focused on the following comparisons: (1) the overall correspondence between self-reported drinking and TAC readings; (2) the sensitivity of various TAC criteria thresholds to detect self-reported drinking (TAC thresholds of none, low, moderate, and heavy); and (3) the risks of false positive TAC findings using self-reported drinking as the Gold Standard. Participants self-reported drinking a total of 324\u202fdays, of which, TAC events were detected on 212\u202fdays (65.4%). When participants self-reported not drinking (399\u202fdays), zero TAC was also found on 366\u202fdays (92%). The correspondence between self-reported drinking and transdermal concentrations tended to be good: overall, when self-reported drinking was reported, TAC also detected drinking 65.4% of the time.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 21
+  },
+  {
+    "paperId": "e66f97b940ca460e1a4331dcf60294c41e77442d",
+    "externalIds": {
+      "DBLP": "journals/corr/abs-2504-17376",
+      "ArXiv": "2504.17376",
+      "DOI": "10.48550/arXiv.2504.17376",
+      "CorpusId": 278032895
+    },
+    "url": "https://www.semanticscholar.org/paper/e66f97b940ca460e1a4331dcf60294c41e77442d",
+    "title": "On-Device Qwen2.5: Efficient LLM Inference with Model Compression and Hardware Acceleration",
+    "year": 2025,
+    "citationCount": 6,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/2504.17376, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "ArXiv",
+      "volume": "abs/2504.17376"
+    },
+    "authors": [
+      {
+        "authorId": "2152666378",
+        "name": "Maoyang Xiang"
+      },
+      {
+        "authorId": "144724517",
+        "name": "R. Fernando"
+      },
+      {
+        "authorId": "2354606326",
+        "name": "Bo Wang"
+      }
+    ],
+    "abstract": "Transformer-based Large Language Models (LLMs) have significantly advanced AI capabilities but pose considerable challenges for deployment on edge devices due to high computational demands, memory bandwidth constraints, and energy consumption. This paper addresses these challenges by presenting an efficient framework for deploying the Qwen2.5-0.5B model on the Xilinx Kria KV260 edge platform, a heterogeneous system integrating an ARM Cortex-A53 CPU with reconfigurable FPGA logic. Leveraging Activation-aware Weight Quantization (AWQ) with FPGA-accelerated execution pipelines, the proposed approach enhances both model compression rate and system throughput. Additionally, we propose a hybrid execution strategy that intelligently offloads compute-intensive operations to the FPGA while utilizing the CPU for lighter tasks, effectively balancing the computational workload and maximizing overall performance. Our framework achieves a model compression rate of 55.08% compared to the original model and produces output at a rate of 5.1 tokens per second, outperforming the baseline performance of 2.8 tokens per second.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 21
+  },
+  {
+    "paperId": "db929a872ebd0c2544418c3d4db99fc7a0e87a98",
+    "externalIds": {
+      "DOI": "10.1016/j.drugalcdep.2024.111122",
+      "CorpusId": 267631459,
+      "PubMed": "38367536"
+    },
+    "url": "https://www.semanticscholar.org/paper/db929a872ebd0c2544418c3d4db99fc7a0e87a98",
+    "title": "Comparison of transdermal alcohol concentration and self-reported alcohol consumption in people with alcohol dependence attending community alcohol treatment services.",
+    "year": 2024,
+    "citationCount": 5,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1016/j.drugalcdep.2024.111122",
+      "status": "HYBRID",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.drugalcdep.2024.111122?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.drugalcdep.2024.111122, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Review"
+    ],
+    "journal": {
+      "name": "Drug and alcohol dependence",
+      "pages": "\n          111122\n        ",
+      "volume": "256"
+    },
+    "authors": [
+      {
+        "authorId": "1935892790",
+        "name": "Eileen Brobbin"
+      },
+      {
+        "authorId": "7226768",
+        "name": "P. Deluca"
+      },
+      {
+        "authorId": "4002207",
+        "name": "S. Coulton"
+      },
+      {
+        "authorId": "2283225903",
+        "name": "Stephen Parkin"
+      },
+      {
+        "authorId": "2270419683",
+        "name": "Colin Drummond"
+      }
+    ],
+    "abstract": "AIM\nWe aimed to assess the accuracy and wearability of a transdermal alcohol sensor (TAS) (BACtrack Skyn) with people currently receiving treatment at alcohol services.\n\n\nMETHOD\nA mixed methods observational study involving three NHS alcohol services in south London was conducted. All participants (7=male, 9=female) wore a TAS for 1 week and met with the researcher every other weekday to complete the TAS data download and a TimeLine Follow Back (TLFB). At the end of the week, a post-wear survey was completed. Transdermal Alcohol Concentration (TAC) from the TAS was compared to the TLFB. Post-wear survey responses, attendance voucher incentives and descriptive TAS data (removals, missing and skin temperature data) were analysed. We investigated different drinking event thresholds changing the criteria of TAC level and length of time TAC was increased and analysed each drinking threshold sensitivity, specificity, positive and negative predicative values, and percentage accuracy classification.\n\n\nRESULTS\nThe TAS recorded the number of alcohol-drinking days with a high degree of accuracy compared to the TLFB as gold-standard. However, of the participation time of the 16 participants, 14.5% of the TAS data was missing in output and 16.4% of the recorded data suggests the TAS was not currently being worn. Of the data recorded, in line with the drinking event threshold of >15\u2009ug/l TAC, >15minutes, we found that sensitivity = 93%, specificity = 84% and a Pearson correlation of r(16) =.926, p = <.001, BCa 95% CI [.855 -.981]. The threshold with the highest accuracy was TAC>15\u2009ug/l, >60minutes which classified alcohol events with 90% accuracy, AUC =.910, sensitivity = 90%, specificity = 96%. The post-wear survey reported that most participants found it comfortable and that wearing it did not interfere with daily activities. Six participants reported side effects, including itching and a rash, but these would not deter them from wearing it again with all six reporting they would wear the TAS again and for longer than one week.\n\n\nCONCLUSIONS\nThe TAS did not capture every drinking event that was self-reported but maintained a high correlation. There were instances of missing TAS data and TAS removals. Overall, our findings would support the acceptability and feasibility of TAS as a tool that could be used in clinical settings for objective alcohol monitoring with patients being responsible for the TAS.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 20
+  },
+  {
+    "paperId": "907ab3f49a5a40dcb3c2fc1645aa3f8a334547b2",
+    "externalIds": {
+      "DOI": "10.1007/s00521-025-11325-z",
+      "CorpusId": 279064026
+    },
+    "url": "https://www.semanticscholar.org/paper/907ab3f49a5a40dcb3c2fc1645aa3f8a334547b2",
+    "title": "Stock price forecasting through symbolic dynamics and state transition graphs with a convolutional recurrent neural network architecture",
+    "year": 2025,
+    "citationCount": 5,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s00521-025-11325-z?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s00521-025-11325-z, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural Computing and Applications",
+      "pages": "15855 - 15890",
+      "volume": "37"
+    },
+    "authors": [
+      {
+        "authorId": "2258125251",
+        "name": "Fuat Kaan Mirza"
+      },
+      {
+        "authorId": "2309478",
+        "name": "\u00d6. Pekcan"
+      },
+      {
+        "authorId": "2243087345",
+        "name": "Mustafa Hekimo\u011flu"
+      },
+      {
+        "authorId": "1682026",
+        "name": "T. Bayka\u015f"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 20
+  },
+  {
+    "paperId": "a9306b2bf25c6c9b19d7d3e4a69d91bc4b97a7fb",
+    "externalIds": {
+      "DBLP": "conf/icdsp/Shinde25",
+      "DOI": "10.1109/DSP65409.2025.11074798",
+      "CorpusId": 280190803
+    },
+    "url": "https://www.semanticscholar.org/paper/a9306b2bf25c6c9b19d7d3e4a69d91bc4b97a7fb",
+    "title": "Towards Optimal Layer Ordering for Efficient Model Compression via Pruning and Quantization",
+    "year": 2025,
+    "citationCount": 5,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/DSP65409.2025.11074798?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/DSP65409.2025.11074798, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Conference"
+    ],
+    "journal": {
+      "name": "2025 25th International Conference on Digital Signal Processing (DSP)",
+      "pages": "1-5"
+    },
+    "authors": [
+      {
+        "authorId": "2351459236",
+        "name": "Tushar Shinde"
+      }
+    ],
+    "abstract": "Model compression techniques such as pruning and quantization have been proposed to address the high computational and memory demands of deep neural networks (DNNs). However, determining an optimal layer-wise compression strategy remains a complex challenge. In this work, we introduce a novel adaptive framework that optimizes pruning and quantization by sequencing layers based on their structural and statistical characteristics. Our method ranks layers by their significance using metrics like parameter count and variance, which guide the compression decisions. We frame layer sequencing as an optimization problem, with the aim of minimizing overall model size while preserving accuracy. The optimization strategy assigns bit-precision and pruning levels to each layer based on its compression sensitivity, significantly reducing the need for exhaustive parameter tuning. We validate our approach on benchmark image classification tasks using popular DNN architectures. Our method achieves model size reductions of up to 124\u00d7 without any accuracy degradation. These results demonstrate that intelligent layer sequencing enhances compression efficiency, offering a scalable and interpretable solution for deploying DNNs on edge devices.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 20
+  },
+  {
+    "paperId": "1c061cba89605cb43b7d511d8fe1886d79f41710",
+    "externalIds": {
+      "MAG": "2983876376",
+      "DBLP": "journals/corr/abs-1911-05824",
+      "ArXiv": "1911.05824",
+      "CorpusId": 208006427
+    },
+    "url": "https://www.semanticscholar.org/paper/1c061cba89605cb43b7d511d8fe1886d79f41710",
+    "title": "A Discreet Wearable IoT Sensor for Continuous Transdermal Alcohol Monitoring - Challenges and Opportunities",
+    "year": 2019,
+    "citationCount": 19,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/1911.05824, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "ArXiv",
+      "volume": "abs/1911.05824"
+    },
+    "authors": [
+      {
+        "authorId": "6601145",
+        "name": "Baichen Li"
+      },
+      {
+        "authorId": "83875096",
+        "name": "Scott R. Downen"
+      },
+      {
+        "authorId": "2053111091",
+        "name": "Quan Dong"
+      },
+      {
+        "authorId": "2068611907",
+        "name": "Nam Tran"
+      },
+      {
+        "authorId": "26328464",
+        "name": "M. LeSaux"
+      },
+      {
+        "authorId": "21447928",
+        "name": "A. Meltzer"
+      },
+      {
+        "authorId": "2109724754",
+        "name": "Zhenyu Li"
+      }
+    ],
+    "abstract": "Non-invasive continuous alcohol monitoring has potential applications in both population research and in clinical management of acute alcohol intoxication or chronic alcoholism. Current wearable monitors based on transdermal alcohol content (TAC) sensing are relatively bulky and have limited quantification accuracy. Here we describe the development of a discreet wearable transdermal alcohol (TAC) sensor in the form of a wristband or armband. This novel sensor can detect vapor-phase alcohol in perspiration from 0.09 ppm (equivalent to 0.09 mg/dL sweat alcohol concentration at 25 \u00b0C under Henry's Law equilibrium) to over 500 ppm at one-minute time resolution. The TAC sensor is powered by a 110 mAh lithium battery that lasts for over 7 days. In addition, the sensor can function as a medical \"internet-of-things\" (IoT) device by connecting to an Android smartphone gateway via Bluetooth Low Energy (BLE) and upload data to a cloud informatics system. Such wearable IoT sensors may enable large-scale alcohol-related research and personalized management. We also present evidence suggesting a hypothesis that perspiration rate is the dominant factor leading to TAC measurement variabilities, which may inform more reproducible and accurate TAC sensor designs in the future.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 19
+  },
+  {
+    "paperId": "c6f1fbe5e2e4969a32626826abb23d831e1c8ba6",
+    "externalIds": {
+      "DBLP": "journals/nca/EgriogluB23",
+      "DOI": "10.1007/s00521-022-07753-w",
+      "CorpusId": 252132190
+    },
+    "url": "https://www.semanticscholar.org/paper/c6f1fbe5e2e4969a32626826abb23d831e1c8ba6",
+    "title": "A new hybrid recurrent artificial neural network for time series forecasting",
+    "year": 2022,
+    "citationCount": 19,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1007/s00521-022-07753-w?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1007/s00521-022-07753-w, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural Computing and Applications",
+      "pages": "2855-2865",
+      "volume": "35"
+    },
+    "authors": [
+      {
+        "authorId": "2276136",
+        "name": "E. E\u011frio\u011flu"
+      },
+      {
+        "authorId": "23725944",
+        "name": "Eren Ba\u015f"
+      }
+    ],
+    "abstract": null,
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 19
+  },
+  {
+    "paperId": "1f66f855a9e50ebf9182b5282c468f9782f9be4c",
+    "externalIds": {
+      "DOI": "10.62019/77c8jx73",
+      "CorpusId": 277757734
+    },
+    "url": "https://www.semanticscholar.org/paper/1f66f855a9e50ebf9182b5282c468f9782f9be4c",
+    "title": "WEARABLE IOT DEVICES WITH AI FOR OCCUPATIONAL HEALTH: REAL-TIME WORKER MONITORING AND SAFETY ANALYTICS",
+    "year": 2025,
+    "citationCount": 4,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.62019/77c8jx73?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.62019/77c8jx73, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle",
+      "Review"
+    ],
+    "journal": {
+      "name": "Journal of Medical &amp; Health Sciences Review"
+    },
+    "authors": [
+      {
+        "authorId": "2355296947",
+        "name": "Dr Abdul Hadi"
+      },
+      {
+        "authorId": "2393833932",
+        "name": "Faizan Ali"
+      },
+      {
+        "authorId": "2301271525",
+        "name": "Sahil Kumar"
+      },
+      {
+        "authorId": "2281970197",
+        "name": "D. Javed"
+      },
+      {
+        "authorId": "2155834286",
+        "name": "Bilal Ahmed"
+      },
+      {
+        "authorId": "2355296977",
+        "name": "Islamabad Pakistan Pims"
+      }
+    ],
+    "abstract": "Background: Wearable IoT devices with artificial intelligence are set to change occupational health by allowing near real-time worker tracking and safety assessment. These technologies can enhance workplace safety, decrease the rate of accidents, and assess the health of workers who are involved in the construction, manufacturing, or logistics sectors. However, the levels of adherence to these devices as well as the perceived utility of the devices differ between one user and another.\nObjectives: The aim and objectives of the work include a quantitative analysis of the effectiveness, satisfaction, and impact of wearable IoT devices with AI for real-time health monitoring and risk assessment. Instead, it focuses on examining precursors to device usage and how ergonomic technologies are perceived by workers in the area of safety enhancement.\nMethods: An online self-administered was done on 250 participants in industries that adopt wearable IoT devices. The key variables of frequency, satisfaction, perceived usefulness of health monitoring, and safety analytics generated from AI were captured using a Likert scale questionnaire. Data analysis was done by use of descriptive statistics, inferential statistics, Shapiro-Wilk normality test, Cronbach\u2019s Alpha reliability coefficient test, and linear regression analysis.\nResults: Descriptive analysis showed that the age ranged from 17\u201356 years and age was skewed, W(821) = 0.960, P value = 0.000, Shapiro and Wilk's test showed that age was non-normal shaped which indicates different levels of adoption among age groups. The test-retest reliability of Cronbach\u2019s Alpha was 0.014, for the Likert scale items of the survey, indicating a low internal consistency because of the multi-faceted nature of the worker experience. Those who reported how often they used devices differed in their responses with over half claiming that they used devices occasionally, whereas the perceived efficacy of health monitoring was relatively lower, with almost a quarter of the respondents stating that they found health monitoring to be only somewhat effective or not at all effective.\nConclusion: The study shows how occupational health and safety can be enhanced through wearable IoT devices with AI but also clarifies some limitations in the usability of the device, the training of the end-users, and how the survey should be designed. Albeit, adoption has risen over time, daily usage is still low, and they do not have one view of it as being effective. Professoring and resolving these challenges may also help improve the design and bring forth better integration including safety measures in different workplaces and advance the effectiveness of these devices.",
+    "_section": "vehicle_interlock",
+    "_query": "vehicle safety IoT wearable integration",
+    "_score": 19
+  },
+  {
+    "paperId": "c38f1a331c2db06b1fb6c9a35662e9f346d70d9c",
+    "externalIds": {
+      "DBLP": "journals/cbm/YiH25",
+      "DOI": "10.1016/j.compbiomed.2025.110138",
+      "CorpusId": 277866508,
+      "PubMed": "40245688"
+    },
+    "url": "https://www.semanticscholar.org/paper/c38f1a331c2db06b1fb6c9a35662e9f346d70d9c",
+    "title": "A new lightweight deep learning model optimized with pruning and dynamic quantization to detect freezing gait on wearable devices",
+    "year": 2025,
+    "citationCount": 4,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.compbiomed.2025.110138?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.compbiomed.2025.110138, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Computers in biology and medicine",
+      "pages": "\n          110138\n        ",
+      "volume": "191"
+    },
+    "authors": [
+      {
+        "authorId": "2298484534",
+        "name": "Myung-Kyu Yi"
+      },
+      {
+        "authorId": "2153642216",
+        "name": "Seong Oun Hwang"
+      }
+    ],
+    "abstract": "Freezing of gait (FoG) is a debilitating symptom of Parkinson's disease that severely impacts patients' mobility and quality of life. To minimize the risk of falls and injuries associated with FoG, it is crucial to develop highly accurate FoG detection systems for portable wearable devices that enable continuous and real-time monitoring. However, achieving high accuracy in deep learning (DL) models typically requires a large number of parameters and integrating multiple sensors, posing challenges for deployment on resource-constrained wearable devices. To address these challenges, we propose a novel lightweight DL model that combines a convolutional neural network and a gated recurrent unit with residual attention and efficient channel attention mechanisms. Additionally, we incorporate pruning and dynamic quantization techniques, along with an innovative feature selection method, to optimize the model for wearable applications. Experimental results demonstrate that our proposed DL model outperforms state-of-the-art supervised DL models, achieving an F1 score of 0.994 while utilizing 29.9 times fewer parameters than existing models. The model's maximum memory usage is only 420.91 KB, making it well-suited for wearable devices. Furthermore, optimizations through pruning and dynamic quantization further reduced the model size by an additional 7.84 times, resulting in a final size of just 44.04 KB without sacrificing accuracy. As a result, the proposed DL model achieves high accuracy in FoG detection with minimal memory usage, enabling real-time monitoring on wearable devices and providing a practical solution for managing FoG in Parkinson's patients.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 19
+  },
+  {
+    "paperId": "67a3cfb1a68439efe9e0e0cdc1b1f7d8d435ac80",
+    "externalIds": {
+      "DBLP": "journals/corr/abs-2506-17870",
+      "ArXiv": "2506.17870",
+      "DOI": "10.1109/TMC.2025.3582583",
+      "CorpusId": 279671224
+    },
+    "url": "https://www.semanticscholar.org/paper/67a3cfb1a68439efe9e0e0cdc1b1f7d8d435ac80",
+    "title": "NestQuant: Post-Training Integer-Nesting Quantization for On-Device DNN",
+    "year": 2025,
+    "citationCount": 4,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://arxiv.org/abs/2506.17870, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Transactions on Mobile Computing",
+      "pages": "12088-12102",
+      "volume": "24"
+    },
+    "authors": [
+      {
+        "authorId": "2326250476",
+        "name": "Jianhang Xie"
+      },
+      {
+        "authorId": "2335418574",
+        "name": "Chuntao Ding"
+      },
+      {
+        "authorId": "2108795381",
+        "name": "Xiaqing Li"
+      },
+      {
+        "authorId": "2326273663",
+        "name": "Shenyuan Ren"
+      },
+      {
+        "authorId": "2317031154",
+        "name": "Yidong Li"
+      },
+      {
+        "authorId": "2180442960",
+        "name": "Zhichao Lu"
+      }
+    ],
+    "abstract": "Deploying quantized deep neural network (DNN) models with resource adaptation capabilities on ubiquitous Internet of Things (IoT) devices to provide high-quality AI services can leverage the benefits of compression and meet multi-scenario resource requirements. However, existing dynamic/mixed precision quantization requires retraining or special hardware, whereas post-training quantization (PTQ) has two limitations for resource adaptation: (i) The state-of-the-art PTQ methods only provide one fixed bitwidth model, which makes it challenging to adapt to the dynamic resources of IoT devices; (ii) Deploying multiple PTQ models with diverse bitwidths consumes large storage resources and switching overheads. To this end, this paper introduces a resource-friendly post-training integer-nesting quantization, i.e., NestQuant, for on-device quantized model switching on IoT devices. The proposed NestQuant incorporates the integer weight decomposition, which bit-wise splits quantized weights into higher-bit and lower-bit weights of integer data types. It also contains a decomposed weights nesting mechanism to optimize the higher-bit weights by adaptive rounding and nest them into the original quantized weights. In deployment, we can send and store only one NestQuant model and switch between the full-bit/part-bit model by paging in/out lower-bit weights to adapt to resource changes and reduce consumption. Experimental results on the ImageNet-1 K pretrained DNNs demonstrated that the NestQuant model can achieve high performance in top-1 accuracy, and reduce in terms of data transmission, storage consumption, and switching overheads. In particular, the ResNet-101 with INT8 nesting INT6 can achieve 78.1% and 77.9% accuracy for full-bit and part-bit models, respectively, and reduce switching overheads by approximately 78.1% compared with diverse bitwidths PTQ models.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 19
+  },
+  {
+    "paperId": "3b20fbf5bf99b7c74cc0d4b4c9c25c23f9437a78",
+    "externalIds": {
+      "PubMedCentral": "12073130",
+      "DOI": "10.3390/nu17091470",
+      "CorpusId": 278196866,
+      "PubMed": "40362779"
+    },
+    "url": "https://www.semanticscholar.org/paper/3b20fbf5bf99b7c74cc0d4b4c9c25c23f9437a78",
+    "title": "The Impact of Alcohol on Sleep Physiology: A Prospective Observational Study on Nocturnal Resting Heart Rate Using Smartwatch Technology",
+    "year": 2025,
+    "citationCount": 3,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC12073130, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Study",
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Nutrients",
+      "volume": "17"
+    },
+    "authors": [
+      {
+        "authorId": "2079574090",
+        "name": "Anna Str\u00fcven"
+      },
+      {
+        "authorId": "4993297",
+        "name": "Jenny Schlichtiger"
+      },
+      {
+        "authorId": "2161630846",
+        "name": "J. M. Hoppe"
+      },
+      {
+        "authorId": "2358170088",
+        "name": "Isabel Thiessen"
+      },
+      {
+        "authorId": "2250991799",
+        "name": "Stefan Brunner"
+      },
+      {
+        "authorId": "145933861",
+        "name": "C. Stremmel"
+      }
+    ],
+    "abstract": "Background/Objectives: Alcohol consumption is known to influence cardiovascular regulation and sleep quality; however, real-world data on its acute effects\u2014particularly during nocturnal rest\u2014are limited. This study aimed to investigate the impact of moderate alcohol intake on nocturnal resting heart rate (HR) and sleep parameters using continuous smartwatch-based monitoring in healthy individuals. Methods: In this prospective observational study, 40 healthy adults (63% female, mean age of 30.5 years) underwent a structured 9-day smartwatch monitoring period. The protocol included three alcohol-free baseline days, three consecutive evenings with moderate alcohol consumption (40 g/day for women, 60 g/day for men), and three post-exposure days. Continuous data on HR, sleep stages, nocturnal awakenings, and physical activity were recorded. Subjective sleep quality was assessed using the Pittsburgh Sleep Quality Index (PSQI) at baseline. The primary endpoint was the change in the average nocturnal resting HR. Secondary outcomes included sleep parameters and activity levels. Results: Alcohol consumption led to a statistically significant increase in nocturnal resting HR from 63.6 \u00b1 9.2 bpm at baseline to 66.6 \u00b1 9.0 bpm during exposure (p < 0.001), with rapid normalization during the post-exposure phase (64.9 \u00b1 9.3 bpm). No significant changes were observed in objective sleep architecture or daytime activity. Despite stable sleep structure, participants reported reduced subjective sleep quality under alcohol exposure, suggesting a potential link to the elevated HR. Conclusions: Even moderate alcohol intake transiently elevates nocturnal resting HR without affecting sleep architecture, likely impairing physiological recovery. These findings underscore the underestimated cardiovascular impact of alcohol and warrant further research in larger and more diverse populations.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 18
+  },
+  {
+    "paperId": "20edbc7817a6be4358ebd0437d8885e06c2c62ef",
+    "externalIds": {
+      "DBLP": "journals/sensors/KhemtonglangCKC22",
+      "PubMedCentral": "9460546",
+      "DOI": "10.3390/s22176435",
+      "CorpusId": 251973329,
+      "PubMed": "36080890"
+    },
+    "url": "https://www.semanticscholar.org/paper/20edbc7817a6be4358ebd0437d8885e06c2c62ef",
+    "title": "A Smart Wristband Integrated with an IoT-Based Alarming System for Real-Time Sweat Alcohol Monitoring",
+    "year": 2022,
+    "citationCount": 18,
+    "openAccessPdf": {
+      "url": "https://www.mdpi.com/1424-8220/22/17/6435/pdf?version=1661505974",
+      "status": "GOLD",
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC9460546, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Sensors (Basel, Switzerland)",
+      "volume": "22"
+    },
+    "authors": [
+      {
+        "authorId": "2183569901",
+        "name": "Kodchakorn Khemtonglang"
+      },
+      {
+        "authorId": "2183560167",
+        "name": "Nataphiya Chaiyaphet"
+      },
+      {
+        "authorId": "93015708",
+        "name": "Tinnakorn Kumsaen"
+      },
+      {
+        "authorId": "2183562443",
+        "name": "Chanyamon Chaiyachati"
+      },
+      {
+        "authorId": "6280014",
+        "name": "O. Chuchuen"
+      }
+    ],
+    "abstract": "Breathalyzer is a common approach to measuring blood alcohol concentration (BAC) levels of individuals suspected of drunk driving. Nevertheless, this device is relatively high-cost, inconvenient for people with limited breathing capacity, and risky for COVID-19 exposure. Here, we designed and developed a smart wristband integrating a real-time noninvasive sweat alcohol metal oxide (MOX) gas sensor with a Drunk Mate, an Internet of Thing (IoT)-based alarming system. A MOX sensor acquired transdermal alcohol concentration (TAC) which was converted to BAC and sent via the IoT network to the Blynk application platform on a smartphone, triggering alarming messages on LINE Notify. A user would receive an immediate alarming message when his BAC level reached an illegal alcohol concentration limit (BAC 50 mg%; TAC 0.70 mg/mL). The sensor readings showed a high linear correlation with TAC (R2 = 0.9815; limit of detection = 0.045 mg/mL) in the range of 0.10\u20131.05 mg/mL alcohol concentration in artificial sweat, achieving an accuracy of 94.66%. The sensor readings of ethanol in water were not statistically significantly different (p > 0.05) from the measurements in artificial sweat and other sweat-related solutions, suggesting that the device responded specifically to ethanol and was not affected by other electrolytes in the artificial sweat. Moreover, the device could continuously monitor TAC levels simulated in real-time in an artificial sweat testing system. With the integration of an IoT-based alarming system, the smart wristband developed from a commercial gas sensor presented here offers a promising low-cost MOX gas sensor monitoring technology for noninvasive and real-time sweat alcohol measurement and monitoring.",
+    "_section": "alcohol_detection",
+    "_query": "transdermal alcohol monitoring smartwatch",
+    "_score": 18
+  },
+  {
+    "paperId": "a470600b938219118a839d290f99374bedc7dc09",
+    "externalIds": {
+      "DBLP": "journals/tnn/WangCM25",
+      "DOI": "10.1109/TNNLS.2025.3529995",
+      "CorpusId": 275964360,
+      "PubMed": "40031300"
+    },
+    "url": "https://www.semanticscholar.org/paper/a470600b938219118a839d290f99374bedc7dc09",
+    "title": "Probabilistic Approximation of Stochastic Time Series Using Bayesian Recurrent Neural Network",
+    "year": 2025,
+    "citationCount": 3,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/TNNLS.2025.3529995?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/TNNLS.2025.3529995, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Transactions on Neural Networks and Learning Systems",
+      "pages": "11664-11671",
+      "volume": "36"
+    },
+    "authors": [
+      {
+        "authorId": "2323611349",
+        "name": "Yuhan Wang"
+      },
+      {
+        "authorId": "2238255810",
+        "name": "Kaiquan Cai"
+      },
+      {
+        "authorId": "2056697592",
+        "name": "Deyuan Meng"
+      }
+    ],
+    "abstract": "In this brief, we investigate the approximation theory (AT) of Bayesian recurrent neural network (BRNN) for stochastic time series forecasting (TSF) from a probabilistic standpoint. Due to the cumulative dependencies present in stochastic time series, which are incompatible with the recurrent structure of BRNN and further complicate the analysis of AT, we first perform marginalization and transform the time series into a probabilistically equivalent latent variable model (LVM). Subsequently, we analyze the AT by evaluating the approximation error between the output mean of BRNN and that of the LVM, which are derived through Taylor expansion-based uncertainty propagation and distribution parameterization, respectively. Finally, leveraging the Khinchin\u2019s law of large numbers, we study the convergence in probability of the sampling-based training algorithm, i.e., Bayes by Backprop (BBB), and prove that increasing the number of Monte Carlo samples in BBB leads to a convergence probability approaching one. Numerical simulations are conducted to demonstrate the validity of our results.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 18
+  },
+  {
+    "paperId": "28be9b26df36e5b4a97e9d3a17dfbc3f23023b4a",
+    "externalIds": {
+      "DBLP": "journals/nn/LaiZZLL25",
+      "DOI": "10.1016/j.neunet.2025.107298",
+      "CorpusId": 276486085,
+      "PubMed": "40010293"
+    },
+    "url": "https://www.semanticscholar.org/paper/28be9b26df36e5b4a97e9d3a17dfbc3f23023b4a",
+    "title": "Dynamic graph-based bilateral recurrent imputation network for multivariate time series",
+    "year": 2025,
+    "citationCount": 3,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1016/j.neunet.2025.107298?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1016/j.neunet.2025.107298, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Neural networks : the official journal of the International Neural Network Society",
+      "pages": "\n          107298\n        ",
+      "volume": "186"
+    },
+    "authors": [
+      {
+        "authorId": "2277082051",
+        "name": "Xiaochen Lai"
+      },
+      {
+        "authorId": "2148905682",
+        "name": "Zheng Zhang"
+      },
+      {
+        "authorId": "2238886041",
+        "name": "Liyong Zhang"
+      },
+      {
+        "authorId": "2332775631",
+        "name": "Wei Lu"
+      },
+      {
+        "authorId": "2333053036",
+        "name": "Zhuohan Li"
+      }
+    ],
+    "abstract": "Multivariate time series imputation using graph neural networks (GNNs) has gained significant attention, where the variables and their correlations are depicted as the graph nodes and edges, offering a structured way to understand the intricacies of multivariate time series. On this basis, existing GNNs typically make the assumption of static correlations between variables, using a graph with fixed edge weights to model multivariate relationships. However, the static assumption is usually inconsistent with the dynamic nature of real-world data, where correlations between variables tend to change over time. In this paper, we propose a dynamic graph-based bilateral recurrent imputation network (DGBRIN) to address the above issue. Specifically, for each segment of a multivariate time series captured within a sliding window, we construct a specialized graph to capture the localized, dynamic correlations between variables. To this end, we design a dynamic adjacency matrix learning (DAML) module, which integrates temporal dependencies through an information fusion layer and mine localized monotonic correlations between variables using the Spearman rank correlation coefficient. These correlations are represented in segment-specific adjacency matrices. Subsequently, the adjacency matrices and time series are fed into a hybrid graph-based bilateral recurrent network for missing value imputation, which combines the advantages of recurrent neural networks and graph convolutional networks to effectively capture temporal dependencies and merge the correlation information between variables. We conduct experiments on eight real-world time series. The results demonstrate the effectiveness of the proposed model.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 18
+  },
+  {
+    "paperId": "d6962b37670cafe0397c41af27d30e378b81fcd0",
+    "externalIds": {
+      "DBLP": "journals/access/KimLKP24",
+      "DOI": "10.1109/ACCESS.2024.3473323",
+      "CorpusId": 273113893
+    },
+    "url": "https://www.semanticscholar.org/paper/d6962b37670cafe0397c41af27d30e378b81fcd0",
+    "title": "Automated Arrhythmia Classification System: Proof-of-Concept With Lightweight Model on an Ultra-Edge Device",
+    "year": 2024,
+    "citationCount": 3,
+    "openAccessPdf": {
+      "url": "https://doi.org/10.1109/access.2024.3473323",
+      "status": "GOLD",
+      "license": "CCBYNCND",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/ACCESS.2024.3473323?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/ACCESS.2024.3473323, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Access",
+      "pages": "150546-150563",
+      "volume": "12"
+    },
+    "authors": [
+      {
+        "authorId": "50497514",
+        "name": "Namho Kim"
+      },
+      {
+        "authorId": "2324406446",
+        "name": "Seongjae Lee"
+      },
+      {
+        "authorId": "2324149834",
+        "name": "Seungmin Kim"
+      },
+      {
+        "authorId": "2148572286",
+        "name": "Sung-Min Park"
+      }
+    ],
+    "abstract": "Arrhythmia can lead to severe complications and early detection of arrhythmia is crucial to prevent progression. Electrocardiograms are the most reliable measure for detecting arrhythmia. This study aims to implement a practical ultra-edge-computing system for automated arrhythmia classification, incorporating a lightweight deep neural network-based model and low-power wearable electrocardiogram sensing device. The lightweight model was designed based on the WavelNet architecture, which has been previously introduced for precise arrhythmia classification. Model compression methods including knowledge distillation, pruning, and quantization were employed to enhance arrhythmia classification performance while reducing computational complexity. The lightweight model was integrated into a wearable sensing device featuring a resource-constrained microcontroller unit. The efficiency of the lightweight model and edge-computing system was evaluated regarding arrhythmia classification performance and computational complexity. This study was conducted using a widely used publicly accessible database following a benchmark training and evaluation procedure. Compared to a standard convolutional neural network-based model which exhibited 81.5% overall accuracy, the proposed lightweight model achieved more precise arrhythmia classification with achieving 87.1% overall accuracy. The lightweight model also exhibited significantly reduced computational complexity, with 51.5% fewer parameters, 78.1% smaller model size, 40.3% fewer multiply-accumulate operations, and 79.6% reduced inference time. The completed edge-computing system featured sufficiently short inference time and low memory usage. The proposed lightweight model and ultra-edge-computing system demonstrated advanced performance in classifying arrhythmia, with a significantly reduced computational burden. This outcome ensures the practicality of the system to achieve on-device real-time arrhythmia classification in the real-world.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 18
+  },
+  {
+    "paperId": "29cc2c7679d11e0ac8848321b62e06e9847237e4",
+    "externalIds": {
+      "DBLP": "journals/tcasai/YangLWZJ24",
+      "DOI": "10.1109/TCASAI.2024.3491941",
+      "CorpusId": 273873253
+    },
+    "url": "https://www.semanticscholar.org/paper/29cc2c7679d11e0ac8848321b62e06e9847237e4",
+    "title": "SearchQ: Search-Based Fine-Grained Quantization for Data-Free Model Compression",
+    "year": 2024,
+    "citationCount": 3,
+    "openAccessPdf": {
+      "url": "",
+      "status": "CLOSED",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/TCASAI.2024.3491941?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/TCASAI.2024.3491941, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Transactions on Circuits and Systems for Artificial Intelligence",
+      "pages": "220-228",
+      "volume": "1"
+    },
+    "authors": [
+      {
+        "authorId": "2276199933",
+        "name": "Ning Yang"
+      },
+      {
+        "authorId": "1491233985",
+        "name": "Fangxin Liu"
+      },
+      {
+        "authorId": "2108184060",
+        "name": "Zongwu Wang"
+      },
+      {
+        "authorId": "2329543869",
+        "name": "Junping Zhao"
+      },
+      {
+        "authorId": "2148655643",
+        "name": "Li Jiang"
+      }
+    ],
+    "abstract": "The huge memory and computing costs of deep neural networks (DNNs) greatly hinder their deployment on resource-constrained devices with high efficiency. Quantization has emerged as an effective approach to shrinking the model size for memory saving and simplifying the operations for compute acceleration in DNNs. However, previous methods require retraining or fine-tuning after quantization to recover the model accuracy. These alternatives do not apply to confidential scenarios due to personal privacy and security concerns, highlighting the necessity of adopting data-free quantization methods. To this end, we propose a simple yet effective quantization framework, named SearchQ, which leverages a principled search approach to automatically allocate suitable quantization parameters (e.g., data format and bitwidth) for weights. Thus, the quantization parameters can be adapted to various distributions of weights in different blocks. Based on such locality, we minimize the quantization error by better matching the weight distribution in every block before and after quantization. Since searching separately for each block will lead to an exponentially vast search space, we then used an effective strategy to increase the search speed. Given quantization parameters specified by platform features, SearchQ quantization derives an optimal quantization model for DNN deployment without any model retraining or expensive calculation. Comprehensive experimental results on various computer vision tasks validate that SearchQ achieves better performance and outperforms other state-of-the-art methods of network compression.",
+    "_section": "edge_ai",
+    "_query": "model compression quantization wearable device",
+    "_score": 18
+  },
+  {
+    "paperId": "27b4148511b5000c41b92473f35e7fc1cd669169",
+    "externalIds": {
+      "DBLP": "journals/tnn/MartsenyukBK25",
+      "DOI": "10.1109/TNNLS.2024.3377446",
+      "CorpusId": 268722969,
+      "PubMed": "38530720"
+    },
+    "url": "https://www.semanticscholar.org/paper/27b4148511b5000c41b92473f35e7fc1cd669169",
+    "title": "On Model of Recurrent Neural Network on a Time Scale: Exponential Convergence and Stability Research",
+    "year": 2024,
+    "citationCount": 2,
+    "openAccessPdf": {
+      "url": "https://ieeexplore.ieee.org/ielx7/5962385/6104215/10479223.pdf",
+      "status": "HYBRID",
+      "license": "CCBYNCND",
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/TNNLS.2024.3377446?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/TNNLS.2024.3377446, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Transactions on Neural Networks and Learning Systems",
+      "pages": "4864-4878",
+      "volume": "36"
+    },
+    "authors": [
+      {
+        "authorId": "153210193",
+        "name": "V. Martsenyuk"
+      },
+      {
+        "authorId": "2267047300",
+        "name": "Marcin Berna\u015b"
+      },
+      {
+        "authorId": "1408125061",
+        "name": "A. K\u0142os-Witkowska"
+      }
+    ],
+    "abstract": "The majority of the results on modeling recurrent neural networks (RNNs) are obtained using delayed differential equations, which imply continuous time representation. On the other hand, these models must be discrete in time, given their practical implementation in computer systems, requiring their versatile utilization across arbitrary time scales. Hence, the goal of this research is to model and investigate the architecture design of a delayed RNN using delayed differential equations on a time scale. Internal memory can be utilized to describe the calculation of the future states using discrete and distributed delays, which is a representation of the deep learning architecture for artificial RNNs. We focus on qualitative behavior and stability study of the system. Special attention is paid to taking into account the effect of the time-scale parameters on neural network dynamics. Here, we delve into the exploration of exponential stability in RNN models on a time scale that incorporates multiple discrete and distributed delays. Two approaches for constructing exponential estimates, including the Hilger and the usual exponential functions, are considered and compared. The Lyapunov\u2013Krasovskii (L\u2013K) functional method is employed to study stability on a time scale in both cases. The established stability criteria, resulting in an exponential-like estimate, utilizes a tuple of positive definite matrices, decay rate, and graininess of the time scale. The models of RNNs for the two-neuron network with four discrete and distributed delays, as well as the ring lattice delayed network of seven identical neurons, are numerically investigated. The results indicate how the time scale (graininess) and model characteristics (weights) influence the qualitative behavior, leading to a transition from stable focus to quasiperiodic limit cycles.",
+    "_section": "ml_bac_estimation",
+    "_query": "recurrent neural network biosignal time series",
+    "_score": 17
+  },
+  {
+    "paperId": "b1ef73d119e1933531eac0c2e37d72f7e78f64cb",
+    "externalIds": {
+      "DOI": "10.1109/ICCC64910.2025.11077179",
+      "CorpusId": 280097184
+    },
+    "url": "https://www.semanticscholar.org/paper/b1ef73d119e1933531eac0c2e37d72f7e78f64cb",
+    "title": "Real-Time EEG-Based Drowsiness Detection with IoT-Enabled Vehicle Safety Alert System",
+    "year": 2025,
+    "citationCount": 2,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: The following paper fields have been elided by the publisher: {'abstract'}. Paper or abstract available at https://api.unpaywall.org/v2/10.1109/ICCC64910.2025.11077179?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/ICCC64910.2025.11077179, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Conference"
+    ],
+    "journal": {
+      "name": "2025 6th International Conference on Control, Communication and Computing (ICCC)",
+      "pages": "1-7"
+    },
+    "authors": [
+      {
+        "authorId": "2407270186",
+        "name": "Amal Anand"
+      },
+      {
+        "authorId": "2219607369",
+        "name": "V. K"
+      },
+      {
+        "authorId": "101420585",
+        "name": "K. V. Namboothiri"
+      },
+      {
+        "authorId": "2357296790",
+        "name": "N. M"
+      },
+      {
+        "authorId": null,
+        "name": "Don S"
+      },
+      {
+        "authorId": "9396893",
+        "name": "S. Menon"
+      }
+    ],
+    "abstract": null,
+    "_section": "vehicle_interlock",
+    "_query": "vehicle safety IoT wearable integration",
+    "_score": 17
+  },
+  {
+    "paperId": "931dc4665ba31fab3339f6991d9ea33399f3473b",
+    "externalIds": {
+      "DBLP": "journals/access/PonnadaTKRD24",
+      "DOI": "10.1109/ACCESS.2024.3496791",
+      "CorpusId": 274014533
+    },
+    "url": "https://www.semanticscholar.org/paper/931dc4665ba31fab3339f6991d9ea33399f3473b",
+    "title": "Expanding Applications of TinyML in Versatile Assistive Devices: From Navigation Assistance to Health Monitoring System Using Optimized NASNet-XGBoost Transfer Learning",
+    "year": 2024,
+    "citationCount": 2,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.1109/ACCESS.2024.3496791?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.1109/ACCESS.2024.3496791, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "IEEE Access",
+      "pages": "168328-168338",
+      "volume": "12"
+    },
+    "authors": [
+      {
+        "authorId": "1414512852",
+        "name": "Sreenu Ponnada"
+      },
+      {
+        "authorId": "2331521644",
+        "name": "Tan Kuan Tak"
+      },
+      {
+        "authorId": "15991278",
+        "name": "Pravin R. Kshirsagar"
+      },
+      {
+        "authorId": "2406550459",
+        "name": "P. Srinivasa Rao"
+      },
+      {
+        "authorId": "2632386",
+        "name": "Abhinav Dayal"
+      }
+    ],
+    "abstract": "The healthcare sector receives a considerable amount of unprocessed data from wearable and portable devices. However, traditional cloud-based models used to handle this type of data can pose risks such as exposing sensitive patient data to a network environment and increasing latency due to data storage and time consumption. In response to these issues, an alternative strategy named TinyML was put forth by the scientific community to foster safe and autonomous models capable of gathering and processing data without the need for network exposure. To address these concerns more effectively, we put forward a versatile TinyML model specifically tailored for health monitoring systems. This model uses enhanced NASNet-XGBoost-based transfer learning methodology to adapt to various types of diseases using appropriate healthcare data. The process begins by pre-processing raw health signals collected from patients using a combination of a wavelet soft threshold method and empirical wavelet transform-spectrum adaptive segmentation (EWT-SAS). A Tyrannosaurus-based NASNet model is then used to extract meaningful features from these pre-processed signals. Once the features have been extracted, they are entered into an XGBoost model which can accurately predict various types of diseases based on the given data. This particular approach achieved an impressive 95.4% average accuracy, 93.6% positive predictive value, 94.7% hit rate, and 96.3% selectivity. When compared to traditional models, this TinyML model shows a significant improvement in performance metrics, demonstrating increased effectiveness and accuracy in predicting various diseases.",
+    "_section": "edge_ai",
+    "_query": "TinyML health monitoring wearable deployment",
+    "_score": 17
+  },
+  {
+    "paperId": "a9e7395506bceb3dbf7cb9b5b1937d3c9631568c",
+    "externalIds": {
+      "PubMedCentral": "12765800",
+      "DOI": "10.1007/s40820-025-02003-9",
+      "CorpusId": 284483855,
+      "PubMed": "41486315"
+    },
+    "url": "https://www.semanticscholar.org/paper/a9e7395506bceb3dbf7cb9b5b1937d3c9631568c",
+    "title": "Artificial Intelligence-Enhanced Wearable Blood Pressure Monitoring in Resource-Limited Settings: A Co-Design of Sensors, Model, and Deployment",
+    "year": 2026,
+    "citationCount": 2,
+    "openAccessPdf": {
+      "url": "",
+      "status": null,
+      "license": "CCBY",
+      "disclaimer": "Notice: Paper or abstract available at https://pmc.ncbi.nlm.nih.gov/articles/PMC12765800, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "Review",
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Nano-Micro Letters",
+      "volume": "18"
+    },
+    "authors": [
+      {
+        "authorId": "2390671031",
+        "name": "Yiming Zhang"
+      },
+      {
+        "authorId": "2352889011",
+        "name": "Shirong Qiu"
+      },
+      {
+        "authorId": "2316110062",
+        "name": "Kai Du"
+      },
+      {
+        "authorId": "2391641663",
+        "name": "Shun Wu"
+      },
+      {
+        "authorId": "2367445346",
+        "name": "Ting Xiang"
+      },
+      {
+        "authorId": "2404972430",
+        "name": "Kenghao Zheng"
+      },
+      {
+        "authorId": "2237482871",
+        "name": "Zijun Liu"
+      },
+      {
+        "authorId": "2261894548",
+        "name": "Hanjie Chen"
+      },
+      {
+        "authorId": "2394211735",
+        "name": "Nan Ji"
+      },
+      {
+        "authorId": "2291032979",
+        "name": "Fa Wang"
+      },
+      {
+        "authorId": "2403093078",
+        "name": "Weijia Wu"
+      },
+      {
+        "authorId": "2368253973",
+        "name": "Yuan-Ting Zhang"
+      }
+    ],
+    "abstract": "Integrative Co-Design Framework: We synthesize current advances in sensing, models, accuracy/reliability assessment, and hardware into a sensor\u2013model\u2013deployment\u2013assessment framework that organizes evidence and design trade-offs for cuffless blood pressure monitoring. The framework seeks to balance precision and efficiency by jointly considering low-power edge AI, streamlined sensor architectures, and adaptive computational models, providing a structured basis for reproducible and clinically meaningful wearable solutions. Pathways to Clinical Translation: We critically assess barriers to real-world deployment, offering actionable strategies to bridge the translational gap between laboratory innovations and scalable implementation in low-resource regions with minimal healthcare infrastructure. Interdisciplinary Synthesis: By integrating cutting-edge advances in materials science, digital health, and embedded AI, we provide evidence-based recommendations to empower biomedical researchers, engineers, and data scientists in advancing equitable diagnostic solutions. Integrative Co-Design Framework: We synthesize current advances in sensing, models, accuracy/reliability assessment, and hardware into a sensor\u2013model\u2013deployment\u2013assessment framework that organizes evidence and design trade-offs for cuffless blood pressure monitoring. The framework seeks to balance precision and efficiency by jointly considering low-power edge AI, streamlined sensor architectures, and adaptive computational models, providing a structured basis for reproducible and clinically meaningful wearable solutions. Pathways to Clinical Translation: We critically assess barriers to real-world deployment, offering actionable strategies to bridge the translational gap between laboratory innovations and scalable implementation in low-resource regions with minimal healthcare infrastructure. Interdisciplinary Synthesis: By integrating cutting-edge advances in materials science, digital health, and embedded AI, we provide evidence-based recommendations to empower biomedical researchers, engineers, and data scientists in advancing equitable diagnostic solutions. Accurate blood pressure (BP) monitoring is essential for preventing and managing cardiovascular disease. Advancements in materials science, medicine, flexible electronic, and artificial intelligence (AI) have enabled cuffless, unobtrusive BP monitoring systems, offering an alternative to traditional sphygmomanometers. However, extending these advances to real-world cardiovascular care particularly in resource-limited settings remains challenging due to constraints in computational resources, power efficiency, and deployment scalability. This review presents a comprehensive synthesis of AI-enhanced wearable BP monitoring, emphasizing its potential for personalized, scalable, and accessible healthcare. We systematically analyze the end-to-end system architecture, from mechano-electric sensing principles and AI-based estimation models to edge-aware deployment strategies tailored for low-resource environments. We further discuss clinical validation metrics and implementation barriers and prospective strategies. To bridge lab-to-field translation, we propose an innovative \"sensor-model-deployment-assessment\" co-design framework. This roadmap highlights how AI-enhanced BP technologies can support proactive hypertension control and promote cardiovascular health equity on a global scale.",
+    "_section": "edge_ai",
+    "_query": "TinyML health monitoring wearable deployment",
+    "_score": 17
+  },
+  {
+    "paperId": "167964a717815ce4473c34cb52e002c37aa3e3b1",
+    "externalIds": {
+      "DOI": "10.9734/jerr/2024/v26i51138",
+      "CorpusId": 268993281
+    },
+    "url": "https://www.semanticscholar.org/paper/167964a717815ce4473c34cb52e002c37aa3e3b1",
+    "title": "A Low-Cost Smart Wearable Glove for Non-Invasive Health Monitoring",
+    "year": 2024,
+    "citationCount": 2,
+    "openAccessPdf": {
+      "url": "https://journaljerr.com/index.php/JERR/article/download/1138/2262",
+      "status": "GOLD",
+      "license": null,
+      "disclaimer": "Notice: Paper or abstract available at https://api.unpaywall.org/v2/10.9734/jerr/2024/v26i51138?email=<INSERT_YOUR_EMAIL> or https://doi.org/10.9734/jerr/2024/v26i51138, which is subject to the license by the author or copyright owner provided with this content. Please go to the source to verify the license and copyright information for your use."
+    },
+    "publicationTypes": [
+      "JournalArticle"
+    ],
+    "journal": {
+      "name": "Journal of Engineering Research and Reports"
+    },
+    "authors": [
+      {
+        "authorId": "2295562198",
+        "name": "Md. Asif Iqbal"
+      },
+      {
+        "authorId": "2287669945",
+        "name": "Tarifuzzaman Riyad"
+      },
+      {
+        "authorId": "2295566687",
+        "name": "Habib Un Nabi Polash"
+      },
+      {
+        "authorId": "2295567884",
+        "name": "S. Sohrab"
+      },
+      {
+        "authorId": "2287964568",
+        "name": "Shuvra Mondal"
+      }
+    ],
+    "abstract": "Wearable physiological signal monitoring systems hold notable potential in the future of personal healthcare by seamlessly integrating into daily life, providing continuous monitoring, and aiding in the early detection of health issues. This research presents a wearable health monitoring glove, with a focus on cost-effectiveness while maintaining efficiency for developing countries. The wearable glove can track vital physiological indicators like Blood Pressure, Body Temperature, Glucose level, Blood Oxygen Saturation, Hemoglobin level, ECG, Room Temperature, Humidity, and Motion Tracking. A user-friendly interface facilitates easy interaction, while efforts in energy-efficient design and power management aim to prolong battery life. Also, real-time data monitoring ensures precision in signal analysis and the extraction of vital health data of individuals. The proposed wearable hand glove utilizes a collection of sensors and integrates them towards the diverse detection of skin humidity, temperature, blood oxygen, hemoglobin, etc. non-invasively. Apart from its technical features, the research explores potential applications in healthcare, fitness tracking, and research fields, presenting a versatile solution. Beyond its technical attributes, the research explores potential applications in medical and personal healthcare, fitness tracking, sports, etc. Collaborative efforts with regulatory bodies assess the feasibility of obtaining necessary approvals or certifications, while scalability considerations pave the way for potential mass production and market deployment.",
+    "_section": "edge_ai",
+    "_query": "TinyML health monitoring wearable deployment",
+    "_score": 17
+  }
+]
