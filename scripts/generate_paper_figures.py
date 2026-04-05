@@ -285,11 +285,11 @@ def fig_asymmetric_loss(output_dir):
     # Asymmetric: 5x penalty when true > threshold but pred < threshold
     penalty_mask = (bac_true > threshold) & (bac_pred < threshold)
     asymmetric = mse.copy()
-    asymmetric[penalty_mask] = mse[penalty_mask] + 5 * (bac_true[penalty_mask] - bac_pred[penalty_mask]) ** 2
+    asymmetric[penalty_mask] = mse[penalty_mask] + 30 * (bac_true[penalty_mask] - bac_pred[penalty_mask]) ** 2
 
     fig, ax = plt.subplots(figsize=(3.5, 2.8))
     ax.plot(bac_true, mse, color=COLORS[5], linestyle='--', label='Standard MSE', linewidth=0.9)
-    ax.plot(bac_true, asymmetric, color=COLORS[1], linestyle='-', label='Safety-weighted (5x FN)', linewidth=1.0)
+    ax.plot(bac_true, asymmetric, color=COLORS[1], linestyle='-', label='Safety-weighted (30$\\times$ FN)', linewidth=1.0)
 
     ax.axvline(x=threshold, color='gray', linestyle=':', linewidth=0.6)
     ax.text(threshold + 0.001, max(asymmetric) * 0.9, 'Legal limit\n(0.08 g/dL)',
@@ -312,10 +312,71 @@ def fig_asymmetric_loss(output_dir):
     print(f"  Saved: {path}")
 
 
+def fig_attention_heatmap(attention_data, output_dir):
+    """Fig 7: Attention weight visualization across timesteps for representative samples."""
+    representatives = attention_data.get('representatives', {})
+    mean_weights = attention_data.get('mean_weights', None)
+
+    if not representatives:
+        print("  SKIPPED - no representative samples in attention data")
+        return
+
+    labels = []
+    weights = []
+    bac_vals = []
+
+    for key in ['sober', 'near_threshold', 'intoxicated']:
+        if key in representatives:
+            r = representatives[key]
+            labels.append(f"{key.replace('_', ' ').title()}\n(BAC={r['bac']:.3f})")
+            weights.append(r['weights'])
+            bac_vals.append(r['bac'])
+
+    if mean_weights:
+        labels.append('Population Mean')
+        weights.append(mean_weights)
+
+    if not weights:
+        return
+
+    weights_arr = np.array(weights)
+    n_samples = len(weights)
+    n_timesteps = len(weights[0])
+
+    fig, ax = plt.subplots(figsize=(3.5, 2.0 + 0.4 * n_samples))
+
+    im = ax.imshow(weights_arr, aspect='auto', cmap='YlOrRd', interpolation='nearest')
+    cbar = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.04)
+    cbar.set_label('Attention Weight', fontsize=7)
+    cbar.ax.tick_params(labelsize=6)
+
+    ax.set_xticks(range(n_timesteps))
+    ax.set_xticklabels([f't-{n_timesteps - 1 - i}' if i < n_timesteps - 1 else '$t_0$'
+                        for i in range(n_timesteps)], fontsize=6)
+    ax.set_yticks(range(n_samples))
+    ax.set_yticklabels(labels, fontsize=6)
+    ax.set_xlabel('Timestep (30s intervals)')
+
+    # Annotate values
+    for i in range(n_samples):
+        for j in range(n_timesteps):
+            val = weights_arr[i, j]
+            color = 'white' if val > 0.15 else 'black'
+            ax.text(j, i, f'{val:.2f}', ha='center', va='center',
+                    fontsize=5, color=color)
+
+    path = output_dir / 'attention_heatmap.pdf'
+    fig.savefig(path)
+    fig.savefig(output_dir / 'attention_heatmap.png')
+    plt.close(fig)
+    print(f"  Saved: {path}")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate publication-quality figures for AlcoWatch paper")
     parser.add_argument("--data-dir", default="ml_model/models", help="Directory with training data JSON files")
-    parser.add_argument("--output-dir", default="paper_figures", help="Output directory for figures")
+    parser.add_argument("--output-dir", default="Wiley_New_Journal_Design_version_5__NJD_v5___5_",
+                        help="Output directory for figures")
     args = parser.parse_args()
 
     setup_matplotlib()
@@ -330,17 +391,19 @@ def main():
     # Load data files
     history_path = data_dir / 'training_history.json'
     predictions_path = data_dir / 'predictions_data.json'
+    attention_path = data_dir / 'attention_weights.json'
 
     has_training_data = history_path.exists()
     has_predictions = predictions_path.exists()
+    has_attention = attention_path.exists()
 
     if has_training_data:
         with open(history_path) as f:
             history = json.load(f)
-        print("[1/6] Loss curves...")
+        print("[1/7] Loss curves...")
         fig_loss_curves(history, output_dir)
     else:
-        print(f"[1/6] SKIPPED - {history_path} not found. Run train_model.py first.")
+        print(f"[1/7] SKIPPED - {history_path} not found. Run train_model.py first.")
 
     if has_predictions:
         with open(predictions_path) as f:
@@ -348,29 +411,34 @@ def main():
         y_true = pred_data['y_true']
         y_pred = pred_data['y_pred']
 
-        print("[2/6] Prediction scatter plot...")
+        print("[2/7] Prediction scatter plot...")
         fig_prediction_scatter(y_true, y_pred, output_dir)
 
-        print("[3/6] Confusion matrix...")
+        print("[3/7] Confusion matrix...")
         fig_confusion_matrix(y_true, y_pred, output_dir)
 
-        print("[4/6] ROC curve...")
+        print("[4/7] ROC curve...")
         fig_roc_curve(y_true, y_pred, output_dir)
     else:
-        print(f"[2-4/6] SKIPPED - {predictions_path} not found. Run train_model.py first.")
+        print(f"[2-4/7] SKIPPED - {predictions_path} not found. Run train_model.py first.")
 
-    # These don't need training data
-    print("[5/6] Climate calibration effect...")
+    # Attention heatmap (from real attention weights)
+    if has_attention:
+        with open(attention_path) as f:
+            attention_data = json.load(f)
+        print("[5/7] Attention weight heatmap...")
+        fig_attention_heatmap(attention_data, output_dir)
+    else:
+        print(f"[5/7] SKIPPED - {attention_path} not found.")
+
+    # Analytical figures (no data dependency)
+    print("[6/7] Climate calibration effect...")
     fig_climate_calibration(output_dir)
 
-    print("[6/6] Asymmetric loss function...")
+    print("[7/7] Asymmetric loss function...")
     fig_asymmetric_loss(output_dir)
 
-    print(f"\nDone! Figures saved to {output_dir}/")
-    if not has_training_data or not has_predictions:
-        print("\nTo generate all figures, first run:")
-        print("  cd ml_model && python training/train_model.py")
-        print("Then re-run this script.")
+    print(f"\nDone! {sum(1 for f in output_dir.iterdir() if f.suffix == '.pdf')} PDFs saved to {output_dir}/")
 
 
 if __name__ == "__main__":
