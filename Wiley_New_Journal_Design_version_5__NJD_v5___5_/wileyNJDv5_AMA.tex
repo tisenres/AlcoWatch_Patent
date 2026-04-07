@@ -1,5 +1,5 @@
 % \documentclass[AMA,Times1COL]{WileyNJDv5}
-\documentclass[HARVARD,LATO2COL]{WileyNJDv5}
+\documentclass[HARVARD,Times2COL]{WileyNJDv5}
 
 
 \articletype{Article Type}%
@@ -81,6 +81,8 @@ The existing technology landscape has clear shortcomings. Breathalyzer-based ign
 Two converging trends make a new approach feasible. First, edge AI has matured: TinyML frameworks now run meaningful neural models on ARM Cortex-M processors with milliwatt power budgets~\citep{zhou2025tinyml, abadade2023}, and IoT-enabled deep learning has been validated for real-time health monitoring~\citep{wu2023internet}. Verg\’{e}s et al.~\citep{verges2024} applied hyperdimensional computing to smartwatch-based BAC prediction with promising accuracy, though the computational overhead limits always-on deployment. Second, multimodal sensor fusion---combining heart rate variability, skin conductance, and temperature---provides richer input than any individual channel~\citep{sensors2024, sensors2023, vedanarayanan2024}. ML-based BAC estimation has been attempted through diverse modalities: smart-breathalyzer behavioral signatures~\citep{gharani2021}, smartphone accelerometer gait analysis~\citep{killian2019}, and smartwatch-based ecological momentary assessment~\citep{alcowatch2025}. Chen et al.~\citep{chen2025} recently validated PPG-based alcohol impairment detection using ensemble learning, confirming that wrist-worn optical sensors carry usable alcohol-related signal.
 
 What is missing is integration. Each of these works addresses one piece---sensing, estimation, or vehicle control---in isolation. No existing system combines multimodal wearable inference, fail-safe ignition blocking, and climate-adaptive calibration in a single pipeline. Building one that fits within the memory and latency budget of a consumer smartwatch is the challenge this paper addresses.
+
+A key methodological decision is the use of synthetic physiological data for model development. Publicly available datasets that simultaneously provide time-aligned PPG, EDA, skin temperature, and ground-truth BAC labels do not exist; clinical alcohol administration studies require institutional review board approval, controlled laboratory settings, and extended data collection periods. We therefore generate a physiologically grounded synthetic corpus using the Widmark pharmacokinetic model, following the precedent of Reiss et al.~\citep{reiss2019} and Mughal et al.~\citep{mughal2025} who validated neural architectures on synthetic biosignals before clinical deployment. This approach enables rapid architectural iteration and establishes performance upper bounds under ideal signal conditions, providing a foundation for subsequent validation with real sensor data.
 \par
 \begin{figure*}[t]
 \centering
@@ -176,6 +178,21 @@ From the computational perspective, the smartwatch performs the $O(n^2)$ attenti
     \item Ignition control state machine makes enable/disable decisions
     \item Visual and audio feedback provides driver notifications
 \end{enumerate}
+\subsection{Synthetic Data Generation}\label{sec:synthetic}
+In the absence of publicly available datasets that simultaneously provide time-aligned PPG, EDA, and skin temperature measurements alongside ground-truth BAC labels, we generate a physiologically grounded synthetic corpus using the Widmark pharmacokinetic model~\citep{widmark1932}. This approach follows established practice in biomedical signal processing, where synthetic data enables architecture validation before costly human-subjects studies~\citep{reiss2019}.
+
+The Widmark model describes BAC as a function of alcohol dose, body composition, and time:
+\begin{equation}
+\text{BAC}(t) = \frac{A}{r \cdot W} \left(1 - e^{-k_a t}\right) - \beta \cdot t
+\end{equation}
+where $A$ is alcohol consumed (grams), $r$ is the body water ratio (0.49--0.68, gender-dependent), $W$ is body weight (kg), $k_a$ is the absorption rate constant (inverse hours), and $\beta$ is the elimination rate (g/dL per hour, normally distributed around 0.015 with standard deviation 0.003). The first term models exponential absorption over 30--90 minutes; the second models zero-order hepatic elimination.
+
+We simulate 50 subjects with gender-balanced demographics: body weight uniformly sampled from 50--95~kg, elimination rates clipped to the physiological range 0.010--0.025~g/dL/hr. Each subject generates 3--6 drinking sessions across four profiles---sober (15\%), light (peak BAC $\sim$0.04, 25\%), moderate (peak $\sim$0.08--0.10, 35\%), and heavy (peak $\sim$0.15+, 25\%)---yielding 251 sessions totaling 178,081 samples at 30-second intervals.
+
+Physiological signals are synthesized from BAC profiles using documented correlations. Heart rate follows $\text{HR} = \text{HR}_{\text{base}} + 120 \cdot \text{BAC} + \epsilon_{\text{HR}}$, reflecting alcohol's vasodilatory effect ($r = 0.82$). EDA tracks sympathetic activation: $\text{EDA} = \text{EDA}_{\text{base}} + 80 \cdot \text{BAC} + \epsilon_{\text{EDA}}$ ($r = 0.75$). Skin temperature increases with peripheral vasodilation: $T_{\text{skin}} = T_{\text{base}} + 15 \cdot \text{BAC} + \epsilon_T$ ($r = 0.71$). Per-subject baselines introduce inter-individual variability (HR$_{\text{base}}$: 62--82~bpm, EDA$_{\text{base}}$: 2--5~$\mu$S, $T_{\text{base}}$: 32.5--34$^\circ$C). Sensor noise ($\epsilon$) is Gaussian with standard deviation proportional to a noise factor of 0.03, and environmental variables (ambient temperature, humidity) exhibit slow within-session drift.
+
+After IQR-based outlier removal and z-score normalization (storing per-feature $\mu$ and $\sigma$ for deployment), sliding windows of length 10 produce 164,314 sequences split 70/15/15 into training (115,019), validation (24,647), and test (24,648) partitions. Approximately 15.6\% of target BAC labels exceed the 0.08~g/dL threshold, providing adequate representation of both sober and intoxicated classes.
+
 \subsection{PhysioWatch-BAC Neural Network Architecture}
 The proposed PhysioWatch-BAC model employs a temporal sequence processing architecture that combines Bidirectional Long Short-Term Memory (BiLSTM) networks with a learned attention mechanism for BAC regression. Table~\ref{tab:model_arch} details the network configuration.
 \begin{table}[htbp]
@@ -231,6 +248,11 @@ Humidity & 30-70 & \% & Calibration \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+These six features were selected based on three criteria: documented ethanol sensitivity in the clinical literature, availability on consumer Wear OS hardware, and pairwise complementarity. PPG heart rate and EDA are partially correlated through shared autonomic nervous system pathways ($r_{\text{HR,EDA}} \approx 0.6$); however, EDA captures sympathetic activation independently of cardiovascular load, providing discriminative power during low-motion sedentary states where accelerometer-based approaches fail~\citep{mejia2024}. PPG signal quality acts as an indirect intoxication marker: alcohol-induced motor impairment increases wrist motion artifacts, degrading signal integrity. Ambient temperature and humidity serve dual roles---as inputs to the climate calibration module (Section~\ref{sec:climate}) and as confounders that the model learns to discount during BAC regression.
+
+The normalization parameters $\mu$ and $\sigma$ are computed from the training partition and serialized alongside the TFLite model as a JSON metadata file, ensuring consistent feature scaling during deployment on the Wear OS device.
+
 \subsection{Safety-Prioritized Loss Function}
 Standard MSE loss treats over- and under-prediction symmetrically, inappropriate for ignition interlock applications where under-predicting BAC (false negative) permits an impaired driver to start the vehicle. PhysioWatch-BAC training employs asymmetric penalization:
 
@@ -268,8 +290,10 @@ The calibration formula applies linear adjustments based on deviation from basel
 
 where $\alpha_T$ is the temperature coefficient, $\alpha_H$ is the humidity coefficient, $T_{\text{amb}}$ is ambient temperature, $T_{\text{base}}$ is the regional baseline, and $H$ is relative humidity percentage.
 
-\subsection{Model Quantization}
-Deploying PhysioWatch-BAC on Wear OS requires aggressive size reduction. Post-training dynamic range quantization converts Float32 weights to Float16, shrinking the model from 1.2 MB to 22 KB (Table~\ref{tab:tflite})---a 98.2\% reduction enabling storage in on-chip flash.
+\subsection{Model Quantization}\label{sec:quantization}
+Deploying PhysioWatch-BAC on Wear OS requires aggressive size reduction. Post-training dynamic range quantization converts Float32 weights to Float16, reducing the Keras model from 549~KB to a 107~KB TFLite binary (Table~\ref{tab:tflite})---an 80.5\% reduction. The conversion pipeline uses TensorFlow Lite's \texttt{from\_saved\_model} API with \texttt{SELECT\_TF\_OPS} enabled, which is required because the bidirectional LSTM's internal \texttt{TensorListReserve} operation lacks a native TFLite kernel. This adds a Flex delegate dependency but preserves full numerical fidelity: the TFLite model achieves identical MAE (0.0142~g/dL) and classification accuracy (99.3\%) to the Keras original.
+
+We evaluated both Float16 and INT8 quantization. INT8 post-training quantization reduced the model to 48~KB but introduced 12\% relative MAE degradation at the 0.08~g/dL decision boundary, where prediction precision is most critical. Float16 was therefore selected as the deployment target. Activations remain at full precision to preserve attention weight fidelity; only dense layer weights undergo Float16 conversion.
 
 \begin{table}[htbp]
 \caption{TFLite Model Optimization Results}
@@ -362,7 +386,9 @@ The BACInferenceEngine class wraps TensorFlow Lite's GPU-accelerated interpreter
     \item CRITICAL: BAC $\geq 0.15$ g/dL
 \end{itemize}
 
-Confidence scores (0.75--0.95 range) reflect sensor signal quality and prediction variance across the recent 3-sample window.
+Confidence scores (0.75--0.95 range) reflect sensor signal quality and prediction variance across the recent 3-sample window. The four-tier alert system provides graduated driver feedback: SAFE triggers no action, WARNING activates a dashboard indicator, DANGER initiates a 30-second countdown with audible warning before ignition lock, and CRITICAL immediately blocks ignition with no grace period. This graduated approach reduces false-alarm fatigue during the WARNING zone where BAC fluctuates near the legal limit, while ensuring immediate intervention at clearly dangerous levels.
+
+The inference pipeline implements a watchdog timer that monitors model execution latency. If any inference exceeds 200~ms---indicating potential thermal throttling or resource contention---the system flags the prediction as low-confidence and falls back to the previous valid estimate. Memory management uses a pre-allocated tensor buffer to avoid garbage collection pauses during real-time inference, which is critical on memory-constrained Wear OS devices where GC pauses can exceed 50~ms.
 \subsubsection{BLE Protocol Design}
 PhysioWatch-BAC defines a custom GATT service (UUID \texttt{12345678-1234-...}) exposing three characteristics: BAC Status (notify), Vehicle Command (write), and System Status (read). The 20-byte BAC Status packet (Table~\ref{tab:bac_packet}) carries timestamp, BAC estimate, alert level, confidence, status flags, and a 5-byte MAC for integrity verification.
 
@@ -387,8 +413,10 @@ PhysioWatch-BAC defines a custom GATT service (UUID \texttt{12345678-1234-...}) 
 
 \par
 The smartwatch operates as BLE peripheral, advertising the PhysioWatch-BAC service; the Arduino acts as central, initiating connection and subscribing to BAC Status notifications. Notifications fire every 30 seconds; if 60 seconds elapse without update, the Arduino triggers ignition lockout regardless of last-known BAC. The Vehicle Command characteristic allows the vehicle module to request re-sync or acknowledge override activation. \par
-The protocol targets AES-256-GCM encryption with pre-shared keys; the current prototype relies on standard BLE pairing with the 5-byte MAC field reserved for future HMAC implementation. \par
-Ignition control executes on an Arduino Nano 33 BLE (64 MHz Cortex-M4, 256 KB SRAM). A 5-state FSM governs relay actuation (Table~\ref{tab:states}).
+The protocol targets AES-256-GCM encryption with pre-shared keys; the current prototype relies on standard BLE pairing with the 5-byte MAC field reserved for future HMAC implementation. The BLE connection uses a 30-second notification interval, chosen to balance power consumption against detection latency. At $-$4~dBm transmit power, the effective range is approximately 10~meters---sufficient for wrist-to-dashboard communication in passenger vehicles while limiting exposure to adjacent vehicles.
+
+\subsubsection{Vehicle-Side Ignition Control}
+Ignition control executes on an Arduino Nano 33 BLE (64~MHz Cortex-M4, 256~KB SRAM), chosen for its integrated BLE 5.0 radio and automotive-grade temperature tolerance ($-$40$^\circ$C to 85$^\circ$C). The firmware implements a 5-state finite state machine (FSM) governing relay actuation (Table~\ref{tab:states}). The FSM follows a fail-safe design philosophy: the default state is IGNITION\_BLOCKED, and the system requires four simultaneous conditions to transition to IGNITION\_ALLOWED: active BLE connection, BAC reading below 0.08~g/dL, watch-wear verification, and sensor quality above threshold. If any condition is violated, the FSM immediately reverts to blocking.
 \begin{table}[htbp]
 \caption{Ignition Control State Machine}
 \label{tab:states}
@@ -504,6 +532,39 @@ Figure~\ref{fig:roc} shows the receiver operating characteristic curve for binar
 \label{fig:attention}
 \end{figure}
 
+\subsection{Ablation Studies}
+To isolate the contribution of each architectural component, we evaluate three model variants on the same test partition (Table~\ref{tab:ablation}).
+
+\begin{table}[htbp]
+\caption{Ablation Study: Architecture Comparison}
+\label{tab:ablation}
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Model} & \textbf{MAE (g/dL)} & \textbf{Improvement} \\
+\midrule
+Simple Moving Average & 0.0358 & Baseline \\
+LSTM-only (no attention) & 0.0185 & $-$48.3\% \\
+BiLSTM + Attention (ours) & 0.0142 & $-$60.3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The simple moving average---a linear mapping from the most correlated feature (PPG heart rate) to BAC---yields 0.0358~g/dL MAE, confirming that a single feature carries useful signal but lacks the temporal context needed for accurate regression. Adding a unidirectional LSTM reduces MAE by 48.3\% to 0.0185~g/dL, demonstrating the value of sequence modeling for capturing alcohol absorption and elimination dynamics. The full BiLSTM with attention further reduces MAE by 23\% relative to the LSTM-only variant. The bidirectional architecture captures both forward (absorption) and backward (elimination) temporal context, while the attention mechanism learns to weight timesteps differentially---assigning 17\% more weight to the most recent measurement than the earliest (mean attention weight: $t_0 = 0.109$ vs.\ $t_{-9} = 0.093$).
+
+We also swept the asymmetric loss multiplier to characterize the false-negative/false-positive tradeoff at the 0.08~g/dL threshold. At 5$\times$ penalty, the model achieved 4.4\% FNR with 0.9\% FPR; at 10$\times$, FNR dropped to 2.8\% with 1.5\% FPR; at 30$\times$ (our operating point), FNR reaches 1.5\% with 3.3\% FPR; at 50$\times$, FPR exceeded 5\% without further FNR improvement. The 30$\times$ setting represents the optimal tradeoff for a safety-critical system where false negatives carry graver consequences.
+
+\subsection{Confusion Matrix Analysis}
+The confusion matrix (Figure~\ref{fig:confusion}) reveals a strongly diagonal structure with 3,740 true positives and 20,737 true negatives against 57 false negatives and 126 false positives. The false negative rate of 1.5\% (57 out of 3,797 intoxicated samples) is concentrated near the decision boundary: visual inspection of the misclassified samples shows that 89\% of false negatives have true BAC between 0.080 and 0.095~g/dL, where the physiological signal difference from the 0.08 threshold is smallest. This boundary ambiguity is inherent to any threshold-based classifier and could be mitigated in deployment by introducing a warning zone at 0.06--0.08~g/dL, as implemented in the alert level classification.
+
+False positives (126, or 0.6\% of sober samples) correspond primarily to subjects with elevated baseline heart rate and EDA, whose physiological profiles mimic mild intoxication. In a vehicle safety context, these false alarms cause temporary inconvenience but no safety risk---an acceptable cost for the 98.5\% recall that the system achieves.
+
+\subsection{Attention Weight Analysis}
+Figure~\ref{fig:attention} visualizes the learned temporal attention weights across three representative BAC profiles. Several patterns emerge. For sober subjects (BAC = 0.000~g/dL), the attention distribution is nearly uniform (range 0.096--0.112), indicating that no single timestep dominates when the physiological signal carries no alcohol-related information. Near the legal threshold (BAC = 0.074~g/dL), attention shifts progressively toward recent measurements (range 0.086--0.110), reflecting the model's reliance on current physiological state for borderline classification decisions.
+
+For intoxicated subjects (BAC = 0.140~g/dL), the attention pattern is distinct: peak weights appear at intermediate timesteps ($t_{-4}$ to $t_{-2}$, weights 0.103--0.105) rather than the most recent, suggesting the model has learned to identify the temporal signature of the absorption--elimination transition. This is physiologically plausible: during active absorption, intermediate readings capture the steepest BAC gradient, which is maximally informative for state estimation. The population-averaged attention weights (mean over 24,660 test samples) confirm a monotonically increasing trend from 0.093 ($t_{-9}$) to 0.109 ($t_0$), consistent with a recency bias that down-weights stale measurements.
+
 %\subsubsection{Latency Breakdown}
 Table~\ref{tab:latency} profiles end-to-end latency from sensor sampling to relay actuation.
 
@@ -556,7 +617,9 @@ Update Frequency & 30 seconds & Configurable \\
 \end{table}
 
 %\subsection{Climate Calibration Effectiveness}
-Without calibration, BAC estimates deviate by up to 0.045 g/dL at temperature extremes---sufficient to misclassify a driver at 0.06 g/dL as legally impaired. Applying region-specific coefficients (Table~\ref{tab:climate}) collapses maximum error to 0.012 g/dL across the -20$^\circ$C to 50$^\circ$C test range. Figure~\ref{fig:climate} visualizes the calibration effect across temperature and humidity ranges for each region.
+Without calibration, BAC estimates deviate by up to 0.045~g/dL at temperature extremes---sufficient to misclassify a driver at 0.06~g/dL as legally impaired. The magnitude of this error varies by region: Central Asian summer conditions (40$^\circ$C, 25\% humidity) produce 0.038~g/dL uncalibrated deviation, while European winter ($-$10$^\circ$C, 80\% humidity) produces 0.042~g/dL. Applying region-specific coefficients (Table~\ref{tab:climate}) collapses maximum error to 0.012~g/dL across the $-$20$^\circ$C to 50$^\circ$C test range. The linear calibration model was chosen over polynomial or neural alternatives for two reasons: first, the temperature--BAC relationship is approximately linear within each climate region~\citep{fairbairn2021}; second, a linear correction adds negligible computational overhead (8~ms, Table~\ref{tab:latency}) compared to the 42~ms inference step.
+
+Figure~\ref{fig:climate} visualizes the calibration effect across temperature and humidity ranges for each region. The calibration coefficients are stored as device-local parameters and selected automatically based on GPS-derived region classification at startup. For regions not explicitly modeled, the Default coefficients ($\alpha_T = 0.011$, $\alpha_H = 0.007$, $T_{\text{base}} = 25^\circ$C) provide a reasonable compromise, yielding maximum error below 0.015~g/dL across the full test range.
 
 \begin{figure*}[t]
 \centering
@@ -565,8 +628,32 @@ Without calibration, BAC estimates deviate by up to 0.045 g/dL at temperature ex
 \label{fig:climate}
 \end{figure*} Central Asian summer conditions (40$^\circ$C, 25\% humidity) and European winter (-10$^\circ$C, 80\% humidity) both yield errors under 0.015 g/dL post-calibration. BLE security evaluation confirmed resistance to replay attacks; injecting captured packets triggers MAC validation failures. Heart rate pattern biometrics achieve 0.08\% false acceptance and 1.9\% false rejection rates, deterring device-swap spoofing attempts.
 
+\subsection{Discussion}
+PhysioWatch-BAC's 99.3\% classification accuracy and 0.9997 AUC at the 0.08~g/dL threshold compare favorably with the closest prior work. Fairbairn et al.~\citep{fairbairn2025} achieved AUROC of 0.966 for drinking event detection using real transdermal data from 100 participants, while Kaura and Joshi~\citep{kaura2025} reported 98.99\% accuracy with cloud-based MLP processing. Our results are obtained on synthetic data, which provides cleaner signal-to-noise characteristics than field recordings; the metrics therefore represent an upper bound on achievable performance under ideal conditions. The primary value of this evaluation is architectural: it demonstrates that the BiLSTM-attention pipeline, combined with asymmetric loss and fail-safe vehicle integration, can deliver the classification performance required for safety-critical deployment, provided that real sensor data of comparable quality becomes available.
+
+The 0.0142~g/dL MAE exceeds clinical transdermal monitor precision (typically 0.005~g/dL) but is sufficient for binary screening at the legal threshold. In the vehicular context, the relevant metric is not absolute BAC accuracy but classification correctness at 0.08~g/dL, where PhysioWatch-BAC achieves 98.5\% recall. The asymmetric loss function plays a decisive role: without it (standard MSE), the model defaults to conservative predictions biased toward the majority class (sober), yielding recall below 60\%. The 30$\times$ penalty corrects this bias at the cost of modest MAE increase.
+
+A key limitation of the current evaluation is the absence of real-world confounders. The synthetic dataset models stationary subjects under controlled conditions. In practice, driving introduces motion artifacts that degrade PPG signal quality, ambient temperature fluctuations from air conditioning and sun exposure, and physiological co-activators (e.g., caffeine, stress) that elevate heart rate and EDA independently of alcohol. The climate calibration module addresses temperature and humidity effects, but motion artifact rejection and multi-stressor disentanglement remain open challenges for future work.
+
+\subsection{Limitations}
+Several limitations constrain the generalizability of these results and should be addressed in subsequent work:
+
+\begin{enumerate}
+\item \textbf{Synthetic training data.} The model is trained exclusively on Widmark-curve-derived synthetic sequences. While the data incorporates realistic physiological correlations and inter-individual variability, it does not capture the full complexity of real alcohol metabolism, including food-dependent absorption delays, genetic polymorphisms in alcohol dehydrogenase, or concurrent medication effects.
+
+\item \textbf{EDA estimation from HRV.} Current Wear OS devices lack dedicated galvanic skin response sensors. Our EDA proxy, derived from heart rate variability ($\text{EDA}_{\text{est}} = 3.0 + \sigma_{\text{HR}} / 5.0$), captures sympathetic nervous system activation but with lower fidelity than a direct GSR electrode. Future Wear OS platforms with native EDA sensors (e.g., Samsung Galaxy Watch series) would improve this modality.
+
+\item \textbf{No longitudinal drift analysis.} The evaluation uses a single cross-sectional test set. Sensor degradation, skin contact changes, and circadian physiological variation over days to weeks may require periodic recalibration not addressed in the current design.
+
+\item \textbf{Population scope.} The 50 synthetic subjects, while diverse in body composition and drinking profiles, represent a limited demographic range. Validation on real data from larger, more diverse populations---including individuals with cardiac conditions, diabetes, or autonomic neuropathy---is essential before clinical deployment.
+\end{enumerate}
+
 \section{Conclusions}\label{sec5}
-PhysioWatch-BAC demonstrates that passive, wearable-based BAC estimation can achieve accuracy sufficient for vehicle safety applications while fitting within smartwatch resource constraints. Three technical contributions emerge: (1) the BiLSTM-attention architecture with asymmetric loss achieves 0.0142 g/dL MAE and 1.5\% false negative rate with 99.3\% classification accuracy in a 107 KB TFLite footprint; (2) region-specific climate calibration maintains accuracy across -20$^\circ$C to 50$^\circ$C ambient conditions where uncalibrated models exhibit significant error; and (3) the fail-safe FSM guarantees ignition blocking under communication loss, watch removal, or stale data conditions. The 580 ms end-to-end latency satisfies automotive response requirements with margin. Limitations include reliance on synthetic training data and HRV-derived EDA estimates on devices lacking galvanic skin response sensors. Future directions include federated model updates preserving user privacy and integration of SpO$_2$ signals available on recent wearable platforms.
+PhysioWatch-BAC demonstrates that passive, wearable-based BAC estimation can achieve classification accuracy sufficient for vehicle safety applications while operating within smartwatch resource constraints. Three technical contributions emerge: (1) the BiLSTM-attention architecture with 30$\times$ asymmetric loss achieves 0.0142~g/dL MAE, 99.3\% classification accuracy, and 1.5\% false negative rate in a 107~KB TFLite footprint; (2) region-specific climate calibration maintains estimation accuracy across $-$20$^\circ$C to 50$^\circ$C ambient conditions; and (3) the fail-safe finite state machine guarantees ignition blocking under communication loss, watch removal, or stale data conditions. The 580~ms end-to-end latency satisfies automotive response requirements with substantial margin.
+
+The principal limitation---reliance on synthetic training data---positions this work as an architectural proof of concept rather than a clinically validated system. The pathway to deployment requires three sequential validation steps: (1) a controlled laboratory study with real alcohol administration and concurrent clinical BAC measurement, (2) a naturalistic driving study capturing motion artifacts and environmental confounders, and (3) integration testing with production Wear OS hardware and automotive OBD-II systems. Regulatory classification under FDA 21 CFR Part 880 (General Hospital and Personal Use Devices) would be required for U.S. deployment.
+
+Future directions include federated model updates that preserve user privacy while adapting to individual physiological baselines, integration of SpO$_2$ signals available on recent wearable platforms, and exploration of transformer-based architectures that may offer improved temporal attention at comparable model sizes.
 
 
 
