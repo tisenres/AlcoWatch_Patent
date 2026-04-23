@@ -1,6 +1,9 @@
+"""BiLSTM + Attention model for 4-class driver stress classification."""
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers, Model
+from typing import Optional
 
 
 class TemporalSumLayer(layers.Layer):
@@ -34,9 +37,12 @@ class StressClassificationModel:
         self.lstm_units = lstm_units
         self.dropout_rate = dropout_rate
         self.n_classes = n_classes
-        self.model: Model = None
+        self.model: Optional[Model] = None
 
     def build_model(self) -> Model:
+        """Build and return the Keras model; no-op if already built."""
+        if self.model is not None:
+            return self.model
         inputs = keras.Input(shape=(self.sequence_length, self.n_features))
 
         x = layers.Bidirectional(
@@ -61,7 +67,8 @@ class StressClassificationModel:
         self.model = Model(inputs=inputs, outputs=outputs, name='stress_classifier')
         return self.model
 
-    def compile(self, learning_rate: float = 0.001):
+    def compile(self, learning_rate: float = 0.001) -> None:
+        """Compile the model with Adam + categorical cross-entropy; builds if needed."""
         if self.model is None:
             self.build_model()
         self.model.compile(
