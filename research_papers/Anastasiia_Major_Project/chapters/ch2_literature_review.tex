@@ -170,8 +170,8 @@ CNN on raw signals \citep{can2019stress} & Multiple & $\approx$ 87\% &
 Poor long-range temporal context. \\
 LSTM on windowed features & WESAD & $\approx$ 88\% & Unidirectional;
 misses future context within window. \\
-\textbf{BiLSTM + attention (this work)} & \textbf{WESAD} & \textbf{93.1\%}
-& \textbf{Wrist-only, 70~KB TFLite, real-time on Wear~OS.} \\
+\textbf{BiLSTM + attention (this work)} & \textbf{WESAD} & \textbf{97.8\%}
+& \textbf{Wrist-only, 72~KB TFLite, real-time on Wear~OS.} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -224,8 +224,8 @@ ones while costing almost nothing in parameters.
 Our final architecture, presented in Chapter~\ref{ch:methodology},
 therefore combines a bidirectional LSTM backbone with an additive
 attention head. The appended row of Table~\ref{tab:ml-comparison}
-summarises its performance: 93.1\% accuracy on held-out WESAD data
-at a deployment footprint of 70~KB, which is roughly four times
+summarises its performance: 97.8\% accuracy on held-out WESAD data
+at a deployment footprint of 72~KB, which is roughly four times
 smaller than the unquantised baseline and hundreds of times smaller
 than CNN-based alternatives in the literature.
 

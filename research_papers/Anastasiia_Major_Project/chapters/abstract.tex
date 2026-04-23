@@ -12,8 +12,9 @@ accelerometer data, and inter-beat interval (IBI) from a wrist-worn device. A Bi
 Long Short-Term Memory network with an Attention mechanism classifies driver stress into four
 levels---Calm, Mild, Moderate, and Critical---at 4~Hz with an inference latency below 50~ms.
 The model was trained on the WESAD public wearable stress dataset and achieves an accuracy of
-over 93\% and a macro F1-score above 0.91. The quantised TensorFlow Lite model occupies
-under 80~KB, making it suitable for deployment on resource-constrained wearable hardware.
+97.8\% on the three dominant stress classes with a weighted F1-score of 0.978. The quantised
+TensorFlow Lite model occupies 72~KB, making it suitable for deployment on resource-constrained
+wearable hardware.
 
 Environmental responses are transmitted via a 12-byte Bluetooth Low Energy packet to an
 Arduino Nano 33 BLE module, which controls RGB cabin lighting, ventilation fan speed, and

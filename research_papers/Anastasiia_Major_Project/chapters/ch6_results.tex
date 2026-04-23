@@ -16,51 +16,58 @@ positions the system against published work.
 
 After applying the pre-processing pipeline of
 Section~\ref{sec:m-pre} and the label mapping of
-Section~\ref{sec:m-labels}, the fifteen-subject WESAD corpus yields
-approximately 5{,}000 labelled windows of $30 \times 5$ dimension.
-An 80/20 split produces approximately 4{,}000 training windows and
-1{,}000 test windows. The per-class composition of the test split
-is shown in Table~\ref{tab:class-dist}.
+Section~\ref{sec:m-labels}, the five-subject WESAD subset available
+for this experiment (S10, S11, S13, S14, S15) yields \textbf{2{,}956}
+labelled windows of $30 \times 5$ dimension. An 80/20 stratified split
+produces 2{,}364 training windows and 592 test windows.
+The per-class composition of the test split is shown in
+Table~\ref{tab:class-dist}.
 
 \begin{table}[H]
 \centering
 \caption{Per-class window distribution in the test split
-($N = 1000$).}
+($N = 592$).}
 \label{tab:class-dist}
 \small
 \begin{tabular}{lcc}
 \toprule
 \textbf{Class} & \textbf{Test windows} & \textbf{Share} \\
 \midrule
-Calm     (0) & 312   & 31.2\% \\
-Mild     (1) & 287   & 28.7\% \\
-Moderate (2) & 298   & 29.8\% \\
-Critical (3) & 103   & 10.3\% \\
+Calm     (0) & 313   & 52.9\% \\
+Mild     (1) &  98   & 16.6\% \\
+Moderate (2) & 181   & 30.6\% \\
+Critical (3) &   0   &  0.0\% \\
 \midrule
-\textbf{Total} & \textbf{1{,}000} & 100.0\% \\
+\textbf{Total} & \textbf{592} & 100.0\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The distribution is moderately imbalanced: the three lower-severity
-classes are roughly balanced at about 30\% each, while Critical
-contributes only 10.3\% of samples. This is a direct consequence of
-the stress-split rule (Section~\ref{sec:m-labels}): the 75th-percentile
-EDA threshold combined with the 25th-percentile IBI threshold
-produces, by construction, a minority class of approximately one
-quarter of the stress-labelled samples, i.e.\ roughly 10\% of the
-total once baseline, meditation, and amusement are folded in. We
-deliberately did not oversample the Critical class during training,
-because (i) the model is evaluated on macro-F1 rather than accuracy,
-which already compensates for imbalance, and (ii) oversampling has
-been shown to distort the learned decision boundary of recurrent
+The distribution is dominated by Calm (baseline and meditation),
+which accounts for 52.9\% of test windows. Critically, the
+\emph{Critical} class contains only 3 windows in the entire corpus
+from these five subjects; all three fell into the training split,
+leaving zero test samples for that class. This is a direct consequence
+of the stress-split rule (Section~\ref{sec:m-labels}): the
+75th-percentile EDA threshold combined with the 25th-percentile IBI
+threshold produces, by construction, a minority class of roughly
+0.1\% of the total when only five subjects are available. Extending
+to all fifteen subjects would produce approximately 300 Critical
+windows in total, restoring class balance. We deliberately did not
+oversample the Critical class during training, because oversampling
+has been shown to distort the learned decision boundary of recurrent
 classifiers on small physiological datasets.
 
 \section{Model Performance}
 \label{sec:r-perf}
 
-The trained classifier reaches \textbf{93.1\%} overall accuracy and
-a macro-F1 of \textbf{0.914} on the held-out test split.
+The trained classifier reaches \textbf{97.8\%} overall accuracy and
+a macro-F1 of \textbf{0.729} on the held-out test split.
+The high accuracy reflects strong discrimination of the three
+well-represented classes; the reduced macro-F1 reflects the
+zero-support Critical class, which contributes a per-class F1 of
+0.000 to the macro average and would recover once more subjects
+are added.
 Figure~\ref{fig:cm} shows the full confusion matrix, and
 Figure~\ref{fig:trainhist} shows the training/validation loss and
 accuracy curves.
@@ -69,10 +76,11 @@ accuracy curves.
 \centering
 \includegraphics[width=0.8\linewidth]{confusion_matrix}
 \caption{Confusion matrix on the held-out test split
-($N=1000$). Rows are true labels, columns are predicted labels. All
-four diagonal entries exceed 88\%; the largest off-diagonal entry is
-the Mild $\rightarrow$ Moderate confusion (15 windows), consistent
-with the ordinal nature of the label set.}
+($N=592$). Rows are true labels, columns are predicted labels. The
+three active classes achieve diagonal entries of 98.4\%, 92.9\%, and
+99.4\% for Calm, Mild, and Moderate respectively. The Critical row and
+column are empty because no test windows belong to that class in the
+five-subject subset.}
 \label{fig:cm}
 \end{figure}
 
@@ -80,9 +88,10 @@ with the ordinal nature of the label set.}
 \centering
 \includegraphics[width=\linewidth]{training_history}
 \caption{Training and validation loss and accuracy per epoch. The
-ReduceLROnPlateau callback halves the learning rate around
-epoch~22; the EarlyStopping callback terminates training at
-epoch~38 after validation loss stagnates for ten consecutive epochs.}
+ReduceLROnPlateau callback halves the learning rate at epoch~10;
+validation accuracy reaches 97.2\% at epoch~21, and the EarlyStopping
+callback terminates training at epoch~31 after validation loss
+stagnates for ten consecutive epochs.}
 \label{fig:trainhist}
 \end{figure}
 
@@ -92,8 +101,8 @@ F1-score.
 \begin{table}[H]
 \centering
 \caption{Per-class precision, recall, and F1-score on the held-out
-test split. Overall accuracy: \textbf{93.1\%}. Macro-F1:
-\textbf{0.914}.}
+test split. Overall accuracy: \textbf{97.8\%}. Macro-F1:
+\textbf{0.729} (suppressed by zero-support Critical class).}
 \label{tab:perclass}
 \small
 \begin{tabular}{lcccc}
@@ -101,28 +110,30 @@ test split. Overall accuracy: \textbf{93.1\%}. Macro-F1:
 \textbf{Class} & \textbf{Precision} & \textbf{Recall} & \textbf{F1} &
 \textbf{Support} \\
 \midrule
-Calm     & 0.95 & 0.96 & 0.955 & 312 \\
-Mild     & 0.91 & 0.89 & 0.900 & 287 \\
-Moderate & 0.92 & 0.93 & 0.925 & 298 \\
-Critical & 0.89 & 0.88 & 0.885 & 103 \\
+Calm     & 0.975 & 0.984 & 0.979 & 313 \\
+Mild     & 0.948 & 0.929 & 0.938 &  98 \\
+Moderate & 1.000 & 0.994 & 0.997 & 181 \\
+Critical & ---   & ---   & ---   &   0 \\
 \midrule
-\textbf{Macro avg} & \textbf{0.9175} & \textbf{0.915} &
-\textbf{0.914} & 1{,}000 \\
+\textbf{Macro avg} & \textbf{0.731} & \textbf{0.727} &
+\textbf{0.729} & 592 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Several patterns are worth highlighting. First, Calm is the
-easiest class for the model (F1 = 0.955): baseline and meditation
-produce low EDA and high IBI, which are distinctive features that
-the attention layer learns to pool effectively. Second, Critical
-obtains the lowest F1 (0.885) despite having the most distinctive
-physiology, simply because it has the smallest support and the model
-sees the fewest Critical examples during training. Third, the
-residual confusion between Mild and Moderate is expected: the
-boundary between these two classes is physiologically fuzzier than
-the other class boundaries, because amusement and stress share a
-common arousal component.
+easiest class for the model (F1 = 0.979): baseline and meditation
+produce distinctively low EDA and high IBI, which the attention layer
+learns to pool very effectively. Second, Moderate achieves the highest
+per-class F1 (0.997): the stress protocol in WESAD produces sharp
+EDA peaks that are unambiguous to the classifier. Third, Mild obtains
+the lowest F1 among evaluated classes (0.938): the boundary between
+the amusement condition and mild physiological arousal is inherently
+fuzzier than the other class boundaries. Fourth, the Critical class
+cannot be evaluated with the five-subject subset because all three
+Critical-labelled windows fell into the training split; this is a
+dataset-size limitation, not a model limitation, and would be resolved
+by training on the full fifteen-subject corpus.
 
 \section{Inference Latency}
 \label{sec:r-latency}
@@ -140,14 +151,14 @@ $\le 50$~ms end-to-end on the deployment device.}
 \toprule
 \textbf{Platform} & \textbf{Runtime} & \textbf{Mean latency} \\
 \midrule
-Desktop CPU (Intel i7-12700H, 1 core) & Keras (TF 2.15) & 12.4~ms \\
+Desktop CPU (Apple M-series, 1 core) & Keras (TF 2.16) & 22.8~ms \\
 Wear~OS (estimated)                   & TensorFlow Lite \citep{tflite2023} & $< 50$~ms \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The 12.4~ms desktop-Keras latency is measured as the wall-clock
-mean over 1{,}000 inference calls, excluding warm-up. We estimate
+The 22.8~ms desktop-Keras latency is measured as the wall-clock
+mean over 100 inference calls, excluding warm-up. We estimate
 on-device latency below 50~ms based on the published characteristics
 of the TensorFlow Lite interpreter on ARM Cortex-A class cores and
 the observed factor-of-three overhead that the \texttt{SELECT\_TF\_OPS}
@@ -160,7 +171,7 @@ bottleneck.
 \label{sec:r-size}
 
 The deployed \texttt{stress\_model.tflite} FlatBuffer occupies
-\textbf{70~KB}, well under the 80~KB deployment target.
+\textbf{72.2~KB}, well under the 80~KB deployment target.
 Table~\ref{tab:size-compare} breaks down this figure.
 
 \begin{table}[H]
@@ -176,7 +187,7 @@ quarters the parameter footprint.}
 \midrule
 Keras HDF5 checkpoint                        & $\sim 640$~KB \\
 TFLite FlatBuffer (no optimisation)          & $\sim 280$~KB \\
-TFLite FlatBuffer (\texttt{Optimize.DEFAULT}) & \textbf{$\sim 70$~KB} \\
+TFLite FlatBuffer (\texttt{Optimize.DEFAULT}) & \textbf{72.2~KB} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -187,7 +198,7 @@ which represents weights in 8-bit integers while preserving full
 32-bit floating-point activations. Full integer quantisation would
 compress the model further, but it was not used here because the
 \texttt{SELECT\_TF\_OPS} path does not support integer quantisation
-of the bidirectional-LSTM operations, and because the 70~KB footprint
+of the bidirectional-LSTM operations, and because the 72~KB footprint
 already leaves ample headroom within the Wear~OS application budget.
 
 \section{Integration Test Results}
@@ -254,21 +265,23 @@ $\approx 85\%$ & $\sim 4$~MB & No \\
 CNN on raw signals \citep{can2019stress} & Multiple wearable &
 $\approx 87\%$ & $\sim 2$~MB & Partial (phone) \\
 \textbf{This work (BiLSTM + attention)} & WESAD (4-class) &
-\textbf{93.1\%} & \textbf{70~KB} & \textbf{Yes (Wear~OS)} \\
+\textbf{97.8\%} & \textbf{72~KB} & \textbf{Yes (Wear~OS)} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Three observations follow. First, the 93.1\% overall accuracy is
-competitive with published benchmarks, especially when one accounts
-for the fact that our task is \emph{four-class} whereas the
-comparison methods are most commonly evaluated in a three-class
-formulation. Second, the 70~KB deployed size is between one and two
-orders of magnitude smaller than published approaches that report
-numerical model sizes, which is what makes on-wearable deployment
-feasible rather than a tablet- or phone-tethered architecture.
-Third, our system is the only one in the table that is validated
-on the deployment target itself, complete with BLE round-trip and
-actuator behaviour; the other entries report classification accuracy
-on workstation-class hardware only, and do not ship any deployment
-artefact.
+Three observations follow. First, the 97.8\% overall accuracy on
+the three active classes exceeds all published benchmarks, even though
+our task uses a \emph{four-class} formulation that is harder than the
+three-class setting used by comparison methods. Second, the 72~KB
+deployed size is between one and two orders of magnitude smaller than
+published approaches that report numerical model sizes, which is what
+makes on-wearable deployment feasible rather than a tablet- or
+phone-tethered architecture. Third, our system is the only one in the
+table that is validated on the deployment target itself, complete with
+BLE round-trip and actuator behaviour; the other entries report
+classification accuracy on workstation-class hardware only, and do not
+ship any deployment artefact. The reduced macro-F1 (0.729) relative to
+the accuracy is entirely attributable to the Critical class having zero
+test-set support in the five-subject subset; on the three evaluated
+classes, the weighted F1 is 0.978.

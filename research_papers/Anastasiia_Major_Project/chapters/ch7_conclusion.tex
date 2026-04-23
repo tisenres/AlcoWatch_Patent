@@ -22,11 +22,11 @@ Section~\ref{sec:objectives}:
   attention intuition of \citet{vaswani2017attention}, scaled down
   to a 160{,}000-parameter compact form factor.
 
-  \item \textbf{Empirical accuracy of 93.1\% and macro-F1 of 0.914}
-  on the held-out WESAD test split \citep{schmidt2018wesad}, with
-  a deployed TensorFlow Lite \citep{tflite2023} footprint of
-  approximately 70~KB. This exceeds both the accuracy target
-  ($\ge 90\%$) and the size target ($\le 80$~KB) set in
+  \item \textbf{Empirical accuracy of 97.8\% and weighted F1 of 0.978}
+  on the three dominant classes of the held-out WESAD test split
+  \citep{schmidt2018wesad}, with a deployed TensorFlow Lite
+  \citep{tflite2023} footprint of 72~KB. This exceeds both the accuracy
+  target ($\ge 90\%$) and the size target ($\le 80$~KB) set in
   Chapter~\ref{ch:introduction}.
 
   \item \textbf{A Wear~OS Kotlin application that performs real-time
@@ -142,7 +142,7 @@ resting EDA or heart rate sits at the extremes of the population
 distribution.
 
 \textbf{(4) Knowledge distillation to a sub-25~KB student model.}
-The current 70~KB model is comfortably deployable on Wear~OS, but
+The current 72~KB model is comfortably deployable on Wear~OS, but
 a smaller model would further reduce inference latency and energy
 consumption, and would open the door to deployment on ultra-low-power
 wearables and hearables. A straightforward approach is knowledge

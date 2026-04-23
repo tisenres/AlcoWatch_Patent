@@ -32,7 +32,7 @@ stress_detection/               # Python 3.11 ML pipeline
   conversion/
     export_tflite.py            # SavedModel -> TFLite conversion
   models/
-    stress_model.tflite         # deployable FlatBuffer (~70 KB)
+    stress_model.tflite         # deployable FlatBuffer (72 KB)
 wear_os_app/
   app/src/main/java/com/alcowatch/stress/
     StressInferenceEngine.kt    # TFLite interpreter wrapper
@@ -157,7 +157,7 @@ def build_model(timesteps: int = 30, n_features: int = 5,
                 n_classes: int = 4) -> Model:
     """BiLSTM(64) + additive attention + 2-layer MLP head.
 
-    Approx. 160k parameters, ~70 KB after TFLite default-optimisation.
+    Approx. 160k parameters, 72 KB after TFLite default-optimisation.
     """
     inputs = layers.Input(shape=(timesteps, n_features),
                           name="stress_input")
