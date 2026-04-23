@@ -17,6 +17,8 @@ class StressInferenceEngine(private val context: Context) {
         val channel = afd.createInputStream().channel
         val buffer = channel.map(FileChannel.MapMode.READ_ONLY,
                                  afd.startOffset, afd.declaredLength)
+        channel.close()
+        afd.close()
         interpreter = Interpreter(buffer)
     }
 
