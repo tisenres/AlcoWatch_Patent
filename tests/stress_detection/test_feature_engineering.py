@@ -67,6 +67,20 @@ class TestMapWesadLabels:
         mapped = map_wesad_labels(labels, eda, ibi)
         assert np.all(mapped[:len(mapped)] == -1)
 
+    def test_stress_split_moderate_and_critical(self):
+        # 8 seconds of stress (label=2) at 700Hz → 32 samples at 4Hz after downsampling
+        # First 25 samples: low EDA + high IBI → moderate (2)
+        # Last 7 samples:   high EDA + low IBI → critical (3)
+        # With these values: eda_75 ≈ 0.1, ibi_25 ≈ 675ms
+        # Critical condition (eda > 0.1 AND ibi < 675) is met only by last 7 samples
+        labels = np.array([2] * (700 * 8), dtype=np.int32)
+        eda = np.array([0.1] * 25 + [10.0] * 7, dtype=np.float32)
+        ibi = np.array([800.0] * 25 + [300.0] * 7, dtype=np.float32)
+        mapped = map_wesad_labels(labels, eda, ibi)
+        valid = mapped[mapped != -1]
+        assert 2 in valid, "Moderate stress (2) should be present"
+        assert 3 in valid, "Critical stress (3) should be present"
+
 
 class TestCreateWindows:
     def test_output_shape(self):
