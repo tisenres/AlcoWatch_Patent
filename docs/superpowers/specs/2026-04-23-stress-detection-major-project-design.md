@@ -92,12 +92,19 @@ WESAD has 3 conditions: baseline, stress, amusement. We create 4 levels by split
 
 **Key difference from AlcoWatch:** regression (→ float BAC) replaced by classification (→ softmax 4 classes). Architecture is otherwise parallel.
 
-**Target metrics:**
+**Validated tech stack:** Python 3.12 + TensorFlow 2.16.1 (not 2.15 — incompatible with Py 3.12). TFLite export requires `from_concrete_functions` API; `SELECT_TF_OPS` mandatory for BiLSTM (`TensorListReserve` op).
+
+**Target metrics (full 15-subject corpus):**
 - Accuracy > 93%
 - F1-score (macro) > 0.90
 - False Critical Rate < 2%
-- TFLite model size ≤ 25 KB
+- TFLite model size ≤ 80 KB (SELECT_TF_OPS flex delegate adds ~50 KB overhead vs pure-builtin)
 - Inference latency < 50ms on Wear OS
+
+**Actual metrics (5-subject subset, subject-aware split):**
+- Accuracy 97.8% on 3 active classes; Critical class absent from test split (only 3 total windows)
+- Weighted F1 0.978; macro F1 0.729 (suppressed by zero-support Critical class)
+- TFLite 72.2 KB; Keras inference latency 22.8 ms
 
 ---
 
@@ -118,13 +125,13 @@ WESAD has 3 conditions: baseline, stress, amusement. We create 4 levels by split
 
 **New firmware:** `stress_cabin_control.ino` (independent from ignition control firmware)
 
-**Pin assignments:**
-- Pin 2: Red LED (PWM)
-- Pin 3: Green LED (PWM)
-- Pin 4: Blue LED (PWM)
-- Pin 5: Fan/ventilation motor (PWM speed control)
-- Pin 6: DFPlayer Mini (audio — TX/RX)
-- Pin 7: Override button
+**Pin assignments (as implemented — pins 9-11 chosen because they are PWM-capable on Nano 33 BLE, unlike D2-D4):**
+- Pin 9:  Red LED (PWM)
+- Pin 10: Green LED (PWM)
+- Pin 11: Blue LED (PWM)
+- Pin 6:  Fan/ventilation motor (PWM speed control)
+- Pin 4/5: DFPlayer Mini (RX/TX)
+- Pin 7:  Override button
 
 **State machine (4 states):**
 

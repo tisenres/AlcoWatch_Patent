@@ -15,17 +15,18 @@ The original sciebo link is no longer active. Use one of the three options below
 
 ## Option B — UCI ML Repository (programmatic)
 
+> **WARNING: UCI typically returns pre-extracted CSV features, NOT raw `.pkl` files.**
+> The training pipeline (`wesad_loader.py`) requires the original `.pkl` files.
+> If `fetch_ucirepo` gives you CSV/DataFrame output, stop here and use Option A or C instead.
+
 ```bash
 pip install ucimlrepo
 python3 - <<'EOF'
 from ucimlrepo import fetch_ucirepo
 wesad = fetch_ucirepo(id=465)
-# Follow UCI instructions to save the raw .pkl files
+print(type(wesad.data.features))   # if this is a DataFrame, use Option A or C
 EOF
 ```
-
-Note: UCI may only provide pre-extracted features, not raw `.pkl` files.
-The training pipeline requires raw `.pkl` files — use Option A or C if UCI returns CSVs only.
 
 ---
 

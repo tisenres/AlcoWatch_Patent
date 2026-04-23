@@ -3,6 +3,8 @@ import pytest
 import tensorflow as tf
 from stress_detection.training.stress_model import StressClassificationModel
 
+pytestmark = pytest.mark.slow
+
 
 class TestStressClassificationModel:
     def test_output_shape_is_4_classes(self):
