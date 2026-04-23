@@ -28,6 +28,7 @@ class StressInferenceEngine(private val context: Context) {
      * Returns (StressLevel, confidence 0..1)
      */
     fun classify(window: Array<FloatArray>): Pair<StressLevel, Float> {
+        checkNotNull(interpreter) { "Stress model not loaded — cannot classify" }
         require(window.size == 30 && window[0].size == 5) {
             "Expected [30, 5], got [${window.size}, ${window[0].size}]"
         }
@@ -35,7 +36,7 @@ class StressInferenceEngine(private val context: Context) {
         for (step in window) for (f in step) input.putFloat(f)
 
         val output = Array(1) { FloatArray(4) }
-        interpreter?.run(input, output)
+        interpreter!!.run(input, output)
 
         val probs = output[0]
         val idx = probs.indices.maxByOrNull { probs[it] } ?: 0

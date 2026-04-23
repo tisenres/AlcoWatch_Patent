@@ -120,5 +120,6 @@ void loop() {
     currentState = WAITING;
     setLED(0, 0, 50);
     analogWrite(PIN_FAN, 0);
+    dfplayerCmd(0x16, 0, 0);  // stop any playing track
   }
 }

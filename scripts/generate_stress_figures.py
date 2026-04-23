@@ -5,27 +5,32 @@ Output: paper_figures/stress/
 """
 import os
 import json
+from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import seaborn as sns
 
-METRICS_FILE = 'stress_detection/models/stress_metrics.json'
-OUTPUT_DIR   = 'paper_figures/stress'
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+REPO_ROOT    = Path(__file__).resolve().parent.parent
+METRICS_FILE = REPO_ROOT / 'stress_detection' / 'models' / 'stress_metrics.json'
+OUTPUT_DIR   = REPO_ROOT / 'paper_figures' / 'stress'
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 CLASS_NAMES = ['Calm', 'Mild', 'Moderate', 'Critical']
 
 
 def save(name):
     for ext in ('pdf', 'png'):
-        plt.savefig(f'{OUTPUT_DIR}/{name}.{ext}', bbox_inches='tight', dpi=300)
+        plt.savefig(OUTPUT_DIR / f'{name}.{ext}', bbox_inches='tight', dpi=300)
     plt.close()
     print(f"Saved: {name}.pdf")
 
 
 def plot_confusion_matrix(metrics):
     cm = np.array(metrics['confusion_matrix'])
-    cm_norm = cm.astype(float) / cm.sum(axis=1, keepdims=True)
+    row_sums = cm.sum(axis=1, keepdims=True)
+    cm_norm = np.divide(cm.astype(float), row_sums,
+                        out=np.zeros_like(cm, dtype=float),
+                        where=row_sums != 0)
     fig, ax = plt.subplots(figsize=(7, 6))
     sns.heatmap(cm_norm, annot=True, fmt='.2f', cmap='Blues',
                 xticklabels=CLASS_NAMES, yticklabels=CLASS_NAMES, ax=ax,

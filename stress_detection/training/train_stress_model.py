@@ -9,7 +9,7 @@ import json
 import time
 import numpy as np
 import tensorflow as tf
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.metrics import classification_report, confusion_matrix
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -31,8 +31,9 @@ CLASS_NAMES = ['Calm', 'Mild', 'Moderate', 'Critical']
 
 
 def build_dataset(loader: WESADLoader):
-    X_all, y_all = [], []
-    for subj in loader.available_subjects():
+    """Return (X, y, groups) where groups is a per-window subject index."""
+    X_all, y_all, g_all = [], [], []
+    for subj_idx, subj in enumerate(loader.available_subjects()):
         print(f"  Loading {subj}...", end=' ')
         try:
             d = loader.load_subject(subj)
@@ -58,13 +59,14 @@ def build_dataset(loader: WESADLoader):
             continue
         X_all.append(X)
         y_all.append(y)
+        g_all.append(np.full(len(X), subj_idx, dtype=np.int32))
         print(f"{len(X)} windows  classes={np.bincount(y, minlength=4)}")
 
     if not X_all:
         raise RuntimeError(
             f"No usable subjects found. Check DATA_DIR and that WESAD .pkl files exist."
         )
-    return np.concatenate(X_all), np.concatenate(y_all)
+    return np.concatenate(X_all), np.concatenate(y_all), np.concatenate(g_all)
 
 
 def main():
@@ -73,12 +75,18 @@ def main():
 
     loader = WESADLoader(DATA_DIR)
     print("Building dataset...")
-    X, y = build_dataset(loader)
+    X, y, groups = build_dataset(loader)
     print(f"\nTotal: {len(X)} windows | class distribution: {np.bincount(y, minlength=4)}\n")
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
-    )
+    # Subject-aware split: hold out ~20% of subjects so no subject leaks
+    # across train/test, preventing inflated accuracy from overlapping windows.
+    gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+    train_idx, test_idx = next(gss.split(X, y, groups=groups))
+    X_train, X_test = X[train_idx], X[test_idx]
+    y_train, y_test = y[train_idx], y[test_idx]
+    n_test_subj = len(np.unique(groups[test_idx]))
+    n_train_subj = len(np.unique(groups[train_idx]))
+    print(f"Split: {n_train_subj} train subjects / {n_test_subj} test subjects")
     X_train_norm, means, stds = normalize_features(X_train)
     X_test_norm, _, _ = normalize_features(X_test, means=means, stds=stds)
     np.save(os.path.join(MODELS_DIR, 'scaler_means.npy'), means)
