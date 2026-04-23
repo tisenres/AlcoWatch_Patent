@@ -44,6 +44,7 @@ def build_dataset(loader: WESADLoader):
         eda  = d['EDA']
         temp = d['TEMP']
         acc  = resample_to_4hz(d['ACC'], 32)
+        # EDA and TEMP are already at 4 Hz in WESAD wrist recordings
         ibi  = compute_ibi(bvp)
 
         labels = map_wesad_labels(d['labels'], eda, ibi)
@@ -59,6 +60,10 @@ def build_dataset(loader: WESADLoader):
         y_all.append(y)
         print(f"{len(X)} windows  classes={np.bincount(y, minlength=4)}")
 
+    if not X_all:
+        raise RuntimeError(
+            f"No usable subjects found. Check DATA_DIR and that WESAD .pkl files exist."
+        )
     return np.concatenate(X_all), np.concatenate(y_all)
 
 
@@ -71,13 +76,13 @@ def main():
     X, y = build_dataset(loader)
     print(f"\nTotal: {len(X)} windows | class distribution: {np.bincount(y, minlength=4)}\n")
 
-    X_norm, means, stds = normalize_features(X)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+    X_train_norm, means, stds = normalize_features(X_train)
+    X_test_norm, _, _ = normalize_features(X_test, means=means, stds=stds)
     np.save(os.path.join(MODELS_DIR, 'scaler_means.npy'), means)
     np.save(os.path.join(MODELS_DIR, 'scaler_stds.npy'), stds)
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_norm, y, test_size=0.2, random_state=42, stratify=y
-    )
     y_train_cat = tf.keras.utils.to_categorical(y_train, 4)
     y_test_cat  = tf.keras.utils.to_categorical(y_test,  4)
 
@@ -90,7 +95,7 @@ def main():
         tf.keras.callbacks.ReduceLROnPlateau(patience=5, factor=0.5, verbose=1),
     ]
     history = sm.model.fit(
-        X_train, y_train_cat,
+        X_train_norm, y_train_cat,
         validation_split=0.15,
         epochs=EPOCHS,
         batch_size=BATCH_SIZE,
@@ -98,7 +103,7 @@ def main():
         verbose=1,
     )
 
-    y_pred = np.argmax(sm.model.predict(X_test, verbose=0), axis=1)
+    y_pred = np.argmax(sm.model.predict(X_test_norm, verbose=0), axis=1)
     report_dict = classification_report(
         y_test, y_pred, target_names=CLASS_NAMES, output_dict=True
     )
@@ -106,18 +111,18 @@ def main():
     cm = confusion_matrix(y_test, y_pred).tolist()
 
     # Inference latency (100 samples average)
-    sample = X_test[:1]
+    sample = X_test_norm[:1]
     t0 = time.perf_counter()
     for _ in range(100):
         sm.model.predict(sample, verbose=0)
-    latency_ms = (time.perf_counter() - t0) / 100 * 1000
+    keras_latency_ms = (time.perf_counter() - t0) / 100 * 1000
 
     metrics = {
         'accuracy':        report_dict['accuracy'],
         'f1_macro':        report_dict['macro avg']['f1-score'],
         'per_class':       {k: v for k, v in report_dict.items() if k in CLASS_NAMES},
         'confusion_matrix': cm,
-        'latency_ms':      round(latency_ms, 2),
+        'keras_latency_ms': round(keras_latency_ms, 2),
         'train_history':   {k: [float(v) for v in vs]
                             for k, vs in history.history.items()},
     }
@@ -139,7 +144,7 @@ def main():
         f.write(tflite_bytes)
     size_kb = len(tflite_bytes) / 1024
     print(f"\nTFLite saved: {tflite_path} ({size_kb:.1f} KB)")
-    print(f"Inference latency (CPU): {latency_ms:.1f} ms")
+    print(f"Inference latency (Keras): {keras_latency_ms:.1f} ms")
 
     # Quality gates
     assert report_dict['accuracy'] > 0.90, \

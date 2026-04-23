@@ -91,6 +91,7 @@ stress_detection/data/WESAD/
 stress_detection/models/*.tflite
 stress_detection/models/*_saved/
 stress_detection/models/*.npy
+stress_detection/models/*.json
 *.csv
 *.npy
 *.npz
