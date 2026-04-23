@@ -78,8 +78,8 @@ class TestMapWesadLabels:
         ibi = np.array([800.0] * 25 + [300.0] * 7, dtype=np.float32)
         mapped = map_wesad_labels(labels, eda, ibi)
         valid = mapped[mapped != -1]
-        assert 2 in valid, "Moderate stress (2) should be present"
-        assert 3 in valid, "Critical stress (3) should be present"
+        assert np.sum(valid == 2) == 25, "Expected 25 moderate samples"
+        assert np.sum(valid == 3) == 7, "Expected 7 critical samples"
 
 
 class TestCreateWindows:

@@ -21,8 +21,10 @@ def compute_ibi(bvp_4hz: np.ndarray) -> np.ndarray:
     for i in range(1, len(peaks)):
         ibi_ms = (peaks[i] - peaks[i - 1]) / 4.0 * 1000.0
         ibi_series[peaks[i - 1]:peaks[i]] = ibi_ms
-    if len(peaks) > 0:
-        ibi_series[peaks[-1]:] = ibi_series[max(0, peaks[-1] - 1)]
+    if len(peaks) >= 2:
+        first_ibi = (peaks[1] - peaks[0]) / 4.0 * 1000.0
+        ibi_series[:peaks[0]] = first_ibi  # back-fill pre-peak region
+        ibi_series[peaks[-1]:] = ibi_series[peaks[-1] - 1]  # forward-fill tail
     return ibi_series
 
 
@@ -87,7 +89,8 @@ def create_windows(
         window_labels = labels[start:end]
         if np.any(window_labels == -1):
             continue
-        label = int(np.bincount(window_labels, minlength=4).argmax())
+        # Clamp to 4 classes; argmax breaks ties toward lower index (calm wins)
+        label = int(np.bincount(window_labels, minlength=4)[:4].argmax())
         X.append(features[start:end])
         y.append(label)
     return np.array(X, dtype=np.float32), np.array(y, dtype=np.int32)
