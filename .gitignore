@@ -87,6 +87,10 @@ ENV/
 # Datasets (can be large)
 ml_model/data/raw/
 ml_model/data/processed/
+stress_detection/data/WESAD/
+stress_detection/models/*.tflite
+stress_detection/models/*_saved/
+stress_detection/models/*.npy
 *.csv
 *.npy
 *.npz
