@@ -33,6 +33,10 @@ echo "✓ All dependencies available"
 echo ""
 
 # Run the simulation
+echo "Available scenarios:"
+echo "  BAC Detection:   1=Sober  2=Intoxicated  3=Tamper  4=Drinking  5=Edge  6=All BAC"
+echo "  Stress Detection: 7=Highway  8=Traffic  9=Panic  10=Fatigue  11=Watch removed  12=All stress"
+echo ""
 echo "Starting simulation..."
 echo ""
 python3 run_simulation.py

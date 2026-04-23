@@ -135,6 +135,34 @@ class SmartwatchSimulator:
             return 3  # CRITICAL
 
 
+class StressCabinSimulator:
+    """Simulates Arduino stress cabin controller response"""
+
+    PROFILES = {
+        0: ('Calm',     'warm white',   '30%',  'silence',     Colors.GREEN),
+        1: ('Mild',     'neutral white','50%',  'silence',     Colors.YELLOW),
+        2: ('Moderate', 'blue',         '75%',  'soft music',  Colors.BLUE),
+        3: ('Critical', 'red blink',    '100%', 'voice alert', Colors.RED),
+    }
+
+    def __init__(self):
+        self.current_level = None
+
+    def apply_stress_level(self, level: int, confidence: int):
+        if level > 3 or confidence <= 60:
+            print(f"  {Colors.YELLOW}⚠ Low confidence ({confidence}) — no cabin change{Colors.END}")
+            return
+        name, light, fan, audio, color = self.PROFILES[level]
+        if level != self.current_level:
+            self.current_level = level
+            print(f"  {color}Cabin → {name}{Colors.END}")
+        print(f"    Light: {light}  |  Fan: {fan}  |  Audio: {audio}  |  Confidence: {confidence}%")
+
+    def timeout(self):
+        self.current_level = None
+        print(f"  {Colors.BLUE}BLE timeout — cabin reverts to WAITING (dim blue){Colors.END}")
+
+
 async def run_simulation_scenario(scenario_name, scenario_data, vehicle, smartwatch):
     """Run a single test scenario"""
 
@@ -177,6 +205,26 @@ async def run_simulation_scenario(scenario_name, scenario_data, vehicle, smartwa
             await asyncio.sleep(10)
 
         print(f"\n{Colors.BLUE}✓ Step complete: {update_count} BAC updates sent{Colors.END}")
+
+
+async def run_stress_scenario(scenario_name: str, events: list, cabin: 'StressCabinSimulator'):
+    """Run a single stress detection scenario"""
+    print(f"\n{'='*60}")
+    print(f"{Colors.HEADER}{Colors.BOLD}  STRESS SCENARIO: {scenario_name}{Colors.END}")
+    print(f"{'='*60}\n")
+
+    prev_t = 0
+    for event in events:
+        t = event['t']
+        await asyncio.sleep(min(t - prev_t, 2))  # compressed time for simulation
+        prev_t = t
+        print(f"\n{Colors.CYAN}[t={t:3d}s] Stress packet received:{Colors.END}")
+        if event.get('stress_level') is None:
+            cabin.timeout()
+        else:
+            cabin.apply_stress_level(event['stress_level'], event['confidence'])
+
+    print(f"\n  Scenario complete.")
 
 
 async def main():
@@ -240,14 +288,49 @@ async def main():
         ]),
     }
 
+    stress_scenarios = {
+        "7": ("Relaxed highway driving", [
+            {"t": 0,   "stress_level": 0, "confidence": 95},
+            {"t": 30,  "stress_level": 0, "confidence": 92},
+            {"t": 60,  "stress_level": 0, "confidence": 94},
+        ]),
+        "8": ("Heavy traffic jam", [
+            {"t": 0,   "stress_level": 0, "confidence": 90},
+            {"t": 30,  "stress_level": 1, "confidence": 85},
+            {"t": 60,  "stress_level": 2, "confidence": 88},
+            {"t": 90,  "stress_level": 2, "confidence": 91},
+            {"t": 120, "stress_level": 1, "confidence": 87},
+        ]),
+        "9": ("Near-accident panic", [
+            {"t": 0,  "stress_level": 0, "confidence": 92},
+            {"t": 15, "stress_level": 2, "confidence": 89},
+            {"t": 20, "stress_level": 3, "confidence": 95},
+            {"t": 50, "stress_level": 2, "confidence": 88},
+            {"t": 80, "stress_level": 0, "confidence": 91},
+        ]),
+        "10": ("Gradual fatigue buildup", [
+            {"t": 0,   "stress_level": 0, "confidence": 93},
+            {"t": 60,  "stress_level": 1, "confidence": 86},
+            {"t": 120, "stress_level": 2, "confidence": 84},
+        ]),
+        "11": ("Watch removed mid-drive", [
+            {"t": 0,  "stress_level": 1, "confidence": 88},
+            {"t": 30, "stress_level": None, "confidence": 0},
+        ]),
+    }
+
     # Menu
     print(f"{Colors.BOLD}Select Test Scenario:{Colors.END}\n")
     for key, (name, _) in scenarios.items():
         print(f"  {key}. {name}")
-    print(f"  6. Run ALL scenarios (demo mode)")
+    print(f"  6. Run ALL BAC scenarios (demo mode)")
+    print(f"\n{Colors.CYAN}=== Stress Detection Scenarios ==={Colors.END}")
+    for key in ["7", "8", "9", "10", "11"]:
+        print(f"  {key}. {stress_scenarios[key][0]}")
+    print(f"  12. Run ALL stress scenarios")
     print(f"  q. Quit")
 
-    choice = input(f"\n{Colors.BOLD}Enter choice (1-6 or q): {Colors.END}").strip().lower()
+    choice = input(f"\n{Colors.BOLD}Enter choice (1-12 or q): {Colors.END}").strip().lower()
 
     if choice == 'q':
         print("\nExiting simulator.")
@@ -266,6 +349,20 @@ async def main():
     elif choice in scenarios:
         scenario_name, scenario_data = scenarios[choice]
         await run_simulation_scenario(scenario_name, scenario_data, vehicle, smartwatch)
+
+    elif choice in stress_scenarios:
+        cabin = StressCabinSimulator()
+        scenario_name, events = stress_scenarios[choice]
+        await run_stress_scenario(scenario_name, events, cabin)
+
+    elif choice == '12':
+        cabin = StressCabinSimulator()
+        for key in ["7", "8", "9", "10", "11"]:
+            scenario_name, events = stress_scenarios[key]
+            await run_stress_scenario(scenario_name, events, cabin)
+            if key != "11":
+                print(f"\n{Colors.YELLOW}Press Enter to continue to next scenario...{Colors.END}")
+                input()
 
     else:
         print(f"{Colors.RED}Invalid choice{Colors.END}")
