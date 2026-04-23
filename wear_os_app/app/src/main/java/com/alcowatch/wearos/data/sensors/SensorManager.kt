@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.guava.await
 import timber.log.Timber
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager as AndroidSensorManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -63,6 +67,8 @@ class SensorManager @Inject constructor(
 ) {
     private val healthServicesClient = HealthServices.getClient(context)
     private val measureClient = healthServicesClient.measureClient
+    private val androidSensorManager =
+        context.getSystemService(Context.SENSOR_SERVICE) as AndroidSensorManager
 
     /**
      * Check if required sensors are available
@@ -238,5 +244,24 @@ class SensorManager @Inject constructor(
             Timber.e(e, "Error checking if watch is worn")
             false
         }
+    }
+
+    fun getAccMagnitude(): Float {
+        var magnitude = 9.81f  // gravity default
+        val sensor = androidSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+            ?: return magnitude
+        val latch = java.util.concurrent.CountDownLatch(1)
+        val listener = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                val (x, y, z) = event.values
+                magnitude = kotlin.math.sqrt((x * x + y * y + z * z).toDouble()).toFloat()
+                latch.countDown()
+            }
+            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+        }
+        androidSensorManager.registerListener(listener, sensor, AndroidSensorManager.SENSOR_DELAY_NORMAL)
+        latch.await(500, java.util.concurrent.TimeUnit.MILLISECONDS)
+        androidSensorManager.unregisterListener(listener)
+        return magnitude
     }
 }
