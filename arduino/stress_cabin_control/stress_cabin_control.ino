@@ -54,7 +54,7 @@ void setLED(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void dfplayerCmd(uint8_t cmd, uint8_t p1, uint8_t p2) {
-  uint16_t sum = ~(0xFF + 0x06 + cmd + 0x00 + p1 + p2) + 1;
+  uint16_t sum = (~(uint16_t)(0xFF + 0x06 + cmd + p1 + p2)) + 1;
   uint8_t msg[] = {0x7E, 0xFF, 0x06, cmd, 0x00, p1, p2,
                    (uint8_t)(sum >> 8), (uint8_t)(sum & 0xFF), 0xEF};
   Serial1.write(msg, 10);
