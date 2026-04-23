@@ -14,4 +14,4 @@ stress_detection/data/WESAD/
 └── S17/S17.pkl
 ```
 
-Note: S1 was a pilot study and may not be present — this is expected.
+Note: S1 was a pilot study and is excluded. S12 was not collected by the dataset authors and is absent from the archive — this is expected. The archive contains 15 subjects total (S2–S11, S13–S17).
