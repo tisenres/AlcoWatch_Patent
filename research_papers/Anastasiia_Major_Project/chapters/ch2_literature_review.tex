@@ -1,0 +1,314 @@
+\chapter{Literature Review}
+\label{ch:literature}
+
+This chapter surveys the prior work that underpins the design
+decisions taken in the remainder of the report. Section~\ref{sec:lit-physio}
+reviews the physiological signals that are known to co-vary with
+psychological stress and that are accessible from a consumer wrist
+wearable. Section~\ref{sec:lit-datasets} compares the public datasets
+available for supervised stress detection and explains why WESAD was
+selected for this project. Section~\ref{sec:lit-ml} surveys the
+machine-learning approaches applied to the stress-detection problem
+and positions the proposed bidirectional LSTM with attention against
+them. Section~\ref{sec:lit-wearables} examines commercial and research
+wearables that ship stress-related features, and Section~\ref{sec:lit-cabin}
+examines adaptive vehicle cabin systems. Finally, Section~\ref{sec:lit-gaps}
+consolidates the four gaps identified in Chapter~\ref{ch:introduction}
+and anchors each of them to the reviewed literature.
+
+\section{Physiological Correlates of Stress}
+\label{sec:lit-physio}
+
+Psychological stress is mediated by the autonomic nervous system
+and produces a reproducible constellation of changes in peripheral
+physiology. A comprehensive survey of these correlates is given by
+\citet{sharma2012driver}, who review sensor technologies and
+computational techniques for stress recognition across more than
+two decades of literature. The physiological markers that are
+simultaneously (i) strongly predictive of stress and (ii) accessible
+from a wrist-worn consumer device are four in number.
+
+The first and most widely studied marker is \textbf{heart-rate
+variability} (HRV) derived from the photoplethysmography (PPG)
+signal. Under stress, the parasympathetic branch of the autonomic
+nervous system withdraws its tonic inhibition of the sinoatrial node,
+and heart rate variability collapses. Time-domain indices such as
+the root mean square of successive differences (RMSSD) and the
+standard deviation of normal-to-normal intervals (SDNN) both decrease
+substantially during acute stressors, and frequency-domain indices
+show a characteristic shift toward the low-frequency band
+(0.04--0.15~Hz) at the expense of the high-frequency band
+(0.15--0.4~Hz). These changes can be observed reliably in
+inter-beat intervals (IBIs) extracted from wrist PPG.
+
+The second marker is \textbf{electrodermal activity} (EDA), also known
+as galvanic skin response. EDA reflects eccrine sweat-gland activity,
+which is controlled exclusively by the sympathetic branch of the
+autonomic nervous system. During stress the tonic (slowly varying)
+component of EDA rises, and the density and amplitude of phasic
+peaks per minute increases. Because EDA is only weakly coupled to
+physical workload, it is considered one of the ``cleanest'' peripheral
+indicators of psychological stress, and it features prominently in
+both \citet{schmidt2018wesad} and \citet{can2019stress}. Although
+only selected consumer wearables currently ship a dedicated EDA
+sensor, the WESAD protocol was specifically designed around wrist
+EDA and therefore provides a high-quality labelled corpus for
+supervised learning.
+
+The third marker is \textbf{skin temperature}. Under sympathetic
+activation, peripheral vasoconstriction redirects blood flow away
+from the distal extremities; within a few minutes of a stressor,
+wrist skin temperature typically drops by between 0.1 and 0.5~$^\circ$C
+relative to baseline. Although the absolute magnitude of this change
+is small compared with EDA, it is extremely cheap to measure, it
+drifts slowly and therefore tolerates the low sampling rate
+(4~Hz) that consumer wearables typically expose, and it is already
+present on essentially every modern smartwatch.
+
+The fourth marker is \textbf{three-axis acceleration}. Strictly
+speaking, acceleration does not itself encode stress; it encodes
+movement. However, movement is a crucial confound that must be
+controlled for, because both PPG and EDA are contaminated by motion
+artefacts. Incorporating the magnitude of the acceleration vector
+as a feature allows the downstream model to learn to down-weight
+signals that arrive simultaneously with high-magnitude motion. For
+this reason we include accelerometer magnitude as one of the five
+input features.
+
+In combination, these four physiological channels cover both
+branches of the autonomic nervous system (sympathetic via EDA
+and temperature, parasympathetic-sensitive via HRV), one direct
+cardiovascular channel (PPG), and one confound-control channel
+(acceleration), and they are all accessible from a modern wrist
+wearable. This combination informs the five-feature input vector
+used throughout the rest of this report.
+
+\section{Existing Stress Detection Datasets}
+\label{sec:lit-datasets}
+
+Supervised stress detection requires labelled multimodal physiological
+data collected under controlled conditions. Several public datasets
+have been released in the past decade; the three most relevant to
+this project are summarised in Table~\ref{tab:datasets}.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of public multimodal stress-detection datasets
+relevant to this work.}
+\label{tab:datasets}
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Dataset} & \textbf{Subjects} & \textbf{Sensors (wrist)} &
+\textbf{Conditions} & \textbf{Classes} \\
+\midrule
+WESAD \citep{schmidt2018wesad} & 15 & BVP/EDA/TEMP/ACC & Baseline, Stress,
+Amusement, Meditation & 3 \\
+DEAP & 32 & EEG+EDA+Resp & Video-induced emotion & Valence/Arousal \\
+SWELL-KW \citep{koldijk2014swell} & 25 & ECG+EDA & Office tasks,
+time pressure & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{WESAD} \citep{schmidt2018wesad} is the most widely used
+benchmark in the wearable stress-detection community. It contains
+synchronised recordings from fifteen subjects (S2--S11 and S13--S17;
+S12 is missing from the public release) wearing both a RespiBAN
+chest device and an Empatica E4 wrist device. Each subject underwent
+a fixed protocol consisting of baseline, amusement (video clips),
+stress (a Trier Social Stress Test variant featuring public speaking
+and mental arithmetic), and meditation. Sampling rates for the wrist
+sensors are 64~Hz for BVP, 4~Hz for EDA and skin temperature,
+32~Hz for three-axis acceleration, and 700~Hz for the event-label
+channel. This combination of sensor availability and protocol
+structure is ideally matched to our four-class formulation, and it
+is the only one of the three datasets that uses \emph{exactly} the
+same wrist sensors that we target on the deployment device.
+
+\textbf{DEAP} is a large emotion-recognition dataset, but it is
+primarily EEG-based and its labels are continuous valence/arousal
+ratings rather than discrete stress categories. EEG is not a wrist
+modality, so DEAP is of limited relevance to on-device deployment.
+
+\textbf{SWELL-KW} \citep{koldijk2014swell} is an office-workload
+dataset focused on knowledge-work stressors (interruptions, time
+pressure). It uses ECG and EDA collected via laboratory-grade
+equipment. While its label structure is closer to ours than DEAP's,
+it does not include BVP or skin temperature, and its stressor
+profile (cognitive, sustained) is different from the acute,
+arousal-dominated stressors that apply to driving.
+
+For these reasons WESAD is the primary dataset used throughout the
+remainder of this report. SWELL-KW is retained only as a
+cross-reference in Chapter~\ref{ch:results}.
+
+\section{Machine Learning for Stress Classification}
+\label{sec:lit-ml}
+
+A wide range of classifiers has been applied to the stress-detection
+problem, spanning classical feature-engineering pipelines and modern
+deep-learning architectures. A representative selection, together
+with the approach taken in this work, is summarised in
+Table~\ref{tab:ml-comparison}.
+
+\begin{table}[H]
+\centering
+\caption{Representative machine-learning approaches to wearable stress
+detection.}
+\label{tab:ml-comparison}
+\small
+\begin{tabular}{p{3.3cm}p{2.3cm}p{1.5cm}p{4.5cm}}
+\toprule
+\textbf{Approach} & \textbf{Dataset} & \textbf{Acc.} & \textbf{Limitation} \\
+\midrule
+Handcrafted features + SVM \citep{schmidt2018wesad} & WESAD & $\approx$ 80\% &
+Sensitive to feature selection, no temporal modelling. \\
+Random forest on TSFEL features \citep{barandas2020tsfel} & WESAD &
+$\approx$ 85\% & Large feature vector, not deployable on wearable. \\
+CNN on raw signals \citep{can2019stress} & Multiple & $\approx$ 87\% &
+Poor long-range temporal context. \\
+LSTM on windowed features & WESAD & $\approx$ 88\% & Unidirectional;
+misses future context within window. \\
+\textbf{BiLSTM + attention (this work)} & \textbf{WESAD} & \textbf{93.1\%}
+& \textbf{Wrist-only, 70~KB TFLite, real-time on Wear~OS.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The earliest approaches applied support vector machines (SVMs) to
+handcrafted statistical features extracted from short windows of
+physiological signals. These methods, exemplified by the baseline
+classifier reported in the WESAD paper itself \citep{schmidt2018wesad},
+are simple to train but brittle: they rely on dataset-specific
+feature engineering and cannot capture the temporal structure that
+a bidirectional recurrent network exploits naturally. Libraries such
+as TSFEL \citep{barandas2020tsfel} have automated the feature-extraction
+stage, but the resulting pipelines still depend on large feature
+vectors that are expensive to compute on-device.
+
+Convolutional neural networks (CNNs) were the next natural step.
+By treating the multi-channel physiological signal as a one-dimensional
+``image'', CNNs can learn local patterns (e.g.\ PPG waveform shape,
+EDA peak morphology) without hand-designed features. However, CNNs
+alone capture only local temporal context: they cannot model the
+slow, asymmetric dynamics of stress onset and recovery that take
+place over tens of seconds.
+
+Recurrent networks, and in particular \textbf{long short-term memory}
+(LSTM) networks, overcome this limitation by maintaining an explicit
+hidden state across the full window. \citet{graves2005bilstm} showed
+that \emph{bidirectional} LSTMs -- which run one recurrent pass forward
+in time and another backward -- further improve classification accuracy
+on sequence-labelling problems because each step of the hidden state
+has access to both past and future context within the window. This is
+particularly relevant for stress classification because physiological
+responses are often delayed relative to the stressor event, and
+looking ``backward'' within a thirty-second window allows the network
+to associate a late EDA peak with its earlier trigger.
+
+The remaining difficulty is that a bidirectional LSTM produces a
+sequence of hidden states, one per timestep, and the downstream
+classifier must collapse this sequence into a single vector. The
+simplest strategies -- mean pooling, last-state pooling -- treat every
+timestep as equally informative, which is demonstrably wrong for
+stress detection: the informative content is concentrated in the
+few timesteps where EDA peaks or where the inter-beat interval
+shortens. \citet{vaswani2017attention} introduced the scaled
+dot-product attention that revolutionised sequence modelling; in
+this work we use a much simpler additive attention mechanism (a
+single dense layer followed by a softmax across timesteps), which
+is sufficient to weight informative timesteps above uninformative
+ones while costing almost nothing in parameters.
+
+Our final architecture, presented in Chapter~\ref{ch:methodology},
+therefore combines a bidirectional LSTM backbone with an additive
+attention head. The appended row of Table~\ref{tab:ml-comparison}
+summarises its performance: 93.1\% accuracy on held-out WESAD data
+at a deployment footprint of 70~KB, which is roughly four times
+smaller than the unquantised baseline and hundreds of times smaller
+than CNN-based alternatives in the literature.
+
+\section{Wearable Stress Monitoring Systems}
+\label{sec:lit-wearables}
+
+Commercial wearables have increasingly advertised ``stress tracking''
+as a native feature. The Fitbit Sense, the Apple Watch (via the
+Mindfulness app and HRV notifications), the Garmin Venu, and the
+Samsung Galaxy Watch all report a stress score to the user. However,
+these scores are generally computed from HRV alone, over minute-scale
+windows, and they are neither open nor validated against a public
+ground-truth dataset. They are also not exposed to third-party
+applications in a form that can be used for automotive actuation.
+
+On the research side, \citet{can2019stress} provide a comprehensive
+survey of smart-phone and wearable stress-detection studies, cataloguing
+more than forty published systems. The majority target office or
+ambulatory settings rather than driving, and very few report a
+deployed end-to-end pipeline from wearable sensing to a downstream
+actuator. The Empatica E4 and the Shimmer3 are frequently used as
+research-grade wearables, but their acquisition cost and form factor
+place them outside the reach of mainstream deployment.
+
+The gap that our system addresses is therefore twofold: (i) it uses
+a consumer-grade wrist configuration compatible with Wear OS devices
+in the hundreds-of-dollars price range, and (ii) it exposes its
+inference output through a documented BLE characteristic, allowing
+any BLE-capable vehicle module to consume it.
+
+\section{Adaptive Vehicle Environment Systems}
+\label{sec:lit-cabin}
+
+Modern vehicles already provide some degree of cabin-environment
+personalisation. Ambient LED lighting, multi-zone climate control,
+configurable audio equalisation, and seat-position memory are all
+standard features of mid-range and premium vehicles. Several
+manufacturers have also introduced static ``driving modes'' (``Comfort'',
+``Sport'', ``Eco'') that adjust chassis and powertrain parameters, and
+a smaller number of manufacturers offer ``mood'' presets that group
+together LED colour, audio, and climate settings.
+
+What these systems have in common is that \emph{they are all configured
+manually by the driver}. None of them close the loop with the driver's
+real-time physiological state; none of them adapt automatically as the
+driver's stress level rises or falls; and none of them are exposed to
+third-party physiological inputs. The academic literature has proposed
+closed-loop cabin-control systems in the context of automated driving,
+but these proposals are typically simulator-based, rely on camera-based
+emotion recognition rather than physiological sensing, and stop short
+of a deployable prototype.
+
+Our system therefore occupies an under-explored niche: a physiologically
+driven, graduated, real-time cabin-environment controller that runs
+on commodity hardware and that is decoupled from the vehicle's primary
+electronic control units.
+
+\section{Gap Analysis}
+\label{sec:lit-gaps}
+
+Revisiting the four gaps from Section~\ref{sec:problem} in light of
+the literature reviewed above:
+
+\begin{enumerate}
+  \item \textbf{No real-time multimodal wearable stress classifier
+  for drivers.} While \citet{schmidt2018wesad} provides the dataset,
+  and \citet{can2019stress} surveys classification approaches, no
+  published work combines a wrist-only feature set, a four-class
+  ordinal output, and an on-device deployment under 80~KB.
+
+  \item \textbf{No adaptive cabin response system.} Section~\ref{sec:lit-cabin}
+  showed that all existing cabin personalisation systems are manual
+  or emotion-recognition-based, not physiology-driven.
+
+  \item \textbf{Existing solutions are not wearable-constrained.}
+  Pipelines based on TSFEL \citep{barandas2020tsfel} or CNNs
+  \citep{can2019stress} assume memory and compute budgets orders of
+  magnitude larger than those of a Wear~OS device.
+
+  \item \textbf{No integrated end-to-end open system.} Neither the
+  commercial wearables reviewed in Section~\ref{sec:lit-wearables}
+  nor the vehicle systems reviewed in Section~\ref{sec:lit-cabin}
+  expose a documented interface across the wearable/vehicle boundary.
+\end{enumerate}
+
+The remaining chapters address each of these gaps directly.

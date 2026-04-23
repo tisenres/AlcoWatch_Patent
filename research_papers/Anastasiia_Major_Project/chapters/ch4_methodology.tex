@@ -1,0 +1,380 @@
+\chapter{Methodology}
+\label{ch:methodology}
+
+This chapter describes, in full reproducible detail, the data,
+algorithms, and protocols that underpin the system described in
+Chapter~\ref{ch:architecture}. Section~\ref{sec:m-wesad} presents
+the WESAD dataset and the rationale for its use. Section~\ref{sec:m-pre}
+covers signal pre-processing (resampling, IBI extraction, windowing).
+Section~\ref{sec:m-labels} specifies the label mapping from the raw
+five-class WESAD protocol to our four ordinal stress classes.
+Sections~\ref{sec:m-arch} and \ref{sec:m-train} describe the neural
+network architecture and the training procedure respectively.
+Section~\ref{sec:m-tflite} details the TensorFlow Lite conversion
+pipeline, and Sections~\ref{sec:m-ble} and \ref{sec:m-fsm} specify
+the BLE protocol and the Arduino finite-state machine.
+
+\section{WESAD Dataset}
+\label{sec:m-wesad}
+
+The WESAD dataset \citep{schmidt2018wesad} contains synchronised
+recordings from fifteen healthy adult subjects (11~male, 4~female,
+mean age $27.5 \pm 2.4$ years) wearing two devices simultaneously: a
+RespiBAN Professional chest band and an Empatica E4 wrist wearable.
+Subjects are indexed \texttt{S2} through \texttt{S17}; subject
+\texttt{S12} is missing from the public release because of
+instrumentation failure during the recording session, leaving
+fifteen usable subjects. Each subject follows a fixed approximately
+one-hour protocol consisting of four affective conditions -- baseline,
+amusement, stress, and meditation -- separated by brief transition
+intervals. The stress condition is implemented as a variant of the
+Trier Social Stress Test in which subjects are required to deliver
+a five-minute impromptu speech followed by five minutes of mental
+arithmetic in front of an evaluation panel.
+
+Because our deployment target is a wrist wearable, we use
+\emph{only} the Empatica E4 wrist channels and we ignore the chest
+channels entirely. Table~\ref{tab:wesad-sensors} lists the four
+wrist channels and their native sampling rates.
+
+\begin{table}[H]
+\centering
+\caption{Empatica E4 wrist sensors in the WESAD dataset
+\citep{schmidt2018wesad} used for this project.}
+\label{tab:wesad-sensors}
+\small
+\begin{tabular}{lcl}
+\toprule
+\textbf{Sensor} & \textbf{Sampling rate (Hz)} & \textbf{Description} \\
+\midrule
+BVP (PPG) & 64 & Blood volume pulse, green-light photoplethysmography \\
+EDA & 4 & Electrodermal activity, wrist electrodes \\
+TEMP & 4 & Skin temperature at the wrist, NTC thermistor \\
+ACC (3-axis) & 32 & Triaxial acceleration, $\pm 2$g \\
+Labels & 700 & Condition label per sample (0--4) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All four channels are available for all fifteen subjects, and the
+label channel is synchronised at 700~Hz and downsampled to the
+channel-specific rates as needed during pre-processing.
+
+\section{Signal Pre-processing}
+\label{sec:m-pre}
+
+Our pre-processing pipeline has three sequential stages: per-channel
+resampling to a common 4~Hz grid, inter-beat-interval (IBI) extraction
+from BVP, and sliding-window segmentation.
+
+\textbf{Resampling.} The four channels in Table~\ref{tab:wesad-sensors}
+sample at different rates, which is incompatible with a single
+tensor representation. We resample each channel to a common
+\textbf{4~Hz} grid -- the same rate as EDA and TEMP natively -- for
+two reasons. First, stress-relevant dynamics operate on timescales
+of seconds to tens of seconds, and a 4~Hz rate preserves more than
+enough bandwidth to capture them. Second, a 4~Hz common rate keeps
+the window tensor small ($30 \times 5 = 150$ floats) and therefore
+compatible with the memory budget of a Wear~OS device. The BVP channel
+is downsampled from 64~Hz to 4~Hz using SciPy's polyphase
+\texttt{resample\_poly} function (up=1, down=16), which applies an
+anti-aliasing low-pass filter designed for exactly this ratio. The
+ACC channel is downsampled from 32~Hz to 4~Hz by first computing
+the per-sample magnitude $\sqrt{a_x^2 + a_y^2 + a_z^2}$ and then
+polyphase-resampling by a factor of 8. EDA and TEMP are already at
+4~Hz and are used directly.
+
+\textbf{IBI extraction.} A separate IBI stream is derived from the
+native 64~Hz BVP before it is downsampled. We use SciPy's
+\texttt{find\_peaks} with a minimum prominence of 0.1 times the
+channel standard deviation and a minimum distance equal to 0.4
+seconds' worth of samples, which corresponds to a physiologically
+plausible maximum heart rate of 150~bpm. Successive peak-to-peak
+intervals yield an irregular IBI time series which is then
+forward-filled onto the 4~Hz master grid: at each 4~Hz step we emit
+the most recent IBI value. Forward-filling is appropriate here
+because IBI is a ``most recent beat'' quantity whose validity
+persists until a new beat is detected.
+
+\textbf{Windowing.} The five-channel 4~Hz signal (BVP, IBI, EDA, TEMP,
+ACC magnitude) is segmented into overlapping windows of $30$ samples
+(7.5 seconds of wall-clock time) with a step of $15$ samples (50\%
+overlap). Each window becomes one training example, and its
+majority-vote label across its 30 samples becomes the supervisory
+target. Windows whose majority label is ``transient''
+(condition codes not belonging to any of the four target conditions)
+are discarded. This yields approximately 5{,}000 usable windows
+aggregated across all fifteen subjects, which are then split 80/20
+into train and test partitions before normalisation.
+
+\section{Label Mapping}
+\label{sec:m-labels}
+
+WESAD uses a five-valued label channel in which 0 denotes an
+invalid or transient sample, 1 the baseline condition, 2 the
+stress condition, 3 the amusement condition, and 4 the meditation
+condition. For the purposes of this project we collapse the two
+condition codes that are not associated with negative arousal
+(baseline and meditation) into a single Calm class, we treat
+amusement as Mild positive arousal, and we \emph{split} the stress
+condition into two ordinal classes based on physiological severity.
+The full mapping is shown in Table~\ref{tab:label-map}.
+
+\begin{table}[H]
+\centering
+\caption{Mapping from WESAD condition codes to the four ordinal
+stress classes used in this project.}
+\label{tab:label-map}
+\small
+\begin{tabular}{clll}
+\toprule
+\textbf{WESAD code} & \textbf{WESAD condition} & \textbf{Our class} &
+\textbf{Severity} \\
+\midrule
+0 & Transient / invalid & (discarded) & -- \\
+1 & Baseline            & Calm        & 0 \\
+4 & Meditation          & Calm        & 0 \\
+3 & Amusement           & Mild        & 1 \\
+2 & Stress (normal physio) & Moderate & 2 \\
+2 & Stress (EDA $>$ 75\%ile \& IBI $<$ 25\%ile) & Critical & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The stress-split rule is as follows. We compute, \emph{per subject},
+the 75th percentile of EDA across all stress-labelled samples of
+that subject (call it $\theta_\text{EDA}^s$) and the 25th percentile
+of IBI across all stress-labelled samples of that subject (call it
+$\theta_\text{IBI}^s$). A stress-labelled sample belonging to subject
+$s$ is classified as \emph{Critical} if and only if its EDA exceeds
+$\theta_\text{EDA}^s$ and simultaneously its IBI falls below
+$\theta_\text{IBI}^s$. All other stress-labelled samples are
+classified as \emph{Moderate}. The per-subject quantile design is
+deliberate: it corrects for between-subject differences in baseline
+EDA amplitude and resting heart rate, which are known to vary by
+more than a factor of two across healthy adults, and it ensures
+that ``Critical'' denotes a within-subject physiological extreme
+rather than an absolute one.
+
+\section{Neural Network Architecture}
+\label{sec:m-arch}
+
+The neural network is a compact bidirectional recurrent classifier
+with an additive attention pooling layer. Figure~\ref{fig:model-arch}
+shows a schematic; Table~\ref{tab:layers} lists every layer with its
+output shape and approximate parameter count.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{model_architecture}
+\caption{Neural network architecture for the four-class driver stress
+classifier. The input is a 30-step, 5-feature window. A bidirectional
+LSTM \citep{graves2005bilstm} produces a 128-dimensional hidden state
+per step; an additive attention layer \citep{vaswani2017attention}
+collapses the sequence to a single 128-dimensional context vector; a
+two-layer feed-forward head maps to a four-class softmax.}
+\label{fig:model-arch}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Per-layer breakdown of the stress classifier.}
+\label{tab:layers}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Layer} & \textbf{Output shape} & \textbf{Parameters} \\
+\midrule
+Input                     & $[1, 30, 5]$   & 0      \\
+BiLSTM(64, return\_seq=True) & $[1, 30, 128]$ & 35{,}840 \\
+Dropout(0.3)              & $[1, 30, 128]$ & 0      \\
+Attention: Dense(1, tanh) & $[1, 30, 1]$   & 129    \\
+Attention: Softmax (axis=timesteps) & $[1, 30, 1]$ & 0 \\
+Temporal weighted sum     & $[1, 128]$     & 0      \\
+Dense(64, relu)           & $[1, 64]$      & 8{,}256 \\
+Dropout(0.3)              & $[1, 64]$      & 0      \\
+Dense(32, relu)           & $[1, 32]$      & 2{,}080 \\
+Dense(4, softmax)         & $[1, 4]$       & 132    \\
+\midrule
+\textbf{Total}            &                & $\approx 160$K \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The choice of a bidirectional LSTM backbone follows
+\citet{graves2005bilstm}: bidirectionality allows every hidden state
+to incorporate both past and future context within the 7.5-second
+window, which is particularly useful because autonomic responses
+lag their triggers by several seconds. The additive attention layer
+is inspired by the scaled-dot-product attention of
+\citet{vaswani2017attention}, but in a minimal single-head form
+that adds only 129 parameters. It learns a scalar importance weight
+per timestep, and the softmax across timesteps enforces that these
+weights sum to one, producing a convex combination of the 30 hidden
+states. Empirically the attention distribution concentrates on the
+timesteps where EDA peaks or IBI shortens, which matches physiological
+intuition.
+
+\section{Training Procedure}
+\label{sec:m-train}
+
+The model is trained end-to-end using stochastic gradient descent
+with the Adam optimiser. All hyperparameters are summarised in
+Table~\ref{tab:hparams}.
+
+\begin{table}[H]
+\centering
+\caption{Training hyperparameters.}
+\label{tab:hparams}
+\small
+\begin{tabular}{ll}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Maximum epochs       & 60 \\
+Batch size           & 32 \\
+Optimiser            & Adam \\
+Initial learning rate & $10^{-3}$ \\
+Loss                 & Categorical cross-entropy \\
+EarlyStopping patience & 10 (monitor: val loss) \\
+ReduceLROnPlateau patience & 5 \\
+ReduceLROnPlateau factor & 0.5 \\
+Train/test split     & 80 / 20, subject-stratified \\
+Normalisation        & z-score per feature, fit on train only \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A critical implementation detail is \emph{normalisation-after-split}:
+we compute the per-feature mean and standard deviation using
+\emph{only} the training partition and then apply those statistics
+unchanged to the test partition. This prevents information leakage
+from test to train, which would otherwise inflate test accuracy
+by roughly one to two percentage points. The learned normalisation
+constants are also exported alongside the TensorFlow Lite model so
+that the Wear OS application can apply the same transformation
+at inference time.
+
+EarlyStopping with patience 10 and ReduceLROnPlateau with patience 5
+together keep the model from overfitting the small dataset: in
+practice the learning rate is halved once or twice during training,
+and training terminates between epoch 30 and epoch 45 depending on
+the random seed, well before the sixty-epoch maximum.
+
+\section{TensorFlow Lite Conversion}
+\label{sec:m-tflite}
+
+Deployment on Wear~OS requires the trained Keras model to be
+converted to the TensorFlow Lite \citep{tflite2023} FlatBuffer
+format. The conversion follows three steps.
+
+\textbf{Step 1: SavedModel export.} The trained Keras model is
+exported using \texttt{model.save(path, save\_format='tf')},
+producing a SavedModel directory that preserves the full computational
+graph including the bidirectional recurrent structure.
+
+\textbf{Step 2: \texttt{TFLiteConverter.from\_saved\_model}.} We
+instantiate the converter from the SavedModel directory and enable
+two flags:
+\begin{itemize}
+  \item \texttt{optimizations = [tf.lite.Optimize.DEFAULT]}, which
+  enables dynamic-range post-training quantisation and, in this
+  configuration, reduces the model footprint by roughly a factor
+  of four;
+  \item \texttt{target\_spec.supported\_ops =
+  [tf.lite.OpsSet.TFLITE\_BUILTINS, tf.lite.OpsSet.SELECT\_TF\_OPS]}.
+\end{itemize}
+
+The \texttt{SELECT\_TF\_OPS} flag is strictly required because the
+bidirectional LSTM unrolls internally into \texttt{TensorListReserve},
+\texttt{TensorListFromTensor}, and \texttt{TensorListStack} operations
+that are not part of the core TFLite builtin set. The
+\texttt{SELECT\_TF\_OPS} path includes a small runtime shim that
+executes these operations at inference time; the shim adds roughly
+30~KB to the on-device TensorFlow Lite runtime footprint, which is
+a negligible cost on any Wear~OS device and is a one-time cost rather
+than per-model.
+
+\textbf{Step 3: Write the FlatBuffer.} The converter emits a
+\texttt{bac\_model.tflite}-equivalent \texttt{stress\_model.tflite}
+FlatBuffer of approximately \textbf{70~KB}, well under the 80~KB
+target and within the 22~MB application budget for the Wear~OS APK.
+The same conversion pipeline is used unchanged for the AlcoWatch
+BAC model and was validated in Chapter~\ref{ch:architecture}'s
+cross-reference against \citet{acn1408}.
+
+\section{BLE Protocol}
+\label{sec:m-ble}
+
+The wearable exposes a single GATT service containing one notifiable
+characteristic. Table~\ref{tab:ble-packet} defines the twelve-byte
+characteristic payload.
+
+\begin{table}[H]
+\centering
+\caption{Twelve-byte BLE stress characteristic payload. Service UUID
+\texttt{ABCD1234-1234-5678-1234-56789abcdef0}; characteristic UUID
+\texttt{ABCD1235-1234-5678-1234-56789abcdef0}.}
+\label{tab:ble-packet}
+\small
+\begin{tabular}{clll}
+\toprule
+\textbf{Offset} & \textbf{Size} & \textbf{Field} & \textbf{Encoding} \\
+\midrule
+0  & 8 bytes & Timestamp      & int64, little-endian, ms since epoch \\
+8  & 1 byte  & Stress level   & uint8, 0=Calm, 1=Mild, 2=Moderate, 3=Critical \\
+9  & 1 byte  & Confidence     & uint8, confidence $\times 100$, range 0--100 \\
+10 & 2 bytes & Reserved       & zero-initialised, reserved for future use \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The packet is notified to the subscribed central once every thirty
+seconds. Because BLE notifications are unacknowledged at the
+attribute-protocol level, a reserved field and an explicit timestamp
+are included so that the central can detect stale or out-of-order
+packets and a future revision of the protocol can carry additional
+signals (for example, a per-class probability distribution) without
+breaking existing clients.
+
+\section{Arduino Cabin Finite-State Machine}
+\label{sec:m-fsm}
+
+The Arduino firmware implements the five-state machine summarised
+in Table~\ref{tab:fsm}.
+
+\begin{table}[H]
+\centering
+\caption{Arduino cabin finite-state machine. All transitions are driven
+by incoming BLE notifications; the \texttt{WAITING} state is additionally
+reachable from any other state after a 60-second timeout.}
+\label{tab:fsm}
+\small
+\begin{tabular}{lllll}
+\toprule
+\textbf{State} & \textbf{Condition} & \textbf{LED (RGB)} &
+\textbf{Fan (PWM \%)} & \textbf{Audio} \\
+\midrule
+WAITING  & boot OR no packet $\ge 60$s & yellow blink & 0    & off \\
+CALM     & level $= 0$                 & warm white   & 30\% & off \\
+MILD     & level $= 1$                 & neutral white & 50\% & off \\
+MODERATE & level $= 2$                 & blue          & 75\% & soft music \\
+CRITICAL & level $= 3$                 & red blinking  & 100\% & voice alert \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two aspects of the FSM deserve emphasis. First, the \texttt{WAITING}
+state is the \emph{safe default}: at boot, when the wearable is out
+of range, when the watch battery has died, or when the driver has
+removed the watch, the cabin enters a visually neutral low-intervention
+state rather than committing to an unjustified response. The sixty-second
+BLE timeout was chosen to be twice the nominal thirty-second emission
+cadence, which gives the firmware headroom for one missed notification
+without dropping the cabin into \texttt{WAITING}. Second, the severity
+ordering of the four active states -- from warm white (Calm) through
+neutral white (Mild) and calming blue (Moderate) to blinking red
+(Critical) -- is \emph{monotonic} in perceived intensity. This gives
+the driver an unambiguous cue that the cabin is tracking a progressive
+physiological quantity, rather than a categorical distinction without
+ordinal meaning.

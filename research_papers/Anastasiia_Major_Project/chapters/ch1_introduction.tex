@@ -1,0 +1,251 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Background}
+\label{sec:background}
+
+Road traffic accidents remain one of the leading causes of preventable
+death and injury in the modern world. According to the World Health
+Organization's \emph{Global Status Report on Road Safety}, approximately
+1.19 million people lose their lives in road crashes every year, and
+between twenty and fifty million more suffer non-fatal injuries that
+often result in long-term disability. Driver-related factors account
+for the overwhelming majority of these incidents, with human error
+contributing to roughly ninety percent of all recorded crashes.
+Historically, attention has been concentrated on the most visible
+contributors such as speeding, alcohol intoxication, and fatigue.
+However, a growing body of epidemiological and behavioural research
+now implicates \emph{acute psychological stress} as a silent and
+under-recognised risk factor behind a substantial share of these
+events \citep{sharma2012driver}.
+
+Driving is a cognitively demanding task that continuously requires
+sustained visual attention, rapid decision making, and fine motor
+control. When a driver experiences elevated psychological stress,
+several physiological and cognitive changes take place simultaneously:
+heart rate variability decreases, breathing becomes shallower, muscle
+tension in the shoulders and neck increases, and the sympathetic branch
+of the autonomic nervous system begins to dominate cardiovascular
+regulation. These changes are accompanied by narrowing of the visual
+field (so-called ``tunnel vision''), slower reaction times, reduced
+inhibitory control, and a tendency toward impulsive or aggressive
+manoeuvres such as tailgating, abrupt lane changes, and failure to
+yield. Epidemiological studies have consistently reported that high
+levels of self-reported driving stress are associated with a two- to
+threefold increase in crash risk, particularly during rush-hour
+commuting and long-haul driving.
+
+The sources of driver stress are diverse. They include external
+environmental factors such as traffic congestion, adverse weather,
+and complex road geometry, as well as internal and personal factors
+such as time pressure, interpersonal conflict, workplace deadlines,
+and pre-existing anxiety disorders. Commercial drivers -- taxi drivers,
+truck drivers, and ride-share operators -- are particularly vulnerable
+because their occupational demands combine long hours behind the wheel
+with economic pressure and irregular schedules. Younger drivers and
+novice drivers constitute another at-risk group because they tend to
+experience higher baseline anxiety while simultaneously lacking the
+automatised skills that make experienced driving less cognitively
+taxing.
+
+Despite the clear public-health significance of this problem,
+contemporary vehicles offer remarkably few countermeasures that
+target driver stress directly. Modern driver-assistance systems
+primarily address perceptual lapses (lane keeping, forward collision
+warning, adaptive cruise control) and gross behavioural impairment
+(drowsiness detection, alcohol interlocks), but they are largely blind
+to the emotional and autonomic state of the person behind the wheel.
+This gap motivates the work presented in this report: we aim to close
+it using wearable sensors that many drivers already carry on their
+wrists, and using machine-learning techniques that can be executed
+entirely on-device within the power and memory budget of a smartwatch.
+
+\section{Motivation}
+\label{sec:motivation}
+
+Three complementary trends make real-time, software-based driver
+stress detection both feasible and timely today.
+
+First, \textbf{consumer wearables have reached sensor-grade maturity}.
+Devices such as the Samsung Galaxy Watch, Google Pixel Watch, Fitbit
+Sense, and Apple Watch now routinely expose photoplethysmography (PPG),
+skin temperature, three-axis acceleration, and -- on selected models --
+electrodermal activity (EDA). The same sensor complement that was, only
+a decade ago, confined to laboratory-grade equipment such as the Empatica
+E4 or the RespiBAN professional chest band is now available in consumer
+devices worn for more than twelve hours per day by hundreds of millions
+of users worldwide. The WESAD dataset \citep{schmidt2018wesad}, which
+underpins this project, was specifically collected using such a wrist
+wearable configuration, and therefore its findings translate more or
+less directly to mass-market devices.
+
+Second, \textbf{on-device machine learning is no longer a research
+curiosity}. Frameworks such as TensorFlow Lite \citep{tflite2023},
+ONNX Runtime Mobile, and Core ML provide mature toolchains for running
+quantised neural networks on battery-powered hardware. Modern smartwatch
+system-on-chips expose hardware-accelerated inference paths that can
+execute small recurrent and convolutional models within milliseconds
+while consuming only a few milliwatts. Consequently, stress detection
+can take place \emph{entirely on the wrist}, with no dependence on
+cellular connectivity, no continuous upload of sensitive biometric
+data, and no round-trip latency to a cloud endpoint. This is a crucial
+property for automotive use cases where network availability is
+intermittent and privacy expectations are high.
+
+Third, \textbf{the actuation side of the problem is finally tractable}
+thanks to the widespread availability of low-cost Bluetooth Low Energy
+(BLE) microcontrollers such as the Arduino Nano 33 BLE. These devices
+can drive relays, LEDs, small fans, and infotainment-system inputs,
+while speaking a standard GATT profile to any nearby wearable. This
+makes it possible to build an \emph{end-to-end} prototype -- from
+wearable sensing to cabin actuation -- without bespoke hardware and
+without invasive modifications to the vehicle.
+
+A further motivating factor is the \emph{graduated nature} of the
+intervention being studied. Unlike alcohol interlocks, which make a
+binary decision that either permits or forbids ignition, a stress-aware
+cabin control system can respond proportionally. A mildly elevated
+stress level can be addressed by dimming interior ambient lighting
+and lowering the in-cabin music volume; a moderate level can additionally
+switch the LED ambience to a calming blue and introduce soft background
+audio; only a critical level triggers an overt visual and auditory
+alert. This calibrated, non-punitive form of intervention is more
+likely to be accepted by drivers than a coarse, safety-critical
+override, and it complements rather than competes with existing
+driver-assistance technology.
+
+\section{Project Scope}
+\label{sec:scope}
+
+This project is deliberately \textbf{software-focused}. No new hardware
+has been designed. All of the sensing hardware used -- wrist PPG, EDA,
+skin temperature, and accelerometer -- exists in off-the-shelf consumer
+wearables; all of the actuation hardware -- LEDs, PWM-driven cooling
+fan, and piezo speaker -- is directly supported by an unmodified Arduino
+Nano 33 BLE development board. The contribution of the project lies
+entirely in (i) the machine-learning model and its training pipeline,
+(ii) the Wear OS Kotlin application that runs the model in real time,
+(iii) the BLE protocol layer that conveys stress estimates to the
+vehicle, and (iv) the Arduino firmware that translates those estimates
+into cabin actions.
+
+The scope of the scientific evaluation is equally bounded. All training
+and testing is performed on the publicly available WESAD dataset. No
+naturalistic driving data has been collected; we do not claim that the
+system has been validated \emph{in vivo} on real drivers, and this
+limitation is revisited explicitly in Chapter~\ref{ch:conclusion}.
+The system is, however, architected in a way that does not depend on
+laboratory assumptions -- it expects streaming sensor data, tolerates
+missing samples, and emits its estimates on a fixed thirty-second
+cadence suitable for deployment outside the laboratory.
+
+The scope is further bounded on the safety side. The adaptive cabin
+control system is explicitly designed to be \emph{advisory}: it alters
+lighting, fan speed, and audio profile, but it does not interfere with
+steering, braking, or any other primary vehicle control. This keeps
+the prototype squarely within the regulatory envelope of an aftermarket
+comfort accessory rather than an automated driving component, and it
+aligns the project with the graduated-intervention philosophy described
+earlier.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+Despite extensive prior work on both stress physiology and wearable
+biosensing, four concrete gaps remain unaddressed in the literature
+and the market:
+
+\begin{enumerate}
+  \item \textbf{No real-time multimodal wearable stress classifier
+  targeted at drivers.} The most successful stress classifiers
+  published on WESAD use offline, PC-class models that are neither
+  quantised nor latency-budgeted for a smartwatch, and many of them
+  rely on chest-band signals (respiration, ECG) that wrist wearables
+  cannot acquire.
+
+  \item \textbf{No adaptive cabin response system driven by
+  physiological state.} Commercial vehicles offer static ``comfort
+  profiles'' selected manually by the driver; none of them respond
+  automatically to the driver's real-time autonomic state, and none
+  of them gradate the response across distinct stress levels.
+
+  \item \textbf{Existing solutions are not wearable-constrained.}
+  State-of-the-art stress detection pipelines frequently assume access
+  to full-resolution raw signals at 64--700~Hz and to tens of megabytes
+  of RAM. Consumer smartwatches offer neither. Bridging that gap
+  requires aggressive signal downsampling, a small model footprint,
+  and quantisation-aware conversion tooling.
+
+  \item \textbf{No integrated end-to-end open system.} To our
+  knowledge, no published work combines wearable sensing, on-device
+  inference, a documented BLE protocol, and a vehicle-side actuator
+  controller in a single openly described prototype.
+\end{enumerate}
+
+These gaps together define the problem addressed in this project.
+
+\section{Objectives}
+\label{sec:objectives}
+
+To close the gaps identified above, this project pursues the
+following five concrete objectives:
+
+\begin{enumerate}
+  \item \textbf{Design and train a four-class driver stress classifier}
+  (Calm / Mild / Moderate / Critical) based on a bidirectional LSTM
+  \citep{graves2005bilstm} with an additive attention layer
+  \citep{vaswani2017attention}, using only wrist-accessible signals
+  from the WESAD dataset \citep{schmidt2018wesad}.
+
+  \item \textbf{Achieve accuracy above 90\% and macro-F1 above 0.90}
+  on a held-out test split while keeping the model size compatible
+  with on-device inference (target $\le 80$~KB after TensorFlow Lite
+  conversion).
+
+  \item \textbf{Implement a Wear OS Kotlin application} that performs
+  real-time sensor collection, windowing, normalisation, and on-device
+  TensorFlow Lite inference \citep{tflite2023} with an end-to-end
+  latency below fifty milliseconds.
+
+  \item \textbf{Specify and implement a compact BLE protocol}
+  (a twelve-byte GATT characteristic) carrying timestamp, stress level,
+  and confidence, and connect it to an Arduino Nano 33 BLE that
+  implements the vehicle-side finite state machine.
+
+  \item \textbf{Demonstrate a graduated adaptive cabin response}
+  consisting of four differentiated cabin profiles (Calm, Mild,
+  Moderate, Critical), a waiting state for connection loss, and a
+  sixty-second BLE timeout enforced at the Arduino.
+\end{enumerate}
+
+Each subsequent chapter of this report addresses one or more of
+these objectives directly, and Chapter~\ref{ch:conclusion} revisits
+them in order to demonstrate that each has been met by the
+implemented system.
+
+\section{Connection to Patent ACN1408}
+\label{sec:acn1408}
+
+This work extends a prior invention by the same author, filed as an
+Indian Provisional Patent Application under the number ACN1408
+\citep{acn1408}. The earlier invention -- commercially referred to
+as \emph{AlcoWatch} -- addresses the problem of \textbf{alcohol-related
+driving accidents} by using a wrist wearable to estimate blood alcohol
+concentration (BAC) from physiological correlates (PPG, EDA, skin
+temperature) and by using a relay-controlled Arduino module to block
+vehicle ignition when BAC exceeds the legal limit of 0.08~g/dL. In
+that system the actuation is binary (ignition ALLOW / ignition BLOCK),
+the failure mode is conservative (ignition is blocked by default),
+and the model is regressive (it outputs a scalar BAC estimate).
+
+The present project generalises ACN1408 along two orthogonal axes.
+First, it moves from a \emph{binary safety interlock} (ignition block)
+to a \emph{graduated comfort intervention} (cabin profile). Second,
+it moves from \emph{BAC regression} to \emph{stress classification}
+with four ordinal classes. The two systems are architecturally
+compatible: they reuse the same class of wearable hardware, the same
+class of Arduino microcontroller, and a very similar BLE service
+structure. Chapter~\ref{ch:architecture} provides a direct side-by-side
+comparison, and Chapter~\ref{ch:conclusion} sketches how the two could
+be unified into a single multi-purpose wearable safety platform
+in future work.
