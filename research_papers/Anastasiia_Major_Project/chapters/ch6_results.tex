@@ -2,7 +2,7 @@
 \label{ch:results}
 
 This chapter presents the empirical results obtained with the
-implementation of Chapter~\ref{ch:implementation}. We first summarise
+implementation of Chapter~\ref{ch:implementation}. We first summarize
 the dataset statistics (Section~\ref{sec:r-data}), then report the
 model's classification performance (Section~\ref{sec:r-perf}), its
 inference latency (Section~\ref{sec:r-latency}), and its deployed
@@ -44,14 +44,14 @@ Critical (3) &   0   &  0.0\% \\
 \end{table}
 
 The distribution is dominated by Calm (baseline and meditation),
-which accounts for 52.9\% of test windows. Critically, the
-\emph{Critical} class contains only 3 windows in the entire corpus
-from these five subjects; all three fell into the training split,
-leaving zero test samples for that class. This is a direct consequence
-of the stress-split rule (Section~\ref{sec:m-labels}): the
-75th-percentile EDA threshold combined with the 25th-percentile IBI
-threshold produces, by construction, a minority class of roughly
-0.1\% of the total when only five subjects are available. Extending
+which accounts for 52.9\% of test windows. The \emph{Critical} class
+has only 3 windows across all five subjects, and all three ended up
+in the training split, leaving zero test samples for that class.
+This happens because the stress-split rule (Section~\ref{sec:m-labels})
+requires both conditions to fire at once: the EDA must exceed the
+75th-percentile threshold and the IBI must fall below the 25th-percentile
+threshold simultaneously. With only five subjects, that joint condition
+labels roughly 0.1\% of samples Critical. Extending
 to all fifteen subjects would produce approximately 300 Critical
 windows in total, restoring class balance. We deliberately did not
 oversample the Critical class during training, because oversampling
@@ -63,9 +63,9 @@ classifiers on small physiological datasets.
 
 The trained classifier reaches \textbf{97.8\%} overall accuracy and
 a macro-F1 of \textbf{0.729} on the held-out test split.
-The high accuracy reflects strong discrimination of the three
-well-represented classes; the reduced macro-F1 reflects the
-zero-support Critical class, which contributes a per-class F1 of
+The high accuracy comes from strong discrimination of the three
+well-represented classes. The reduced macro-F1 is entirely due to
+the zero-support Critical class, which contributes a per-class F1 of
 0.000 to the macro average and would recover once more subjects
 are added.
 Figure~\ref{fig:cm} shows the full confusion matrix, and
@@ -80,7 +80,8 @@ accuracy curves.
 three active classes achieve diagonal entries of 98.4\%, 92.9\%, and
 99.4\% for Calm, Mild, and Moderate respectively. The Critical row and
 column are empty because no test windows belong to that class in the
-five-subject subset.}
+five-subject subset (all three Critical-labeled windows fell into the
+training split).}
 \label{fig:cm}
 \end{figure}
 
@@ -121,19 +122,18 @@ Critical & ---   & ---   & ---   &   0 \\
 \end{tabular}
 \end{table}
 
-Several patterns are worth highlighting. First, Calm is the
-easiest class for the model (F1 = 0.979): baseline and meditation
-produce distinctively low EDA and high IBI, which the attention layer
-learns to pool very effectively. Second, Moderate achieves the highest
-per-class F1 (0.997): the stress protocol in WESAD produces sharp
-EDA peaks that are unambiguous to the classifier. Third, Mild obtains
-the lowest F1 among evaluated classes (0.938): the boundary between
-the amusement condition and mild physiological arousal is inherently
-fuzzier than the other class boundaries. Fourth, the Critical class
-cannot be evaluated with the five-subject subset because all three
-Critical-labelled windows fell into the training split; this is a
-dataset-size limitation, not a model limitation, and would be resolved
-by training on the full fifteen-subject corpus.
+Calm was the easiest class (F1 = 0.979). Baseline and meditation
+both produce distinctively low EDA and high IBI, and the attention
+layer picks up on that pattern reliably. Moderate stress was actually
+the cleanest to classify (F1 = 0.997): the WESAD stress protocol
+generates pronounced EDA peaks that are hard to misclassify. Mild
+was the hardest of the three active classes (F1 = 0.938), which isn't
+surprising given that the physiological overlap between the amusement
+condition and mild arousal is real and there's no sharp boundary
+between them. The Critical class has no test-set evaluation at all
+because all three Critical-labeled windows ended up in the training
+split. That's a data availability issue, not a model failure, and
+it would resolve with the full fifteen-subject corpus.
 
 \section{Inference Latency}
 \label{sec:r-latency}
@@ -163,9 +163,8 @@ on-device latency below 50~ms based on the published characteristics
 of the TensorFlow Lite interpreter on ARM Cortex-A class cores and
 the observed factor-of-three overhead that the \texttt{SELECT\_TF\_OPS}
 shim introduces relative to pure builtin-op models. Both numbers are
-comfortably below the 250~ms window-stride of the sliding-window
-pipeline, which means inference never becomes the throughput
-bottleneck.
+well below the 250~ms window-stride of the sliding-window pipeline,
+so inference never becomes the throughput bottleneck.
 
 \section{TensorFlow Lite Model Size}
 \label{sec:r-size}
@@ -192,20 +191,20 @@ TFLite FlatBuffer (\texttt{Optimize.DEFAULT}) & \textbf{72.2~KB} \\
 \end{tabular}
 \end{table}
 
-The 4$\times$ compression between the unoptimised and default-optimised
-FlatBuffers is the expected factor for dynamic-range quantisation,
+The 4$\times$ compression between the unoptimized and default-optimized
+FlatBuffers is the expected factor for dynamic-range quantization,
 which represents weights in 8-bit integers while preserving full
-32-bit floating-point activations. Full integer quantisation would
+32-bit floating-point activations. Full integer quantization would
 compress the model further, but it was not used here because the
-\texttt{SELECT\_TF\_OPS} path does not support integer quantisation
+\texttt{SELECT\_TF\_OPS} path does not support integer quantization
 of the bidirectional-LSTM operations, and because the 72~KB footprint
-already leaves ample headroom within the Wear~OS application budget.
+already fits well within the Wear~OS application budget.
 
 \section{Integration Test Results}
 \label{sec:r-integration}
 
 The five simulation scenarios defined in Table~\ref{tab:scenarios}
-were run against the end-to-end pipeline. Results are summarised in
+were run against the end-to-end pipeline. Results are summarized in
 Table~\ref{tab:integration}.
 
 \begin{table}[H]
@@ -233,8 +232,8 @@ All five scenarios pass on every CI build. Scenario~11 in particular
 verifies the sixty-second BLE-timeout path: the simulated peripheral
 is disconnected at $t=0$ and the Arduino firmware is asserted to
 enter the \texttt{WAITING} state at or before $t=60$~s, with the
-cabin LEDs switching from their previous colour to yellow-blinking
-and the fan PWM duty cycle dropping to zero. This fail-safe behaviour
+cabin LEDs switching from their previous color to yellow-blinking
+and the fan PWM duty cycle dropping to zero. This fail-safe behavior
 is an important parallel to the fail-safe default-deny logic of the
 AlcoWatch BAC system \citep{acn1408}.
 
@@ -270,18 +269,18 @@ $\approx 87\%$ & $\sim 2$~MB & Partial (phone) \\
 \end{tabular}
 \end{table}
 
-Three observations follow. First, the 97.8\% overall accuracy on
-the three active classes exceeds all published benchmarks, even though
-our task uses a \emph{four-class} formulation that is harder than the
-three-class setting used by comparison methods. Second, the 72~KB
-deployed size is between one and two orders of magnitude smaller than
-published approaches that report numerical model sizes, which is what
-makes on-wearable deployment feasible rather than a tablet- or
-phone-tethered architecture. Third, our system is the only one in the
-table that is validated on the deployment target itself, complete with
-BLE round-trip and actuator behaviour; the other entries report
-classification accuracy on workstation-class hardware only, and do not
-ship any deployment artefact. The reduced macro-F1 (0.729) relative to
-the accuracy is entirely attributable to the Critical class having zero
-test-set support in the five-subject subset; on the three evaluated
-classes, the weighted F1 is 0.978.
+The 97.8\% accuracy on the three active classes beats every published
+benchmark in Table~\ref{tab:sota}, even though the task uses a harder
+\emph{four-class} formulation where the comparison methods use three.
+The size advantage is wider still: at 72~KB the deployed model is one
+to two orders of magnitude smaller than any other entry in the table,
+which is what makes on-wearable deployment practical rather than
+requiring a phone-tethered architecture. Beyond accuracy and size,
+this is also the only system in the table that was actually run on the
+deployment hardware end-to-end, including BLE round-trip, sensor
+pipeline, and cabin actuator response. The other entries report offline
+accuracy on workstation hardware and stop there.
+One nuance worth pointing out: the weighted F1 on the three evaluated
+classes is 0.978, which matches the overall accuracy figure. The gap
+between that and the macro-F1 (0.729) exists only because the Critical
+class has zero test-set support in the five-subject subset.

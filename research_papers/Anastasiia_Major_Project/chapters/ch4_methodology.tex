@@ -17,7 +17,7 @@ the BLE protocol and the Arduino finite-state machine.
 \section{WESAD Dataset}
 \label{sec:m-wesad}
 
-The WESAD dataset \citep{schmidt2018wesad} contains synchronised
+The WESAD dataset \citep{schmidt2018wesad} contains synchronized
 recordings from fifteen healthy adult subjects (11~male, 4~female,
 mean age $27.5 \pm 2.4$ years) wearing two devices simultaneously: a
 RespiBAN Professional chest band and an Empatica E4 wrist wearable.
@@ -57,7 +57,7 @@ Labels & 700 & Condition label per sample (0--4) \\
 \end{table}
 
 All four channels are available for all fifteen subjects, and the
-label channel is synchronised at 700~Hz and downsampled to the
+label channel is synchronized at 700~Hz and downsampled to the
 channel-specific rates as needed during pre-processing.
 
 \section{Signal Pre-processing}
@@ -69,13 +69,12 @@ from BVP, and sliding-window segmentation.
 
 \textbf{Resampling.} The four channels in Table~\ref{tab:wesad-sensors}
 sample at different rates, which is incompatible with a single
-tensor representation. We resample each channel to a common
-\textbf{4~Hz} grid -- the same rate as EDA and TEMP natively -- for
-two reasons. First, stress-relevant dynamics operate on timescales
-of seconds to tens of seconds, and a 4~Hz rate preserves more than
-enough bandwidth to capture them. Second, a 4~Hz common rate keeps
-the window tensor small ($30 \times 5 = 150$ floats) and therefore
-compatible with the memory budget of a Wear~OS device. The BVP channel
+tensor representation. We resample each channel to a common \textbf{4~Hz} grid (the same
+rate that EDA and TEMP already use natively). A 4~Hz rate is more
+than sufficient for stress-relevant dynamics, which operate on
+timescales of seconds to tens of seconds. It also keeps the window
+tensor small ($30 \times 5 = 150$ floats), which is important for
+fitting within the memory budget of a Wear~OS device. The BVP channel
 is downsampled from 64~Hz to 4~Hz using SciPy's polyphase
 \texttt{resample\_poly} function (up=1, down=16), which applies an
 anti-aliasing low-pass filter designed for exactly this ratio. The
@@ -105,7 +104,7 @@ target. Windows whose majority label is ``transient''
 (condition codes not belonging to any of the four target conditions)
 are discarded. This yields approximately 5{,}000 usable windows
 aggregated across all fifteen subjects, which are then split 80/20
-into train and test partitions before normalisation.
+into train and test partitions before normalization.
 
 \section{Label Mapping}
 \label{sec:m-labels}
@@ -219,7 +218,7 @@ intuition.
 \label{sec:m-train}
 
 The model is trained end-to-end using stochastic gradient descent
-with the Adam optimiser. All hyperparameters are summarised in
+with the Adam optimizer. All hyperparameters are summarized in
 Table~\ref{tab:hparams}.
 
 \begin{table}[H]
@@ -233,7 +232,7 @@ Table~\ref{tab:hparams}.
 \midrule
 Maximum epochs       & 60 \\
 Batch size           & 32 \\
-Optimiser            & Adam \\
+Optimizer            & Adam \\
 Initial learning rate & $10^{-3}$ \\
 Loss                 & Categorical cross-entropy \\
 EarlyStopping patience & 10 (monitor: val loss) \\
@@ -245,12 +244,12 @@ Normalisation        & z-score per feature, fit on train only \\
 \end{tabular}
 \end{table}
 
-A critical implementation detail is \emph{normalisation-after-split}:
+A critical implementation detail is \emph{normalization-after-split}:
 we compute the per-feature mean and standard deviation using
 \emph{only} the training partition and then apply those statistics
 unchanged to the test partition. This prevents information leakage
 from test to train, which would otherwise inflate test accuracy
-by roughly one to two percentage points. The learned normalisation
+by roughly one to two percentage points. The learned normalization
 constants are also exported alongside the TensorFlow Lite model so
 that the Wear OS application can apply the same transformation
 at inference time.
@@ -340,7 +339,7 @@ breaking existing clients.
 \section{Arduino Cabin Finite-State Machine}
 \label{sec:m-fsm}
 
-The Arduino firmware implements the five-state machine summarised
+The Arduino firmware implements the five-state machine summarized
 in Table~\ref{tab:fsm}.
 
 \begin{table}[H]
@@ -364,17 +363,17 @@ CRITICAL & level $= 3$                 & red blinking  & 100\% & voice alert \\
 \end{tabular}
 \end{table}
 
-Two aspects of the FSM deserve emphasis. First, the \texttt{WAITING}
-state is the \emph{safe default}: at boot, when the wearable is out
-of range, when the watch battery has died, or when the driver has
-removed the watch, the cabin enters a visually neutral low-intervention
-state rather than committing to an unjustified response. The sixty-second
-BLE timeout was chosen to be twice the nominal thirty-second emission
-cadence, which gives the firmware headroom for one missed notification
-without dropping the cabin into \texttt{WAITING}. Second, the severity
-ordering of the four active states -- from warm white (Calm) through
-neutral white (Mild) and calming blue (Moderate) to blinking red
-(Critical) -- is \emph{monotonic} in perceived intensity. This gives
-the driver an unambiguous cue that the cabin is tracking a progressive
-physiological quantity, rather than a categorical distinction without
-ordinal meaning.
+The FSM has two notable properties. The \texttt{WAITING} state is
+the \emph{safe default}: at boot, when the wearable is out of range,
+when the watch battery dies, or when the driver removes the watch,
+the cabin enters a visually neutral low-intervention state rather than
+committing to an unjustified response. The sixty-second BLE timeout
+is deliberately set to twice the thirty-second emission cadence, giving
+the firmware room to survive one missed notification without dropping
+into \texttt{WAITING}. The other property worth noting is that the
+severity ordering across the four active states (warm white for Calm,
+neutral white for Mild, calming blue for Moderate, blinking red for
+Critical) is \emph{monotonic} in perceived intensity. That gives the
+driver an unambiguous cue that the cabin is tracking something that
+gets progressively worse, not a categorical signal without ordinal
+meaning.

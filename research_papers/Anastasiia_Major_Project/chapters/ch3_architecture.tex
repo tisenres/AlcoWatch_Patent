@@ -66,22 +66,22 @@ The five components are, from the wrist outward:
   internal finite-state machine.
 
   \item \textbf{Cabin actuator subsystem.} The Arduino drives an
-  RGB LED strip (PWM, three colour channels), a cooling fan (PWM
+  RGB LED strip (PWM, three color channels), a cooling fan (PWM
   duty cycle, four discrete levels), and an audio output (tone
   pattern) through three independent general-purpose output paths.
   It falls back to a safe \texttt{WAITING} state if no BLE packet
   is received within sixty seconds.
 \end{enumerate}
 
-Two properties of this decomposition deserve emphasis. First,
-\emph{inference is fully on-device}: no physiological data ever
+Two properties of this decomposition are worth calling out.
+\emph{Inference is fully on-device}: no physiological data ever
 leaves the wrist, and the wearable operates correctly even when the
-vehicle has no cellular connectivity. Second, the interface between
-wrist and vehicle is a \emph{narrow, documented, twelve-byte
-characteristic}, which makes the two halves independently replaceable.
-In principle, any BLE-capable wearable that emits the same packet
-layout can drive the Arduino, and any BLE-capable vehicle module
-that consumes the same characteristic can be driven by the wearable.
+vehicle has no cellular connectivity. The interface between wrist and
+vehicle is also intentionally \emph{narrow and documented} --- a
+twelve-byte characteristic --- which makes the two halves independently
+replaceable. Any BLE-capable wearable that emits the same packet layout
+can drive the Arduino, and any BLE-capable vehicle module that consumes
+the same characteristic can be driven by the wearable.
 
 \section{Data Flow Pipeline}
 \label{sec:arch-pipeline}
@@ -101,7 +101,7 @@ fifteen samples (3.75~seconds of wall-clock time) at every inference
 step. This choice trades off responsiveness against label stability.
 
 Once per second -- or more precisely, every fifteen samples -- the
-full $30 \times 5$ window is z-score normalised using the training-set
+full $30 \times 5$ window is z-score normalized using the training-set
 per-feature means and standard deviations (cached as constants in
 the application) and passed to the TensorFlow Lite interpreter.
 The interpreter invokes the bidirectional-LSTM + attention model and
@@ -194,7 +194,7 @@ ML model type & BiLSTM + attention, regression head (scalar BAC
 in g/dL) & BiLSTM + attention, classification head (4-class softmax) \\
 Output type & Scalar (float) & Ordinal class (0--3) + confidence \\
 Actuator & Ignition relay (binary ALLOW/BLOCK) & Graduated cabin profile
-(LED colour, fan \%, audio) \\
+(LED color, fan \%, audio) \\
 BLE packet size & 20 bytes & 12 bytes \\
 Real-time latency & $<50$~ms on-device + 30~s emission cadence &
 $<50$~ms on-device + 30~s emission cadence \\
@@ -206,18 +206,17 @@ accidents \\
 \end{tabular}
 \end{table}
 
-Three architectural decisions are shared between the two systems:
-the on-device TensorFlow Lite inference pipeline, the Arduino-based
-vehicle-side controller, and the conservative ``default deny''
-failure mode in which the loss of a valid BLE update drives the
-vehicle module into its safest state. Two are specific to the
-present work: the classification (rather than regression) output
-head, which better matches the graduated intervention philosophy
-described in Chapter~\ref{ch:introduction}; and the shrinking of
-the BLE packet from twenty to twelve bytes, reflecting that an
-ordinal class occupies less space than a floating-point regression
-output and that no explicit alert-level byte is needed because the
-class already encodes the severity.
+The two systems share three architectural decisions: the on-device
+TensorFlow Lite inference pipeline, the Arduino-based vehicle-side
+controller, and the conservative ``default deny'' failure mode in
+which loss of a valid BLE update drives the vehicle module into its
+safest state. Two decisions are specific to this work. The output head
+is a classifier rather than a regressor, which fits the graduated
+intervention philosophy described in Chapter~\ref{ch:introduction}.
+The BLE packet is also smaller (twelve bytes instead of twenty) because
+an ordinal class takes less space than a floating-point regression
+output, and no separate alert-level byte is needed since the class
+value already encodes severity.
 
 Chapter~\ref{ch:conclusion} returns to this comparison and sketches
 a unified wearable safety platform that would emit both
