@@ -1,0 +1,194 @@
+\chapter{Literature Review}
+\label{ch:literature_review}
+
+\section{LLM Token Economics}
+\label{sec:token_economics}
+
+The cost structure of large language model APIs is fundamentally different from the cost
+structure of traditional database queries or REST services. Relational database calls are
+priced by compute time, which correlates weakly with the size of the query or its result.
+LLM API calls are priced by the token, which creates a direct linear relationship between
+the amount of context supplied and the monetary cost of the call. Brown et al.~\citep{brown2020gpt3}
+established the scaling properties that make large models capable, and those same scaling
+properties---more parameters, larger context windows---are what make the token-per-call
+model so costly at enterprise scale.
+
+The context window problem is not new. Early transformer models were limited to 512 or
+1,024 tokens; modern models accept 128,000 or more. Paradoxically, larger context windows
+have made the cost problem worse, not better, because they enable---and in production
+settings, encourage---practitioners to dump entire datasets into a single prompt. Vaswani
+et al.~\citep{vaswani2017attention} showed that the self-attention mechanism scales
+quadratically with sequence length, and while linearized attention variants have reduced
+the computational cost, the billing models of commercial APIs remain roughly linear in the
+number of tokens processed. The result is that a team that migrates from a 4K-context
+deployment to a 128K-context deployment does not necessarily save money; it often spends
+more because each query now ingests far more data than is strictly necessary.
+
+Retrieval-Augmented Generation~\citep{lewis2020rag} addresses one version of this problem
+by indexing documents into a vector store and retrieving only the top-$k$ most relevant
+chunks at query time. RAG has been widely adopted and is effective for question-answering
+over static document corpora. Its limitation for the present problem is that supply chain
+event streams are not static corpora. Events arrive continuously, their relevance is
+determined by recency and by structural position within the business graph, not by semantic
+similarity to a query string, and the quantity of interest is often what \emph{changed},
+not what \emph{exists}. A vector similarity search between the query ``what are the
+critical supply risks today?'' and a raw event record will not reliably surface the fact
+that a supplier's centrality in the graph increased because a new contract made it the
+sole source for three products.
+
+Naive context chunking---splitting the event stream into fixed-size windows and forwarding
+each window independently---avoids the RAG dependency but discards relationship information.
+A chunk of 100 sales events contains no indication that two of the suppliers involved are
+linked to the same warehouse, or that an anomaly in one product's defect rate correlates
+with a delay pattern in a geographically distant warehouse. The present project treats
+this structural relationship information as the primary signal and builds the compression
+strategy around preserving it.
+
+\section{Knowledge Graphs for Business Intelligence}
+\label{sec:knowledge_graphs}
+
+Knowledge graphs have a long history in enterprise data management, predating the current
+LLM wave by at least two decades. The Resource Description Framework (RDF) and the Web
+Ontology Language (OWL) established formal foundations for representing entities,
+relationships, and inference rules over structured business data~\citep{berners2001semantic}.
+Industrial deployments at companies like Google, Amazon, and LinkedIn demonstrated that
+graph-based representations of product catalogs, supply networks, and social connections
+support query patterns that relational schemas handle poorly, particularly multi-hop
+relationship queries and anomaly detection via structural deviation.
+
+For supply chain modeling, graph representations have proven especially natural. A supplier
+node connected by ``supplies'' edges to product nodes, which are in turn connected by
+``stored\_at'' edges to warehouse nodes and by ``sold\_in'' edges to region nodes, captures
+the essential topology of the business in a form that is both human-readable and
+algorithmically tractable. Centrality measures on this graph have direct business
+interpretations. A supplier with high betweenness centrality sits on many shortest paths
+between other nodes; a delay from that supplier disrupts more downstream processes than
+a delay from a peripheral supplier. Degree centrality measures how many direct connections
+a node has; a warehouse with high degree is a hub whose stockout affects more product lines
+simultaneously.
+
+NetworkX~\citep{hagberg2008networkx} provides the practical implementation substrate for
+this approach. Its Python API supports the full range of graph operations needed for this
+project: node and edge creation with arbitrary attribute dictionaries, snapshot export for
+delta computation, and the centrality algorithms described above. The library's memory
+efficiency for graphs of the scale used here---30 nodes and roughly 350--400 edges---is
+more than adequate; the entire graph fits within a few kilobytes of RAM and is reconstructed
+from scratch on each event batch in milliseconds.
+
+Graph-based anomaly detection is a well-studied area. Methods range from community
+detection via the Louvain algorithm~\citep{blondel2008louvain} to embedding-based
+approaches that map nodes to vector spaces and flag statistical outliers. The present
+project uses a simpler but interpretable approach: an \texttt{anomaly\_score} attribute
+on each node is updated by the event generator when anomalous conditions are detected
+(quality defect rates above a threshold, delay severity above a threshold), and the delta
+engine surfaces changes in this attribute as high-saliency events. This keeps the
+anomaly detection transparent and audit-friendly, which matters in enterprise supply
+chain contexts where decisions based on automated flags must be explainable.
+
+\section{Saliency Scoring and Information Filtering}
+\label{sec:saliency}
+
+Saliency, in the sense of measuring which parts of an input are most relevant for a
+downstream decision, has been a core concept in information retrieval since the early work
+on term frequency--inverse document frequency (TF-IDF) weighting~\citep{salton1988tfidf}.
+The intuition is the same in both contexts: not all elements of an input contribute equally
+to the output, and a good scoring function can identify the high-contribution elements
+without evaluating the output for each possible subset.
+
+Attention mechanisms in neural networks~\citep{bahdanau2015attention} operationalized this
+idea within deep learning, allowing a model to learn which parts of the input to ``attend
+to'' for a given prediction. The additive attention formulation of Bahdanau et al.\ and the
+scaled dot-product attention of Vaswani et al.~\citep{vaswani2017attention} are the
+architectural foundations of modern transformer models. This project does not train an
+attention model; instead, it uses a hand-crafted saliency function that combines three
+structural signals (degree centrality, betweenness centrality, and attribute magnitude)
+into a scalar score computable in microseconds per node without any gradient computation.
+
+Threshold-based filtering on saliency scores is well-established in information retrieval.
+Buckley and Voorhees~\citep{buckley2000precision} showed that aggressive top-$k$ retrieval
+with appropriate thresholds preserves most of the recall of a full-corpus search while
+cutting the number of documents processed by an order of magnitude. This project applies
+the analogous result to structured events: score each change by its business impact,
+discard changes below a saliency threshold, and forward only the high-impact changes to
+the agent. Empirical tuning on the ground truth anomaly patterns found that a threshold of
+$\theta = 0.4$ on the composite saliency score preserved 93.8\% recall while filtering
+roughly 90--95\% of routine low-importance events.
+
+The challenge in defining saliency for supply chain events is that importance is contextual.
+A price change of 5\% is routine noise in a volatile commodity market but a significant
+signal in a contract-bound manufacturing context. The present project handles this
+by incorporating the magnitude of attribute changes as the third term in the saliency
+formula, giving larger attribute changes higher scores regardless of baseline volatility.
+This is a deliberate simplification; a production system would benefit from domain-specific
+volatility normalization, which is identified as a future work item in
+Chapter~\ref{ch:conclusion}.
+
+\section{Multi-Agent LLM Systems}
+\label{sec:multi_agent}
+
+Multi-agent architectures for LLM-based systems have attracted substantial attention since
+the release of frameworks like LangChain~\citep{chase2022langchain} and
+CrewAI~\citep{crewai2024}. The canonical pattern involves assigning specialized roles to
+individual agents---an analyst agent, a risk assessment agent, a forecasting agent---and
+routing outputs between them through an orchestrator. Each agent receives a context
+specific to its role and returns a structured response that other agents can use.
+
+The economics of multi-agent systems are worse than single-agent systems by a multiplier
+equal to the number of agent invocations. If a pipeline calls three agents per user
+query, token costs are tripled. If each agent receives the full raw context rather than
+a compressed briefing, costs are tripled again. This multiplicative effect is the primary
+driver of the compression requirement: in a three-agent pipeline, achieving 10$\times$
+compression at the input stage reduces total cost by an order of magnitude. The 87$\times$
+compression measured in this project at 1,000 events reduces three-agent costs by nearly
+two orders of magnitude relative to the naive full-context approach.
+
+Tool-use and function-calling APIs have partly addressed the retrieval problem within
+agent architectures. An agent that can call a database query tool or a structured API
+does not need to receive the entire database in its context; it can fetch only what it
+needs at inference time. The limitation is that tool-use adds latency---each tool call is
+a round-trip to an external service---and requires the agent to know in advance what to
+fetch, which is not always possible for exploratory analytical queries over live event
+streams.
+
+The present project's approach is complementary to tool-use. The distillation pipeline
+runs as a preprocessing step before any agent is invoked, producing a briefing that
+captures the most salient state of the business at the current moment. An agent receiving
+this briefing can still use tools for follow-up queries, but the primary context it needs
+to answer most operational questions is already present in the briefing without additional
+round-trips.
+
+\section{Gap Analysis}
+\label{sec:gap_analysis}
+
+A review of the approaches above reveals a consistent pattern: each existing method
+addresses one dimension of the context compression problem but not all three simultaneously.
+RAG addresses the retrieval dimension but not the structural dimension (relationship inference)
+or the change dimension (what changed since the last snapshot). Summarization approaches
+condense long texts but operate on unstructured natural language and do not exploit the
+graph structure of business data. Embedding-based filtering addresses semantic similarity
+but, like RAG, does not naturally capture structural change in a dynamic graph.
+Table~\ref{tab:gap_analysis} summarizes this comparison.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of context compression approaches for LLM pipelines}
+\label{tab:gap_analysis}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Token Reduction} & \textbf{Quality Maintained} & \textbf{Structured Output} & \textbf{Open Source} \\
+\midrule
+RAG (BM25 / embedding) & High & Moderate & No & Yes \\
+LLM summarization & Moderate & Variable & No & Yes \\
+Embedding-based filtering & Moderate & Moderate & No & Yes \\
+\textbf{This work} & \textbf{87$\times$ max} & \textbf{93.8\% recall} & \textbf{Yes} & \textbf{Yes} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The gap this project fills is the absence of a system that combines all three: symbolic
+delta computation over a live knowledge graph, neural saliency scoring of those deltas,
+and structured distillation into an LLM-ready briefing with explicit severity
+classifications. No existing open-source package or published paper describes this
+combination in an end-to-end benchmarked implementation. The present work is, to the
+author's knowledge, the first open system to report token compression and recall metrics
+for this architecture on a supply chain domain.
