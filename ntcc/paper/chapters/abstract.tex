@@ -1,0 +1,23 @@
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This project presents a neuro-symbolic middleware system that sits between raw business event
+streams and LLM-based multi-agent pipelines, dramatically reducing the token cost of enterprise
+AI deployments. The system builds a live knowledge graph from supply chain events, computes
+semantic deltas between consecutive graph snapshots, scores each change by business saliency,
+and forwards only high-importance signals to downstream LLM agents---achieving token compression
+ratios of 3.3$\times$ at 100 events and up to 87$\times$ at 1,000 events while retaining 93.8\%
+of the analytical recall of the naive full-context approach.
+
+The pipeline is implemented in Python using NetworkX for graph management, a custom
+saliency formula combining degree centrality, betweenness centrality, and attribute magnitude,
+and Gemini Flash for agent inference. A Streamlit dashboard exposes four interactive pages:
+a live pipeline demo, a knowledge graph explorer, benchmark charts, and an agent insights panel.
+Benchmarking against a naive baseline and an aggregation-only baseline shows that the full
+pipeline maintains quality parity (score 1.0) while reducing API costs by 52--99\% depending
+on event scale. A ground truth evaluation confirms 100\% detection of four injected anomaly
+patterns, with the pipeline uniquely detecting cascade effects across two warehouses that the
+aggregation baseline misses.
+
+\textbf{Keywords:} Neuro-Symbolic AI, Knowledge Graph, LLM Token Compression, Saliency
+Scoring, Multi-Agent Systems, Supply Chain Intelligence, Streamlit, NetworkX, Gemini
