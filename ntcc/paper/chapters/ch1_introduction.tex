@@ -1,0 +1,177 @@
+\chapter{Introduction}
+\label{ch:introduction}
+
+\section{Background}
+\label{sec:background}
+
+Large language models have moved from research curiosity to production infrastructure faster
+than most enterprise architects anticipated. Within a few years of GPT-3's release, companies
+across logistics, finance, healthcare, and manufacturing began deploying LLM-powered agents to
+parse reports, answer supply chain queries, and generate operational summaries. The appeal is
+obvious: a well-prompted model can synthesize hundreds of data points into a coherent narrative
+in seconds, replacing workflows that once required a team of analysts several hours.
+
+The economics, however, tell a more uncomfortable story. GPT-4o charges approximately
+\$0.03 per thousand tokens, and enterprise deployments are not small. A company running a
+thousand analytical queries per day, each fed a modest 5,000-token context window, spends
+between \$450 and \$1,500 per month on token costs alone---before accounting for response
+tokens, retries, or the larger contexts that complex queries require. At 10,000 queries per
+day, the same arithmetic puts the bill at \$4,500 to \$15,000 monthly. These are not
+hypothetical projections; they are the numbers that show up in cloud billing dashboards for
+teams that have deployed LLM pipelines without a compression strategy.
+
+The fundamental tension is architectural. LLMs are stateless: every call must receive the
+full context needed to answer the query, because the model retains nothing between calls.
+In a dynamic business environment, that context is the raw event stream---hundreds or
+thousands of individual records describing sales, shipments, quality alerts, and contract
+updates. Forwarding the full stream to every agent call is conceptually simple but
+economically unsustainable.
+
+This project addresses that tension by building a middleware layer that processes the raw
+event stream before it reaches any LLM agent. The middleware uses a knowledge graph to
+represent business state, computes structural deltas between successive snapshots, scores
+each delta by its business significance, and assembles a compact Business Intelligence
+Briefing that captures the most salient changes in a few hundred tokens. The result is a
+system that lets LLM agents reason about enterprise data at a fraction of the token cost,
+without meaningful loss of analytical quality.
+
+\section{Motivation}
+\label{sec:motivation}
+
+Three converging developments make this project both necessary and achievable right now.
+
+\textbf{LLM costs scale with context, not complexity.}
+A language model does not charge more for a harder question; it charges more for a longer
+prompt. This asymmetry means that a business analyst querying a 1,000-event data window
+pays roughly ten times more than a colleague querying 100 events, even when the underlying
+question is identical. Retrieval-Augmented Generation (RAG) addresses part of this by
+fetching only relevant document chunks, but RAG assumes that the data can be indexed into
+a vector store beforehand. Real-time event streams---where relevance is defined by what
+changed in the last hour, not by semantic similarity to a query---do not fit neatly into
+the RAG paradigm.
+
+\textbf{Knowledge graphs have matured for structured business data.}
+Libraries like NetworkX make it practical to build in-memory graph representations of
+business entities and their relationships in a few dozen lines of Python. Graph-theoretic
+measures such as degree centrality and betweenness centrality can quantify the relative
+importance of each entity without any labeled training data. A supplier node that sits on
+the shortest path between many product nodes has high betweenness centrality; when it
+develops a delay, the effect propagates broadly and the node's centrality score provides
+a natural measure of how much attention that delay deserves.
+
+\textbf{Saliency-based filtering is proven in adjacent domains.}
+Attention mechanisms in neural networks have demonstrated for years that not all input
+tokens matter equally for a given output. In information retrieval, threshold-based
+filtering of low-relevance documents routinely improves both latency and precision.
+This project applies the same principle to structured business events: score each
+change by its business impact, discard changes below a saliency threshold, and forward
+only the high-impact changes to the agent. The contribution is to operationalize this
+idea in the specific context of supply chain event streams and LLM agent pipelines.
+
+\section{Project Scope}
+\label{sec:scope}
+
+This project is deliberately \textbf{software-focused}. No new hardware has been designed,
+no proprietary dataset has been collected, and no claims are made about production readiness
+in any specific enterprise environment. The system runs entirely on a standard laptop, using
+a synthetic supply chain domain to provide a controllable and reproducible evaluation setting.
+
+The scope covers four deliverables: a neuro-symbolic distillation pipeline implemented in
+Python, a Streamlit web dashboard that exposes the pipeline interactively, a benchmark
+framework that compares the pipeline against two baselines (naive full-context and
+aggregation-only), and a ground truth evaluation against four injected anomaly patterns.
+What falls outside the scope is equally important to state: no real enterprise data
+connectors have been built, the saliency threshold was tuned by hand rather than learned
+from labeled data, and the LLM integration currently relies on a single provider
+(Google Gemini Flash) rather than a provider-agnostic abstraction.
+
+The synthetic supply chain domain consists of ten event types spanning sales, restocks,
+shipments, returns, price changes, supplier delays, quality issues, demand spikes, stockouts,
+and new contracts. The knowledge graph uses a fixed topology of products, suppliers,
+warehouses, and regions, giving the evaluation a well-defined ground truth against which to
+measure the pipeline's detection performance. This controlled setup is a deliberate choice:
+it allows precise measurement of compression ratios and recall without the confounding
+variables that real enterprise data would introduce.
+
+\section{Problem Statement}
+\label{sec:problem}
+
+The problem this project addresses is concrete: there is no open, benchmarked system that
+combines symbolic preprocessing of business events with neural saliency scoring and
+structured distillation into LLM-ready briefings. Four specific gaps define the current
+state of the art.
+
+\begin{enumerate}
+  \item \textbf{No symbolic preprocessing layer for LLM agents.} Existing LLM deployments
+  forward raw data---flat CSV rows, JSON event objects, or unstructured log lines---directly
+  to the model prompt. The model is left to do all the relationship inference and change
+  detection in-context, consuming tokens to reconstruct structure that could have been
+  computed symbolically before the API call.
+
+  \item \textbf{No saliency-aware context compression for business event streams.}
+  RAG-based compression works well for document corpora but poorly for time-ordered event
+  streams where relevance is determined by recency and structural change, not by semantic
+  similarity to a query vector. No published system applies centrality-weighted saliency
+  scoring to knowledge graph deltas for the purpose of LLM token reduction.
+
+  \item \textbf{No supply-chain-specific multi-agent middleware.} Supply chain analysis
+  requires reasoning about relationships---supplier-to-product, product-to-warehouse,
+  warehouse-to-region---that a flat event list obscures. Existing agent frameworks provide
+  tool-use and role-based routing, but they do not include a preprocessing layer that
+  surfaces these relationships before the agent receives its context.
+
+  \item \textbf{No open benchmarked system.} The few industrial papers that describe
+  token-reduction pipelines for enterprise LLM use cases report results on proprietary
+  datasets with no reproducible baseline. This project contributes an end-to-end open
+  implementation with documented baselines and replicable benchmark scripts.
+\end{enumerate}
+
+\section{Objectives}
+\label{sec:objectives}
+
+To close the gaps identified above, this project pursues five concrete objectives:
+
+\begin{enumerate}
+  \item \textbf{Build a neuro-symbolic distillation pipeline} that processes raw supply chain
+  events through a knowledge graph, a semantic delta engine, and a saliency scorer to produce
+  structured Business Intelligence Briefings.
+
+  \item \textbf{Achieve 10$\times$ or greater token compression} with at least 90\% recall
+  relative to the naive full-context baseline, across event scales from 100 to 1,000 events.
+
+  \item \textbf{Implement a Streamlit dashboard} with four pages---Pipeline Demo, Knowledge
+  Graph, Benchmarks, and Agent Insights---giving non-technical users interactive access to
+  the system.
+
+  \item \textbf{Benchmark against a naive baseline and an aggregation-only baseline},
+  measuring token usage, quality recall, pipeline latency, and cost savings at multiple
+  event scales.
+
+  \item \textbf{Validate detection quality on ground truth patterns}, injecting four known
+  anomalies into the synthetic data and measuring whether the pipeline identifies them
+  correctly, including cascade effects that aggregation-only approaches miss.
+\end{enumerate}
+
+Each subsequent chapter addresses one or more of these objectives directly, and
+Chapter~\ref{ch:conclusion} revisits them to show that each has been met.
+
+\section{Connection to AlcoWatch}
+\label{sec:alcowatch}
+
+This project has a sibling in the same codebase. AlcoWatch, a prior work by a colleague
+at Amity University Tashkent, addresses drunk-driving prevention through wearable
+physiological sensing and on-device inference on a Wear OS smartwatch
+\citep{shaposhnikova2025alcowatch}. That system reads PPG, EDA, and skin temperature from
+a wrist device, classifies driver stress in real time, and transmits the result over BLE
+to an Arduino that adjusts the vehicle's cabin environment.
+
+The conceptual connection to the present work is at the level of the middleware idea.
+AlcoWatch distills a stream of raw physiological sensor samples into a single structured
+estimate---the stress level---before passing it to the actuator. This project does the
+same thing one abstraction layer up: it distills a stream of raw business events into a
+structured briefing before passing it to an LLM agent. Both systems apply the principle
+that downstream consumers should receive processed, salient signals rather than raw data.
+The domain and the technology stack are completely different, but the architectural intuition
+is shared. This connection is discussed further in Chapter~\ref{ch:conclusion} as part of
+the broader claim that neuro-symbolic distillation is a pattern applicable across sensing
+and data pipeline contexts.
