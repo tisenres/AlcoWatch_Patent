@@ -1,0 +1,96 @@
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+\section{Summary of Contributions}
+\label{sec:contributions}
+
+This project built, benchmarked, and demonstrated an end-to-end neuro-symbolic distillation
+pipeline that addresses the token cost problem in enterprise LLM deployments. The system
+takes raw supply chain event streams, builds a live knowledge graph, computes structural
+deltas, scores each change by business saliency, and produces compact Business Intelligence
+Briefings that preserve analytical quality while reducing token usage by up to two orders
+of magnitude. The Streamlit dashboard makes the pipeline accessible to non-technical users
+through four interactive pages.
+
+The five project objectives from Chapter~\ref{ch:introduction} were met as follows.
+The neuro-symbolic pipeline was built and is fully operational, processing synthetic supply
+chain events through all five stages with less than 15~ms of overhead before any LLM call.
+The 10$\times$ compression target was exceeded at every scale tested, reaching 84.1$\times$
+at 1,000 events and 311$\times$ at 3,000 events, while recall remained at 93.8\%---above
+the 90\% threshold specified in the objective. The Streamlit dashboard was implemented with
+all four pages (Pipeline Demo, Knowledge Graph, Benchmarks, Agent Insights). The benchmark
+framework compared the full pipeline against both a naive baseline and an aggregation-only
+baseline at five scales. The ground truth evaluation detected all four injected patterns,
+with the pipeline uniquely identifying cascade effects that the aggregation baseline missed.
+
+The project's core architectural claim is that symbolic preprocessing of business events
+can substitute for the majority of the LLM's in-context reasoning burden. By computing
+entity relationships, change magnitudes, and importance scores before the API call, the
+pipeline offloads work from the expensive stochastic inference layer to a cheap deterministic
+computation layer. The 734-token briefing that an LLM agent receives is not a summarization
+of the raw data---it is a structured analytical artifact that already encodes which entities
+are affected, how their relationships connect, and how severe the changes are. The agent's
+job is to interpret this artifact, not to reconstruct it from scratch.
+
+\section{Limitations}
+\label{sec:limitations}
+
+The system as built has four clear limitations that bound the scope of the claims made in
+this report.
+
+\textbf{Synthetic data only.} The entire evaluation is on procedurally generated events
+using a fixed graph topology and calibrated anomaly injection. Real enterprise event streams
+have irregular schemas, missing values, encoding errors, and distribution shifts that the
+synthetic generator does not reproduce. The compression ratios and recall figures reported
+here represent a best-case scenario relative to what a production deployment would achieve.
+How much performance degrades on real data is an open question that future work must address.
+
+\textbf{Single domain.} The knowledge graph schema, saliency formula coefficients, and
+distillation format were all designed for supply chain events. Applying the same system to
+a different domain---financial transactions, healthcare records, or manufacturing sensor
+data---would require re-engineering the graph schema and recalibrating the saliency
+weights. The approach generalizes as a concept but is domain-specific as an implementation.
+
+\textbf{LLM API dependency.} The agent layer is a thin wrapper around the Gemini Flash
+API. The quality results depend on the specific model's analytical capabilities and are
+not reproducible if the model version changes. An open-weights locally-hosted alternative
+would give more reproducible and auditable results, at the cost of additional infrastructure.
+
+\textbf{Hand-tuned saliency threshold.} The threshold $\theta = 0.4$ and the coefficient
+values $\alpha = 0.35$, $\beta = 0.35$, $\gamma = 0.30$ were tuned by grid search on the
+four ground truth patterns. This is a small calibration set. A larger labeled evaluation
+set would allow more principled coefficient selection and might yield better recall at
+higher compression ratios.
+
+\section{Future Work}
+\label{sec:future_work}
+
+The four limitations above point directly to the most valuable directions for future work.
+
+\textbf{Real enterprise data connectors.} The highest-impact extension is replacing the
+synthetic data generator with connectors to real ERP and supply chain management systems.
+Adapters for SAP, Oracle SCM, or message queue systems like Apache Kafka would let the
+pipeline process live event streams and make the compression and recall measurements
+meaningful for production deployments. This is also the most straightforward engineering
+extension: the pipeline's interface to the data generator is a simple Python generator
+function, and replacing it requires no changes to the symbolic or neural layers.
+
+\textbf{Learned saliency via vector embeddings.} The hand-crafted saliency formula is
+interpretable but brittle. A learned embedding model that represents event importance in a
+continuous space, trained on historical incidents labeled by domain experts, would generalize
+better across different supply chain configurations and event distributions. Combining the
+structural graph signals with learned semantic similarity---a hybrid symbolic-neural score---is
+a natural next step that the existing architecture can accommodate without restructuring.
+
+\textbf{Multi-domain graph schemas.} Generalizing the graph schema to support additional
+domains (financial transaction networks, healthcare supply chains, manufacturing bills of
+materials) would test whether the architectural pattern transfers and would increase the
+system's utility as a reusable open-source tool. Domain-specific schema adapters could
+be implemented as plugins without modifying the core pipeline.
+
+\textbf{On-device distillation for edge deployment.} The pipeline currently runs on a
+server and calls a cloud LLM API. For deployments where data privacy or network availability
+is a constraint, running the full pipeline---including a small locally-hosted language
+model---on edge hardware would make the system viable in air-gapped environments. The
+pipeline's sub-15~ms processing overhead suggests that the bottleneck in such a deployment
+would be the local model inference speed, not the symbolic stages.
