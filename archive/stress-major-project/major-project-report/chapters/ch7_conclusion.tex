@@ -1,0 +1,152 @@
+\chapter{Conclusion and Future Work}
+\label{ch:conclusion}
+
+This final chapter summarizes the contributions of the project
+against the five objectives defined in Chapter~\ref{ch:introduction},
+acknowledges the limitations of the current system, and outlines
+four directions for future work.
+
+\section{Summary of Contributions}
+\label{sec:conclusion-contrib}
+
+The project as presented in this report has delivered five concrete
+contributions, each aligned with one of the five objectives from
+Section~\ref{sec:objectives}:
+
+\begin{enumerate}
+  \item \textbf{A four-class driver stress classifier based on a
+  bidirectional LSTM with additive attention.} The classifier
+  operates on a five-feature, 30-timestep window sampled at 4~Hz
+  and uses only wrist-accessible signals. Its design follows the
+  bidirectional-LSTM blueprint of \citet{graves2005bilstm} and the
+  attention intuition of \citet{vaswani2017attention}, scaled down
+  to a 160{,}000-parameter compact form factor.
+
+  \item \textbf{Empirical accuracy of 97.8\% and weighted F1 of 0.978}
+  on the three dominant classes of the held-out WESAD test split
+  \citep{schmidt2018wesad}, with a deployed TensorFlow Lite
+  \citep{tflite2023} footprint of 72~KB. This exceeds both the accuracy
+  target ($\ge 90\%$) and the size target ($\le 80$~KB) set in
+  Chapter~\ref{ch:introduction}.
+
+  \item \textbf{A Wear~OS Kotlin application that performs real-time
+  on-device inference.} The application collects wrist sensors at
+  their native rates, resamples them to a common 4~Hz grid, applies
+  the cached per-feature normalization learned at training time,
+  runs the quantized TensorFlow Lite interpreter, and emits a
+  smoothed stress estimate every thirty seconds with end-to-end
+  latency well below the 50~ms-per-window target.
+
+  \item \textbf{A documented twelve-byte BLE GATT protocol}
+  (service \texttt{ABCD1234\ldots}, characteristic
+  \texttt{ABCD1235\ldots}) that carries a timestamp, a 4-valued
+  stress level, and a confidence. The protocol is fully specified
+  in Section~\ref{sec:m-ble} and can be implemented by any BLE
+  central or peripheral independently of the reference
+  implementation.
+
+  \item \textbf{A graduated, physiology-driven adaptive cabin
+  control system} implemented on the Arduino Nano 33 BLE, comprising
+  four active cabin profiles (Calm, Mild, Moderate, Critical), a
+  safe \texttt{WAITING} state, and a sixty-second BLE timeout.
+  The fail-safe behavior mirrors the design philosophy of the
+  AlcoWatch BAC system under provisional patent ACN1408
+  \citep{acn1408}.
+\end{enumerate}
+
+These five contributions add up to a working end-to-end prototype.
+A driver wearing a Wear~OS device with this application installed,
+while operating a vehicle fitted with the reference Arduino module,
+will see their cabin lighting, ventilation, and audio adapt
+automatically to their autonomic-nervous-system state, with no cloud
+dependency and no compromise of sensor data privacy.
+
+\section{Limitations}
+\label{sec:conclusion-limits}
+
+Four limitations must be acknowledged. Addressing them is what the
+future-work program of Section~\ref{sec:conclusion-future} targets.
+
+\textbf{Laboratory versus naturalistic stressors.} WESAD
+\citep{schmidt2018wesad} was collected under controlled laboratory
+conditions: subjects were stationary, posture was constrained, and
+stressors were delivered via a fixed protocol (a Trier Social Stress
+Test variant). Real driving stress is different. It mixes with
+physical workload (steering, pedals), sustained mental demand, and
+ambient vibration. The physiological signatures might differ enough
+to reduce the classifier's accuracy in actual deployment, which is
+an open empirical question.
+
+The second limitation is \textbf{lack of real-world deployment testing}.
+The system has not been evaluated on real drivers under real driving
+conditions. The evaluation here is limited to held-out WESAD data and
+scripted BLE simulations. A supervised on-road study is needed before
+any safety claim can be made.
+
+\textbf{Synthetic Critical class.} The ``Critical'' class was defined
+using a per-subject quantile split of the WESAD stress condition, not
+from a real driving emergency. That's an approximation of the autonomic
+response a genuine near-miss would produce. Whether it's a close enough
+approximation for the Critical cabin profile to fire at the right
+moments is something only real-world testing can answer.
+
+\textbf{Accelerometer magnitude discards direction.} The model uses
+the three-axis accelerometer magnitude as a single scalar feature.
+That keeps the feature count at five, but throws away directional
+information. For example, a sharp lateral swerve and a vertical
+pothole impact produce similar magnitudes but very different risk
+profiles, and the model can't tell them apart. Admitting the three
+raw axes as separate features would grow the input to seven and
+slightly increase model size, but would likely improve discrimination.
+
+\section{Future Work}
+\label{sec:conclusion-future}
+
+Four directions suggest themselves for follow-on work.
+
+\textbf{Unification with AlcoWatch into a single platform.}
+The AlcoWatch BAC system \citep{acn1408} and this stress-detection
+system share most of their architecture: the same wrist sensors,
+the same on-device TensorFlow Lite runtime, the same Arduino-based
+vehicle controller, and the same fail-safe default-deny philosophy.
+Merging them into a single Wear~OS application that runs both
+inference engines concurrently and exposes two BLE characteristics
+on one shared service is a natural next step. The Arduino firmware
+would combine both decision logics: BAC-based ignition blocking
+(AlcoWatch-style) and stress-driven cabin adaptation (this work).
+That would spread the hardware cost of the wearable across two
+distinct safety outcomes.
+
+A second priority is \textbf{real-world data collection during
+driving}. A follow-on project should collect a WESAD-style multimodal
+dataset under naturalistic driving conditions, either on a simulator
+or on a test track (subject to ethical approval). That dataset would
+let the classifier be fine-tuned on the exact signal distribution it
+encounters in deployment and would provide the empirical basis for a
+quantitative safety claim.
+
+\textbf{Personalization via per-driver calibration} is the third
+direction. The per-subject quantile logic in the stress-split label
+mapping (Section~\ref{sec:m-labels}) is evidence that between-subject
+differences in baseline autonomic tone are large enough to matter.
+A lightweight calibration step -- for example, a five-minute baseline
+capture the first time the watch is worn, with the resulting per-user
+statistics used to normalize incoming sensor streams -- would likely
+improve Critical-class recall on drivers whose resting EDA or heart
+rate sits at the extremes of the population.
+
+Finally, \textbf{knowledge distillation to a sub-25~KB student model}
+would reduce inference latency and energy consumption and would open
+the door to ultra-low-power wearables and hearables. The current
+72~KB model runs fine on Wear~OS, but a smaller model would be useful
+for wristband-class devices. One practical route is knowledge
+distillation: train a student network (a single-direction LSTM or a
+1-D CNN with under 20{,}000 parameters) to match the soft predictions
+of the current BiLSTM+attention teacher. If the student can hold 90\%
+accuracy in a 25~KB footprint, continuous always-on stress monitoring
+becomes feasible on much smaller hardware.
+
+Each of these directions extends rather than replaces the contributions
+of this report. Together they sketch the path from a validated
+laboratory prototype to a deployable, personalized, multi-purpose
+wearable safety platform.

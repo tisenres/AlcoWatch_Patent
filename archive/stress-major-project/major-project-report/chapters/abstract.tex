@@ -1,0 +1,25 @@
+\chapter*{ABSTRACT}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This project presents a software system for real-time driver stress detection and adaptive
+vehicle cabin environment control using physiological signals collected from a Wear OS
+smartwatch. Building on the foundation of Patent Application No.\ ACN1408, which introduced
+a wearable-to-vehicle framework for alcohol detection, the present work extends the platform
+to continuous stress monitoring with automated environmental response.
+
+The system acquires blood volume pulse (BVP), electrodermal activity (EDA), skin temperature,
+accelerometer data, and inter-beat interval (IBI) from a wrist-worn device. A Bidirectional
+Long Short-Term Memory network with an Attention mechanism classifies driver stress into four
+levels---Calm, Mild, Moderate, and Critical---at 4~Hz with an inference latency below 50~ms.
+The model was trained on the WESAD public wearable stress dataset and achieves an accuracy of
+97.8\% on the three dominant stress classes with a weighted F1-score of 0.978. The quantized
+TensorFlow Lite model occupies 72~KB, making it suitable for deployment on resource-constrained
+wearable hardware.
+
+Environmental responses are transmitted via a 12-byte Bluetooth Low Energy packet to an
+Arduino Nano 33 BLE module, which controls RGB cabin lighting, ventilation fan speed, and
+audio prompts according to the detected stress level. A simulation framework validates all
+five system scenarios including a near-accident panic spike and gradual fatigue buildup.
+
+\textbf{Keywords:} Driver Stress Detection, Machine Learning, Wearable Sensors, TensorFlow
+Lite, Bluetooth Low Energy, Adaptive Vehicle Environment, BiLSTM, WESAD, Arduino

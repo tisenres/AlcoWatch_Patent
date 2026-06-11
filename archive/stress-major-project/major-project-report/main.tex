@@ -1,0 +1,79 @@
+% research_papers/Anastasiia_Major_Project/main.tex
+\documentclass[12pt,a4paper]{report}
+\usepackage[margin=1in]{geometry}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{natbib}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning}
+
+\doublespacing
+\graphicspath{{figures/}}
+
+\lstset{basicstyle=\ttfamily\footnotesize, keywordstyle=\color{blue}\bfseries,
+        commentstyle=\color{gray}, breaklines=true, frame=single,
+        numbers=left, numberstyle=\tiny\color{gray}}
+
+\begin{document}
+
+% ── Title Page ──────────────────────────────────────────────────────────────
+\begin{titlepage}
+\begin{singlespace}
+\centering\vspace*{1cm}
+{\Large\bfseries MAJOR PROJECT REPORT}\\[0.5cm]
+on\\[0.5cm]
+{\large\bfseries ``AI-Based Real-Time Driver Stress Detection\\
+and Adaptive Vehicle Environment Control System''}\\[1.5cm]
+Submitted to\\[0.2cm]
+\textbf{Amity University Tashkent}\\[1cm]
+\includegraphics[width=4cm]{amity_logo}\\[1cm]
+In partial fulfilment of the requirements for the award of the degree of\\[0.3cm]
+\textbf{Bachelor of Science Information Technology}\\[1cm]
+by\\[0.5cm]
+\textbf{Anastasiia Igorevna Shaposhnikova}\\A85204923019\\[1cm]
+Under the guidance of\\[0.2cm]
+\textbf{Dr.\ Ram Naresh}\\Professor\\
+Department of Information Technology and Engineering\\[1.5cm]
+\textbf{Department of Information Technology and Engineering}\\
+\textbf{AMITY UNIVERSITY IN TASHKENT}\\[0.3cm]
+2025--26
+\end{singlespace}
+\end{titlepage}
+
+% ── Front Matter ─────────────────────────────────────────────────────────────
+\pagenumbering{roman}
+\include{chapters/declaration}
+\include{chapters/certificate}
+\include{chapters/acknowledgement}
+\tableofcontents\newpage
+\listoftables\newpage
+\listoffigures\newpage
+\include{chapters/abstract}
+
+% ── Main Chapters ─────────────────────────────────────────────────────────────
+\pagenumbering{arabic}
+\include{chapters/ch1_introduction}
+\include{chapters/ch2_literature_review}
+\include{chapters/ch3_architecture}
+\include{chapters/ch4_methodology}
+\include{chapters/ch5_implementation}
+\include{chapters/ch6_results}
+\include{chapters/ch7_conclusion}
+
+% ── References ───────────────────────────────────────────────────────────────
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

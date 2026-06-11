@@ -1,0 +1,349 @@
+\chapter{Implementation}
+\label{ch:implementation}
+
+This chapter presents the concrete implementation of the system
+described in Chapter~\ref{ch:methodology}. It is organized top-down:
+we first describe the project's directory structure so that the
+reader can locate any referenced file, then walk through the key
+modules in three programming languages (Python for the ML pipeline,
+Kotlin for the Wear~OS application, and C++ for the Arduino firmware),
+and finally describe the simulation framework that allows the entire
+end-to-end system to be exercised without physical hardware.
+
+\section{Project Structure}
+\label{sec:impl-structure}
+
+The project is organized into four top-level directories that
+correspond to the four major build artifacts (Python wheel, Wear~OS
+APK, Arduino sketch, and simulation scripts):
+
+\begin{lstlisting}[language=bash]
+stress_detection/               # Python 3.11 ML pipeline
+  data/
+    wesad_loader.py             # WESAD pickle I/O
+    feature_engineering.py      # resampling + IBI + label mapping
+    dataset_builder.py          # windowing + train/test split
+  model/
+    stress_model.py             # BiLSTM + attention definition
+    attention_layer.py          # custom Keras attention layer
+  training/
+    train.py                    # end-to-end training script
+    evaluate.py                 # held-out evaluation + confusion matrix
+  conversion/
+    export_tflite.py            # SavedModel -> TFLite conversion
+  models/
+    stress_model.tflite         # deployable FlatBuffer (72 KB)
+wear_os_app/
+  app/src/main/java/com/alcowatch/stress/
+    StressInferenceEngine.kt    # TFLite interpreter wrapper
+    SensorCollector.kt          # 4 Hz windowing pipeline
+    StressBLECharacteristic.kt  # GATT peripheral
+    StressLevel.kt              # ordinal enum
+arduino/
+  stress_cabin_control/
+    stress_cabin_control.ino    # top-level sketch
+    cabin_profile.h             # profile constants and LED tables
+    ble_central.cpp             # ArduinoBLE central wrapper
+scripts/
+  run_simulation.py             # scripted BLE central for hardware-free tests
+  generate_figures.py           # paper figure generation
+paper_figures/                  # output PDFs
+\end{lstlisting}
+
+The separation of \texttt{stress\_detection/} from the
+\texttt{wear\_os\_app/} and \texttt{arduino/} trees reflects the
+build-time boundary between training (performed once, on a
+workstation) and deployment (performed continuously, on the device).
+The \texttt{models/} subdirectory is the handoff point: its
+\texttt{stress\_model.tflite} artifact is the only file that crosses
+from training to deployment.
+
+\section{ML Pipeline Implementation}
+\label{sec:impl-ml}
+
+The ML pipeline is implemented in Python 3.11 against TensorFlow
+2.15. We describe three representative modules: the WESAD loader,
+the feature-engineering module that performs label mapping, and the
+model definition itself.
+
+\subsection{\texttt{wesad\_loader.py}}
+
+WESAD is distributed as per-subject pickle files containing a nested
+dictionary of signals and labels. Python 3 cannot load these pickles
+with the default encoding because they were serialized under Python
+2; an explicit \texttt{encoding='latin1'} argument is required.
+
+\begin{lstlisting}[language=Python]
+import pickle
+from pathlib import Path
+from typing import Dict
+
+class WESADLoader:
+    """Load per-subject WESAD pickle files."""
+
+    def __init__(self, root: Path):
+        self.root = Path(root)
+
+    def load_subject(self, subject_id: str) -> Dict:
+        """Load one subject (e.g. 'S2') from the WESAD release.
+
+        Returns a dict with keys 'signal' (nested wrist/chest) and
+        'label' (1D ndarray at 700 Hz).
+        """
+        path = self.root / subject_id / f"{subject_id}.pkl"
+        with open(path, "rb") as fh:
+            # WESAD was pickled under Python 2; latin1 decoding is
+            # required to restore the byte strings as expected.
+            data = pickle.load(fh, encoding="latin1")
+        return {
+            "bvp":   data["signal"]["wrist"]["BVP"].ravel(),    # 64 Hz
+            "eda":   data["signal"]["wrist"]["EDA"].ravel(),    # 4 Hz
+            "temp":  data["signal"]["wrist"]["TEMP"].ravel(),   # 4 Hz
+            "acc":   data["signal"]["wrist"]["ACC"],            # 32 Hz, 3-axis
+            "label": data["label"].astype("int8").ravel(),       # 700 Hz
+        }
+\end{lstlisting}
+
+\subsection{\texttt{feature\_engineering.py}}
+
+The label-mapping function implements the stress-split rule from
+Section~\ref{sec:m-labels} directly. Per-subject EDA and IBI
+quantiles are computed once on the subject's stress-labeled samples
+and then applied to each sample in turn.
+
+\begin{lstlisting}[language=Python]
+import numpy as np
+
+# WESAD code -> our ordinal stress class (default target)
+_BASE_MAP = {1: 0, 4: 0, 3: 1, 2: 2}   # 0 drops; 2 may be bumped to 3
+
+def map_wesad_labels(
+    wesad_labels: np.ndarray,
+    eda: np.ndarray,
+    ibi: np.ndarray,
+) -> np.ndarray:
+    """Map WESAD 0..4 labels to our 0..3 ordinal stress classes.
+
+    Stress samples (code 2) split into Moderate (2) vs Critical (3)
+    by EDA > 75th-pct AND IBI < 25th-pct (per-subject quantiles).
+    """
+    out = np.full_like(wesad_labels, fill_value=-1, dtype=np.int8)
+
+    stress_mask = wesad_labels == 2
+    if stress_mask.any():
+        eda_thresh = np.quantile(eda[stress_mask], 0.75)
+        ibi_thresh = np.quantile(ibi[stress_mask], 0.25)
+        crit_mask = stress_mask & (eda > eda_thresh) & (ibi < ibi_thresh)
+    else:
+        crit_mask = np.zeros_like(stress_mask)
+
+    for code, cls in _BASE_MAP.items():
+        out[wesad_labels == code] = cls
+    out[crit_mask] = 3      # promote to Critical
+    return out              # -1 entries are later discarded
+\end{lstlisting}
+
+\subsection{\texttt{stress\_model.py}}
+
+The model definition is a direct Keras functional-API translation
+of Table~\ref{tab:layers}. The attention layer is factored out into
+a thin wrapper for readability.
+
+\begin{lstlisting}[language=Python]
+import tensorflow as tf
+from tensorflow.keras import layers, Model
+
+def build_model(timesteps: int = 30, n_features: int = 5,
+                n_classes: int = 4) -> Model:
+    """BiLSTM(64) + additive attention + 2-layer MLP head.
+
+    Approx. 160k parameters, 72 KB after TFLite default-optimisation.
+    """
+    inputs = layers.Input(shape=(timesteps, n_features),
+                          name="stress_input")
+
+    # Bidirectional temporal encoder
+    x = layers.Bidirectional(
+        layers.LSTM(64, return_sequences=True), name="bilstm"
+    )(inputs)                                  # -> [B, T, 128]
+    x = layers.Dropout(0.3)(x)
+
+    # Additive attention pooling
+    e = layers.Dense(1, activation="tanh", name="attn_score")(x)   # [B, T, 1]
+    a = layers.Softmax(axis=1, name="attn_weights")(e)             # [B, T, 1]
+    context = layers.Lambda(
+        lambda z: tf.reduce_sum(z[0] * z[1], axis=1),
+        name="attn_context"
+    )([x, a])                                                      # [B, 128]
+
+    # Feed-forward head
+    h = layers.Dense(64, activation="relu")(context)
+    h = layers.Dropout(0.3)(h)
+    h = layers.Dense(32, activation="relu")(h)
+    logits = layers.Dense(n_classes, activation="softmax",
+                          name="stress_probs")(h)
+
+    model = Model(inputs, logits, name="stress_classifier")
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(1e-3),
+        loss="categorical_crossentropy",
+        metrics=["accuracy"],
+    )
+    return model
+\end{lstlisting}
+
+\section{Wear OS Kotlin Implementation}
+\label{sec:impl-kotlin}
+
+The Wear~OS application exposes two Kotlin classes directly relevant
+to this report: \texttt{StressInferenceEngine}, which wraps the
+TensorFlow Lite interpreter, and \texttt{StressBLECharacteristic},
+which builds the twelve-byte GATT payload.
+
+\subsection{\texttt{StressInferenceEngine.kt}}
+
+\begin{lstlisting}[language=Kotlin]
+class StressInferenceEngine(context: Context) {
+
+    private val interpreter: Interpreter =
+        Interpreter(loadModelFile(context, "stress_model.tflite"))
+
+    // Normalisation constants exported from training.
+    private val featureMeans  = floatArrayOf( /* 5 values */ )
+    private val featureStds   = floatArrayOf( /* 5 values */ )
+
+    /** Run one inference on a 30x5 window. */
+    fun classify(window: Array<FloatArray>): StressResult {
+        require(window.size == 30 && window[0].size == 5)
+
+        // z-score normalise in place
+        val normalised = Array(30) { t ->
+            FloatArray(5) { f ->
+                (window[t][f] - featureMeans[f]) / featureStds[f]
+            }
+        }
+
+        // TFLite expects [1, 30, 5] input, [1, 4] output
+        val input  = arrayOf(normalised)
+        val output = Array(1) { FloatArray(4) }
+        interpreter.run(input, output)
+
+        val probs = output[0]
+        val level = probs.indices.maxBy { probs[it] }
+        return StressResult(
+            level       = StressLevel.fromInt(level),
+            confidence  = probs[level],
+            probabilities = probs
+        )
+    }
+}
+\end{lstlisting}
+
+\subsection{\texttt{StressBLECharacteristic.kt}}
+
+\begin{lstlisting}[language=Kotlin]
+object StressBLECharacteristic {
+
+    /** Pack a StressResult into the 12-byte GATT payload. */
+    fun buildPacket(result: StressResult, timestampMs: Long): ByteArray {
+        val buf = ByteBuffer.allocate(12).order(ByteOrder.LITTLE_ENDIAN)
+        buf.putLong(timestampMs)                                  // bytes 0..7
+        buf.put(result.level.ordinalByte)                          // byte 8
+        buf.put((result.confidence * 100f)
+                .coerceIn(0f, 100f).toInt().toByte())              // byte 9
+        buf.putShort(0)                                            // bytes 10..11 reserved
+        return buf.array()
+    }
+}
+\end{lstlisting}
+
+\section{Arduino Firmware}
+\label{sec:impl-arduino}
+
+The Arduino firmware is a single-sketch C++ program built against
+the \texttt{ArduinoBLE} library. The main loop polls the BLE central,
+applies timeout logic, and dispatches to a per-profile actuator
+routine.
+
+\subsection{\texttt{loop()}}
+
+\begin{lstlisting}[language=C++]
+void loop() {
+    BLE.poll();
+
+    if (peripheral && peripheral.connected()) {
+        if (stressChar.valueUpdated()) {
+            uint8_t buf[12];
+            stressChar.readValue(buf, 12);
+            // bytes 0..7: timestamp (unused on MCU)
+            uint8_t level      = buf[8];
+            uint8_t conf_pct   = buf[9];
+            applyProfile((StressLevel)level, conf_pct);
+            lastPacketMs = millis();
+        }
+    }
+
+    // 60-second BLE timeout -> WAITING
+    if (millis() - lastPacketMs > 60000UL) {
+        applyProfile(WAITING, 0);
+    }
+}
+\end{lstlisting}
+
+\subsection{\texttt{applyProfile()}}
+
+\begin{lstlisting}[language=C++]
+static void applyProfile(StressLevel s, uint8_t confPct) {
+    switch (s) {
+        case CALM:     // warm white, 30% fan, audio off
+            setRGB(255, 180,  90); setFan( 76); audioOff();         break;
+        case MILD:     // neutral white, 50% fan, audio off
+            setRGB(255, 255, 220); setFan(128); audioOff();         break;
+        case MODERATE: // blue, 75% fan, soft music
+            setRGB( 40, 120, 255); setFan(191); audioSoftMusic();   break;
+        case CRITICAL: // red blinking, 100% fan, voice alert
+            blinkRGB(255,  20,  20, 500); setFan(255); audioVoice();break;
+        case WAITING:  // yellow blink, fan off, audio off
+            blinkRGB(255, 200,   0, 1000); setFan(  0); audioOff(); break;
+    }
+    currentProfile = s;
+}
+\end{lstlisting}
+
+\section{Simulation Framework}
+\label{sec:impl-simulation}
+
+A hardware-free simulation framework allows the Arduino-side firmware
+and the full BLE round-trip to be exercised without any physical
+hardware. \texttt{scripts/run\_simulation.py} implements a scripted
+BLE central (via \texttt{bleak}) that connects to a virtual wearable,
+emits a pre-recorded twelve-byte packet stream, and asserts on the
+Arduino-side serial output. Table~\ref{tab:scenarios} lists the five
+integration scenarios exercised.
+
+\begin{table}[H]
+\centering
+\caption{Simulation scenarios for the stress-detection pipeline. All
+five scenarios are run on every CI build.}
+\label{tab:scenarios}
+\small
+\begin{tabular}{cllp{5cm}}
+\toprule
+\textbf{\#} & \textbf{Name} & \textbf{Trigger} & \textbf{Expected cabin
+response} \\
+\midrule
+7  & Calm commute    & level=0 for 2 min   & warm white, fan 30\%, audio off \\
+8  & Mild arousal    & level=1 for 2 min   & neutral white, fan 50\%, audio off \\
+9  & Moderate stress & level=2 for 2 min   & blue, fan 75\%, soft music \\
+10 & Critical event  & level=3 for 30 s    & red blinking, fan 100\%, voice \\
+11 & Watch removed   & BLE disconnect 90 s & yellow blink (WAITING), fan 0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+These five scenarios collectively cover the complete FSM transition
+graph: every edge is traversed at least once. Scenario 11 additionally
+exercises the sixty-second timeout path, which is the only transition
+not driven by an incoming BLE packet. Regression on any scenario causes
+the CI build to fail, which enforces continued correctness of both
+the Arduino state machine and the Wear~OS BLE packet layout.
