@@ -1,0 +1,132 @@
+\chapter{System Architecture}
+\label{ch:architecture}
+
+\section{Overall Architecture}
+\label{sec:overall_arch}
+
+The system is organized as a five-stage pipeline. Raw business events enter at the left and
+a structured Business Intelligence Briefing exits at the right, ready for consumption by any
+LLM agent. Figure~\ref{fig:system_overview} shows the full pipeline with annotated token
+counts at each stage transition.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{system_overview}
+  \caption{Five-stage neuro-symbolic distillation pipeline. Token counts are illustrative
+           for a 1,000-event batch.}
+  \label{fig:system_overview}
+\end{figure}
+
+The \textbf{Data Generator} produces synthetic supply chain events at a configurable rate.
+Each event carries a type, a timestamp, a product identifier, a supplier or warehouse
+identifier, and a set of numerical attributes (quantities, prices, defect rates, ETAs).
+In a production deployment, this stage would be replaced by a connector to an ERP system
+or a message queue.
+
+The \textbf{Graph Builder} processes each event batch and updates the knowledge graph in
+memory. Node attributes are updated to reflect the latest state of each business entity.
+New nodes and edges are added when new relationships appear in the event stream. The graph
+is snapshotted before and after each batch so that the delta engine can compare the two
+states.
+
+The \textbf{Delta Engine} takes the before and after snapshots and computes a structural
+diff. The diff is represented as five categories of change: new nodes, removed nodes,
+changed node attributes, new edges, and removed edges. Each category of change is
+individually scoreable and has distinct business semantics---a new edge between a supplier
+and a product means a new sourcing relationship, while a change in a node's
+\texttt{anomaly\_score} attribute means an escalating problem at that entity.
+
+The \textbf{Saliency Scorer} assigns a scalar importance score to each delta item using
+the formula described in Chapter~\ref{ch:methodology}. Delta items below the threshold
+$\theta = 0.4$ are classified as noise and discarded. Items above the threshold are
+classified as CRITICAL (score $> 0.75$), IMPORTANT ($0.5 < \text{score} \leq 0.75$), or
+INFORMATIONAL ($0.4 < \text{score} \leq 0.5$). Only CRITICAL and IMPORTANT items are
+included in the briefing forwarded to agents.
+
+The \textbf{Agent Layer} contains three specialized agents---analyst, risk, and forecast---each
+receiving the distilled briefing rather than the raw event stream. The orchestrator routes
+the briefing to all three agents in parallel and assembles their responses into a composite
+report for the dashboard user.
+
+\section{Data Flow Pipeline}
+\label{sec:data_flow}
+
+Tracing a single event batch through all stages makes the data flow concrete. Consider a
+batch of 1,000 supply chain events covering a 24-hour window of activity.
+
+At the raw input stage, the 1,000 events serialized as JSON occupy roughly 61,000 tokens
+when formatted for a language model prompt. Forwarding this directly to an LLM agent would
+cost approximately \$1.85 per call at GPT-4o pricing, or \$0.03 per call at Gemini Flash
+pricing. For a team running 100 such queries per day, the daily cost is \$185 (GPT-4o) or
+\$3 (Gemini Flash).
+
+After the Graph Builder processes the batch, the knowledge graph has absorbed all 1,000
+events into a 30-node, 368-edge structure with updated attributes. The graph itself, if
+serialized naively, is larger than the event list---but the graph is never serialized for
+the prompt. Only the delta computed from it is.
+
+The Delta Engine computes the diff between the pre-batch and post-batch graph snapshots.
+A typical 1,000-event batch produces several dozen delta items: a handful of new edges
+from new supplier contracts, several changed anomaly scores from quality issues, and a
+collection of changed quantities from sales and restocks. The raw delta, before saliency
+filtering, occupies roughly 1,500--3,000 tokens if serialized as text.
+
+After saliency scoring and noise filtering, the surviving delta items are assembled into a
+structured briefing of 600--900 tokens. This briefing explicitly names each entity
+involved, states its current relationship context (``ShenzhenDirect supplies GPU Card RTX
+which is stored at WH-LON where 450 units are pending''), and assigns a severity label.
+The 84$\times$ token compression at this scale is the ratio of the 61,749-token raw input
+to the approximately 734-token average briefing.
+
+\section{Hardware Platform}
+\label{sec:hardware}
+
+The system runs on a standard development laptop with no dedicated GPU or specialized
+hardware. The software dependencies are: Python 3.12, Streamlit 1.32+, NetworkX 3.2+,
+google-generativeai 0.7+ (the Gemini Flash API client), and standard scientific Python
+libraries (NumPy, Pandas, Matplotlib). The Streamlit dashboard runs on localhost:8501 and
+is accessible from any browser on the same machine.
+
+The only external service dependency is the Gemini Flash API, which requires an API key
+and a network connection. The pipeline processing stages (Graph Builder, Delta Engine,
+Saliency Scorer, Distiller) run entirely locally and require no internet access. In an
+offline or air-gapped deployment, a locally hosted open-source model could replace the
+Gemini Flash calls without any change to the pipeline logic.
+
+At the scales tested in this project (up to 3,000 events), the pipeline overhead---the
+total time spent in all stages before the LLM call---is under 15 milliseconds. The
+bottleneck is the LLM API round-trip, which takes 10--25 seconds depending on the
+provider and load. The pipeline overhead contributes less than 0.1\% of end-to-end latency.
+
+\section{Comparison with Naive Baseline}
+\label{sec:comparison_baseline}
+
+Table~\ref{tab:method_comparison} compares the three methods evaluated in this project.
+The naive baseline forwards the full raw event JSON to the LLM without any preprocessing.
+The aggregation baseline computes per-category summary statistics (counts, averages, maxima)
+and formats them as a short text summary, discarding individual event details and
+relationship context. The full pipeline performs the complete neuro-symbolic distillation
+described above.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of three context preparation methods at 1,000 events}
+\label{tab:method_comparison}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Method} & \textbf{Tokens} & \textbf{Recall} & \textbf{Latency (ms)} & \textbf{Relative Cost} \\
+\midrule
+Naive (full context) & 61,749 & 93.8\% & $<$1 & 1.0$\times$ \\
+Aggregation only     & 427    & 93.8\% & $<$1 & 0.007$\times$ \\
+Full pipeline        & 734    & 93.8\% & 5.6  & 0.012$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The aggregation baseline achieves comparable token counts to the full pipeline and
+identical recall on most analytical categories. Its limitation appears on the cascade
+detection task: it identifies 1 of 2 affected warehouses in the GT4 cascade pattern,
+while the full pipeline identifies both, because the pipeline preserves explicit
+relationship context (``ShenzhenDirect $\to$ GPU Card RTX $\to$ WH-LON, WH-NYC'')
+that the aggregation baseline's statistical summary discards. This distinction is
+discussed in detail in Chapter~\ref{ch:results}.

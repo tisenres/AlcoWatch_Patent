@@ -1,0 +1,177 @@
+\chapter{Methodology}
+\label{ch:methodology}
+
+\section{Synthetic Supply Chain Data Model}
+\label{sec:data_model}
+
+The data model used in this project represents a fictional but structurally realistic
+supply chain covering electronic components and consumer hardware. Ten event types drive
+the simulation: sales (product sold from a warehouse in a region), restocks (units added
+to a warehouse from a supplier), shipments (in-transit orders with an ETA), returns
+(products sent back with a reason code), price changes (cost or sale price adjustments),
+supplier delays (ETA extensions with a severity code), quality issues (defect rates above
+a threshold, assigned a severity), demand spikes (relative increase in regional demand
+for a product), stockouts (warehouse inventory reaching zero with pending orders), and
+new contracts (supplier-product agreements with a total value).
+
+The fixed topology establishes the entities. Twenty product nodes cover categories like
+RAM modules, GPU cards, SSDs, laptops, and network hardware. Six supplier nodes
+(ShenzhenDirect, TechSource Asia, BerlinElectronics, EuroComponents GmbH, AmeriParts Inc,
+MumbaiMicro Ltd, TokyoTech Corp) vary in reliability and geographic coverage. Five
+warehouse nodes (WH-LON, WH-NYC, WH-BER, WH-TKY, WH-SHZ) represent major logistics
+hubs. Four region nodes (Europe, North America, Asia Pacific, Latin America) group the
+warehouses by geography.
+
+At steady state after processing a representative event batch, the knowledge graph
+contains 30 nodes and 368 edges. The edge count is higher than a simple product count
+would suggest because each product can be supplied by multiple suppliers, stored in
+multiple warehouses, and sold into multiple regions. The density of the graph is what
+makes centrality measures informative: a high-betweenness-centrality supplier is one
+whose relationships span many products and warehouses, meaning its disruptions propagate
+broadly.
+
+\section{Knowledge Graph Construction}
+\label{sec:graph_construction}
+
+The Graph Builder processes event batches in two phases. In the update phase, each event
+modifies the graph according to its type: a sale decrements the inventory quantity
+attribute on the relevant warehouse-product edge, a quality issue sets the
+\texttt{anomaly\_score} attribute on the affected product node to a severity-weighted
+value, and a new contract adds an edge between the supplier node and the product node with
+a \texttt{contract\_value} attribute. In the snapshot phase, the current graph state is
+deep-copied before the batch begins and again after it ends, giving the delta engine two
+comparable snapshots.
+
+Node attributes are typed and bounded. The \texttt{anomaly\_score} attribute on product
+and supplier nodes is a float in $[0, 1]$; it is set to 0.3 for minor quality issues,
+0.6 for major issues, and 0.9 for critical issues. The \texttt{reliability} attribute on
+supplier nodes is also a float in $[0, 1]$, decremented by 0.1 for each delay event and
+incremented by 0.05 for each on-time delivery. Edge attributes include \texttt{quantity}
+(current inventory), \texttt{pending\_orders}, \texttt{defect\_rate}, and
+\texttt{contract\_value} where applicable.
+
+The graph is implemented using NetworkX's \texttt{DiGraph} class, which supports directed
+edges and arbitrary attribute dictionaries on both nodes and edges. The choice of a
+directed graph reflects the directional nature of supply chain relationships: a ``supplies''
+edge runs from a supplier node to a product node, not the reverse. Centrality measures are
+computed on the undirected projection of the graph (treating all edges as undirected) for
+the betweenness calculation, since the relevant question is whether a node sits on paths
+between other nodes regardless of direction.
+
+\section{Semantic Delta Computation}
+\label{sec:semantic_delta}
+
+The delta engine takes the before and after snapshots and produces a structured diff.
+New nodes are any nodes present in the after-snapshot but absent in the before-snapshot,
+indicating new suppliers, warehouses, or products added during the batch. Removed nodes
+are the converse. Changed attribute nodes are nodes present in both snapshots whose
+attribute dictionary differs by at least one key-value pair. New and removed edges follow
+the same logic.
+
+The delta representation is structured as a Python dictionary with five lists, one per
+category. Each item in a list carries the node or edge identifier, the relevant attributes
+(for changed-attribute items: the old value and new value of each changed attribute), and
+a pre-computed reference to the node's position in the graph (its neighbors, its centrality
+rank, its node type). Including this graph context in the delta item is important because
+the saliency scorer needs it to compute centrality-based scores without re-querying the
+full graph for every item.
+
+A delta computed on a 1,000-event batch typically contains 15--40 distinct items, depending
+on the volatility of the batch. Low-volatility batches with routine sales and restocks
+produce few attribute changes above the detection threshold. High-volatility batches with
+quality alerts, demand spikes, and supplier delays can produce 60--80 items before saliency
+filtering. The delta computation itself is $O(n_{\text{nodes}} + n_{\text{edges}})$ in the
+graph size, which at 30 nodes and 368 edges runs in well under a millisecond.
+
+\section{Saliency Scoring}
+\label{sec:saliency_scoring}
+
+Each delta item receives a saliency score computed by the formula:
+
+\begin{equation}
+\text{saliency}(v) = \alpha \cdot d(v) + \beta \cdot b(v) + \gamma \cdot m(v)
+\label{eq:saliency}
+\end{equation}
+
+where $d(v)$ is the degree centrality of the primary node involved in the change,
+$b(v)$ is the betweenness centrality of that node (both normalized to $[0, 1]$ over
+the current graph), and $m(v)$ is the normalized magnitude of the attribute change.
+For attribute changes, $m(v)$ is the absolute value of the new-minus-old difference
+divided by the maximum observed magnitude for that attribute type in the current batch.
+For structural changes (new or removed nodes and edges), $m(v)$ is set to 0.5 as a
+fixed structural importance weight.
+
+The mixing coefficients $\alpha = 0.35$, $\beta = 0.35$, and $\gamma = 0.30$ were
+calibrated on the ground truth evaluation set. A grid search over the three coefficients
+at 0.05 increments found that this combination maximized recall on the four ground truth
+patterns while keeping the fraction of events passing the threshold below 20\%, which
+is the target compression ratio needed to achieve 5$\times$ or better compression at
+the 100-event scale.
+
+The threshold $\theta = 0.4$ is applied after scoring. Items with saliency $< 0.4$
+are labeled NOISE and discarded. Items with $0.4 \leq \text{saliency} \leq 0.5$ are
+INFORMATIONAL. Items with $0.5 < \text{saliency} \leq 0.75$ are IMPORTANT. Items with
+$\text{saliency} > 0.75$ are CRITICAL. Table~\ref{tab:severity_levels} summarizes
+the severity classification scheme.
+
+\begin{table}[H]
+\centering
+\caption{Distillation severity levels and agent routing}
+\label{tab:severity_levels}
+\begin{tabular}{llll}
+\toprule
+\textbf{Level} & \textbf{Threshold} & \textbf{Included in Briefing} & \textbf{Agent Routing} \\
+\midrule
+CRITICAL      & $> 0.75$       & Yes & All three agents \\
+IMPORTANT     & $0.5$--$0.75$  & Yes & Analyst + Risk \\
+INFORMATIONAL & $0.4$--$0.5$   & Yes (summary only) & Analyst only \\
+NOISE         & $< 0.4$        & No  & Discarded \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Distillation Format}
+\label{sec:distillation_format}
+
+The distiller takes the scored delta items and assembles them into a Business Intelligence
+Briefing. The briefing has a fixed structure: a header with metadata (batch timestamp,
+event count, graph node and edge counts), a CRITICAL section listing the highest-saliency
+items with full relationship context, an IMPORTANT section listing mid-saliency items
+with condensed context, and an INFORMATIONAL section giving a one-line summary of each
+low-saliency surviving item.
+
+The relationship context included for each item is the key differentiator from aggregation
+approaches. For a CRITICAL item flagging a quality issue at ShenzhenDirect affecting
+GPU Card RTX, the briefing includes: the supplier's current reliability score, the list
+of products it supplies, the warehouses where those products are stored, the pending
+order counts at each warehouse, and the delta values for the anomaly score and defect
+rate attributes. A pure aggregation approach that says ``ShenzhenDirect: 1 critical quality
+issue'' provides the label but not the blast radius, which is exactly the information an
+analyst agent needs to assess downstream impact.
+
+The target briefing length is 600--900 tokens. In practice, briefings for 1,000-event
+batches average 734 tokens (from the ablation results), within this range. The
+briefing is plain text with no JSON nesting, because early experiments showed that heavily
+structured JSON briefings cost more tokens per unit of information than prose with inline
+attribute values.
+
+\section{Evaluation Methodology}
+\label{sec:evaluation}
+
+The evaluation covers three separate measurements. The compression and cost evaluation
+measures token counts for naive, aggregation, and pipeline methods at five scales
+(100, 300, 500, 1,000, and 3,000 events) and derives cost savings by assuming a fixed
+per-token price. The quality evaluation measures category recall by having a human
+assessor judge whether each method's LLM response correctly identifies eight analytical
+categories (supplier reliability, stockout detection, demand spike, quality issue,
+price volatility, supply chain risk, warehouse anomaly, and actionable recommendations).
+The ground truth evaluation injects four known anomaly patterns into a controlled batch
+and checks whether each method's LLM response mentions the injected entities and
+relationship structures.
+
+The quality evaluation methodology is post-hoc analysis of saved LLM responses rather
+than a live re-run for each measurement, which is a limitation acknowledged in
+Chapter~\ref{ch:conclusion}. The ground truth evaluation runs live against the actual
+pipeline, injecting the patterns into the data generator and verifying detection.
+The ablation study is also live: the benchmark runner generates the same event batch
+and feeds it to all three methods, recording token counts and pipeline timing for each.
