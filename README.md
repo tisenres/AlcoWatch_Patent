@@ -80,7 +80,10 @@ AlcoWatch/
 ├── wear_os_app/           # Wear OS smartwatch application
 ├── arduino/               # Vehicle control firmware & simulation
 ├── shared/                # BLE protocol & data structures
+├── overleaf_papers/       # Canonical patent paper (LaTeX, Overleaf project)
+├── research_papers/       # Provisional patent documents
 ├── docs/                  # Complete documentation
+├── archive/               # Frozen non-patent work (NTCC paper, Stress Detection) — not maintained
 └── RUN_SIMULATION.sh      # Quick testing script
 ```
 
@@ -116,6 +119,7 @@ AlcoWatch/
 - [System Summary](docs/SYSTEM_SUMMARY.md) - Technical architecture
 - [BLE Protocol](shared/protocols/ble_protocol.md) - Communication spec
 - [Testing Guide](TESTING_WITHOUT_HARDWARE.md) - No-hardware testing
+- [Research Paper](overleaf_papers/wileyNJDv5_AMA.tex) - Canonical patent paper (LaTeX / Overleaf)
 
 ---
 

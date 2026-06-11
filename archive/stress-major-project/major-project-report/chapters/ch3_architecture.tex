@@ -1,0 +1,223 @@
+\chapter{System Architecture}
+\label{ch:architecture}
+
+This chapter describes the high-level architecture of the proposed
+driver stress detection and adaptive cabin control system. The
+objective is to give the reader a coherent mental model of how
+biosignals captured at the wrist are transformed, in fewer than
+two seconds of wall-clock time, into a cabin lighting, ventilation,
+and audio response inside the vehicle. Sections~\ref{sec:arch-overview}
+and \ref{sec:arch-pipeline} describe the system from two complementary
+viewpoints: the component view (who talks to whom) and the pipeline
+view (what the data looks like at each stage). Section~\ref{sec:arch-hw}
+anchors these abstractions to the concrete hardware used in the
+prototype, and Section~\ref{sec:arch-compare} positions the architecture
+against the prior AlcoWatch BAC system~\citep{acn1408}.
+
+\section{Overall Architecture}
+\label{sec:arch-overview}
+
+The system decomposes naturally into five cooperating components,
+arranged in a strict data-flow pipeline from sensors to actuators.
+Figure~\ref{fig:system-overview} shows the physical layout, the
+logical data flow, and the software/hardware boundary between the
+wearable and the vehicle module.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{system_overview}
+\caption{End-to-end system overview. A wrist-worn Wear~OS device
+collects PPG, EDA, skin temperature, and three-axis acceleration,
+applies a bidirectional-LSTM + attention classifier on-device, and
+transmits a twelve-byte BLE GATT update every thirty seconds. An
+Arduino Nano 33 BLE inside the vehicle subscribes to the
+characteristic and drives four cabin profiles (Calm, Mild, Moderate,
+Critical) via an RGB LED strip, a PWM-controlled fan, and an audio
+output.}
+\label{fig:system-overview}
+\end{figure}
+
+The five components are, from the wrist outward:
+
+\begin{enumerate}
+  \item \textbf{Sensor subsystem.} A Wear OS device exposes the four
+  physiological channels of interest through the Android \texttt{SensorManager}
+  and its health-services SDK. Each channel is sampled at the highest
+  rate the platform supports (typically 64~Hz for BVP) and then
+  resampled to a common four-hertz rate in the application layer.
+
+  \item \textbf{Classifier subsystem.} A TensorFlow Lite interpreter
+  \citep{tflite2023} wraps the bidirectional-LSTM + attention model
+  trained offline. It consumes windows of shape
+  $[1, 30, 5]$ and emits a four-dimensional softmax distribution
+  every half-second internally; the subsystem exposes a running
+  average to the BLE layer.
+
+  \item \textbf{BLE peripheral.} A GATT server exposes one primary
+  service (\texttt{ABCD1234-1234-5678-1234-56789abcdef0}) containing a
+  single notifiable characteristic
+  (\texttt{ABCD1235-1234-5678-1234-56789abcdef0}) that carries a
+  twelve-byte stress packet. The characteristic is updated every
+  thirty seconds.
+
+  \item \textbf{BLE central on the Arduino Nano 33 BLE.} This
+  microcontroller scans for the AlcoWatch Stress service, subscribes
+  to notifications, parses the twelve-byte packet, and updates its
+  internal finite-state machine.
+
+  \item \textbf{Cabin actuator subsystem.} The Arduino drives an
+  RGB LED strip (PWM, three color channels), a cooling fan (PWM
+  duty cycle, four discrete levels), and an audio output (tone
+  pattern) through three independent general-purpose output paths.
+  It falls back to a safe \texttt{WAITING} state if no BLE packet
+  is received within sixty seconds.
+\end{enumerate}
+
+Two properties of this decomposition are worth calling out.
+\emph{Inference is fully on-device}: no physiological data ever
+leaves the wrist, and the wearable operates correctly even when the
+vehicle has no cellular connectivity. The interface between wrist and
+vehicle is also intentionally \emph{narrow and documented} --- a
+twelve-byte characteristic --- which makes the two halves independently
+replaceable. Any BLE-capable wearable that emits the same packet layout
+can drive the Arduino, and any BLE-capable vehicle module that consumes
+the same characteristic can be driven by the wearable.
+
+\section{Data Flow Pipeline}
+\label{sec:arch-pipeline}
+
+We now trace a single ``packet'' of data through the system to
+describe the signal processing chain end-to-end.
+
+At $t=0$~ms the Wear~OS application receives a new PPG sample from
+the hardware sensor at its native 64~Hz rate. The application
+accumulates samples in a ring buffer. Every 250~ms (i.e.\ four times
+per second) the PPG buffer is polyphase-downsampled to a single
+4~Hz sample, peak-detected to update the running inter-beat-interval
+(IBI) estimate, and appended to the 30-sample sliding window
+together with the latest EDA, skin temperature, and accelerometer
+magnitude readings. The window has 50\% overlap: it advances by
+fifteen samples (3.75~seconds of wall-clock time) at every inference
+step. This choice trades off responsiveness against label stability.
+
+Once per second -- or more precisely, every fifteen samples -- the
+full $30 \times 5$ window is z-score normalized using the training-set
+per-feature means and standard deviations (cached as constants in
+the application) and passed to the TensorFlow Lite interpreter.
+The interpreter invokes the bidirectional-LSTM + attention model and
+returns a softmax of length four. The argmax of this distribution is
+the predicted class, and the corresponding probability is the
+confidence.
+
+These per-second predictions are not emitted directly on the BLE
+characteristic. Instead, they are accumulated in a thirty-sample
+ring, and a majority-vote smoothing step yields a single stress
+class and an averaged confidence every thirty seconds. This
+temporal smoothing is the key mechanism that keeps the cabin from
+flickering between profiles at every short-lived motion artefact,
+and it is calibrated to the timescale over which autonomic responses
+are known to stabilise.
+
+The resulting decision is packed into the twelve-byte BLE payload
+(eight bytes of little-endian timestamp, one byte of stress level,
+one byte of confidence rounded to a percentage, two bytes reserved
+for future use) and pushed to the Arduino as a GATT notification.
+On the Arduino side, the firmware reads the packet, resets its
+internal BLE-timeout counter, transitions its finite-state machine
+into the new state, and writes the appropriate PWM duty cycles to
+the LED, fan, and audio pins. Total latency from the start of the
+window to the cabin reacting is dominated by the thirty-second
+emission cadence itself; the inference and BLE components contribute
+fewer than one hundred milliseconds combined.
+
+\section{Hardware Platform}
+\label{sec:arch-hw}
+
+The prototype targets two off-the-shelf hardware platforms, one
+on each side of the BLE link.
+
+\textbf{Wearable side.} The reference Wear~OS device is the Samsung
+Galaxy Watch class of hardware (Exynos W-series system-on-chip,
+1.5~GB RAM, Wear~OS~4+), though any Wear~OS device with minimum
+API level 30 that exposes the PPG, skin-temperature, EDA (or a
+derivable surrogate), and three-axis accelerometer through the
+standard \texttt{Sensor} API will function. The application occupies
+roughly 22~MB of storage including the bundled 72~KB TensorFlow Lite
+model. Power budget measurements are outside the scope of this
+project, but the thirty-second emission cadence and the small model
+size have been selected specifically to keep the application well
+inside the budget available on a watch that is already running the
+user's normal workload.
+
+\textbf{Vehicle side.} The reference vehicle-side platform is the
+Arduino Nano 33 BLE. This board is built around the Nordic nRF52840
+system-on-chip and exposes an integrated BLE 5 radio, twenty-two
+digital I/O pins, eight analogue inputs, and roughly 248~KB of
+program memory and 32~KB of SRAM. The firmware developed for this
+project occupies approximately 60~KB of program space and less than
+8~KB of SRAM, leaving ample headroom for future extensions such as
+CAN-bus interfacing or additional sensor inputs. The board is
+powered from the vehicle's accessory circuit via a 12~V-to-5~V
+regulator; it draws less than 50~mA in its highest-power state.
+
+All other components in the cabin prototype -- the RGB LED strip
+(common-anode, PWM-driven through three 220~$\Omega$ current-limiting
+resistors), the 5~V axial fan (PWM-controlled through a logic-level
+MOSFET), and the piezoelectric tone emitter -- are standard hobbyist
+components. No bespoke hardware was fabricated for the project.
+
+\section{Comparison with AlcoWatch BAC Detection System}
+\label{sec:arch-compare}
+
+Although this project targets a different physiological phenomenon
+(stress rather than alcohol intoxication) and a different intervention
+profile (graduated comfort rather than binary interlock), it builds
+architecturally on the prior AlcoWatch system filed under provisional
+patent ACN1408 \citep{acn1408}. Table~\ref{tab:alcowatch-compare}
+contrasts the two systems directly.
+
+\begin{table}[H]
+\centering
+\caption{Architectural comparison between the prior AlcoWatch BAC
+system \citep{acn1408} and the present driver-stress system.}
+\label{tab:alcowatch-compare}
+\small
+\begin{tabular}{p{4cm}p{4cm}p{4cm}}
+\toprule
+\textbf{Aspect} & \textbf{AlcoWatch BAC \citep{acn1408}} &
+\textbf{This Work (Stress)} \\
+\midrule
+Sensors used & PPG, EDA, skin temperature, ambient temp, humidity
+(6 features) & PPG (BVP+IBI), EDA, skin temperature, ACC magnitude
+(5 features) \\
+ML model type & BiLSTM + attention, regression head (scalar BAC
+in g/dL) & BiLSTM + attention, classification head (4-class softmax) \\
+Output type & Scalar (float) & Ordinal class (0--3) + confidence \\
+Actuator & Ignition relay (binary ALLOW/BLOCK) & Graduated cabin profile
+(LED color, fan \%, audio) \\
+BLE packet size & 20 bytes & 12 bytes \\
+Real-time latency & $<50$~ms on-device + 30~s emission cadence &
+$<50$~ms on-device + 30~s emission cadence \\
+Safety failure mode & Conservative: ignition blocked by default &
+Conservative: WAITING state on any packet loss \\
+Primary risk addressed & Alcohol-related accidents & Stress-related
+accidents \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The two systems share three architectural decisions: the on-device
+TensorFlow Lite inference pipeline, the Arduino-based vehicle-side
+controller, and the conservative ``default deny'' failure mode in
+which loss of a valid BLE update drives the vehicle module into its
+safest state. Two decisions are specific to this work. The output head
+is a classifier rather than a regressor, which fits the graduated
+intervention philosophy described in Chapter~\ref{ch:introduction}.
+The BLE packet is also smaller (twelve bytes instead of twenty) because
+an ordinal class takes less space than a floating-point regression
+output, and no separate alert-level byte is needed since the class
+value already encodes severity.
+
+Chapter~\ref{ch:conclusion} returns to this comparison and sketches
+a unified wearable safety platform that would emit both
+characteristics side by side on the same BLE service.

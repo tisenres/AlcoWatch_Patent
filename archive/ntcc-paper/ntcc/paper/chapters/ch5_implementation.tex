@@ -1,0 +1,379 @@
+\chapter{Implementation}
+\label{ch:implementation}
+
+\section{Project Structure}
+\label{sec:project_structure}
+
+The project follows a layered module design that mirrors the theoretical architecture described in
+Chapter~\ref{ch:architecture}. Each subdirectory beneath \texttt{src/} maps to exactly one
+responsibility in the data pipeline: the symbolic layer builds and maintains the knowledge graph,
+the neural layer scores and distills salient changes, the agent layer routes distilled context to
+specialized LLM agents, and the benchmark layer provides reproducible performance comparisons.
+Keeping these concerns separate makes each component independently testable and allows the pipeline
+depth to be adjusted by swapping or bypassing individual modules without touching the others.
+
+\begin{lstlisting}[language=bash, caption={Project directory structure}]
+ntcc/
+  app.py                      # Streamlit entry point (legacy root launcher)
+  config.py                   # API keys, thresholds, model parameters
+  src/
+    symbolic/                 # graph_builder.py, digital_twin.py
+    neural/                   # saliency.py, distiller.py, semantic_delta.py
+    agents/                   # base_agent.py, analyst_agent.py, orchestrator.py
+    benchmarks/               # runner.py, baseline.py, distilled.py, ablation.py
+    data_generator/           # generator.py (synthetic event stream)
+    dashboard/                # app.py (four-page Streamlit interface)
+  results/                    # Benchmark output JSON and PNG charts
+  scripts/                    # Figure generation for the paper
+  paper/
+    figures/                  # PDF and PNG figures used by LaTeX
+    chapters/                 # One .tex file per chapter
+    main.tex                  # Top-level LaTeX document
+\end{lstlisting}
+
+The \texttt{config.py} module at the project root centralises every tunable constant: the Gemini
+API key, the Gemini endpoint URL, the saliency threshold (default 0.35), and the high-saliency
+threshold (default 0.65). Centralising configuration prevents the magic-number problem common in
+research prototypes and makes threshold-sensitivity experiments straightforward to run without
+editing multiple files.
+
+\section{Symbolic Layer}
+\label{sec:symbolic_layer}
+
+The symbolic layer is the entry point for all raw data. Its sole responsibility is to convert an
+unordered batch of business events into a structured directed graph, referred to throughout the
+codebase as the \emph{digital twin}. The \texttt{build\_graph} function in
+\texttt{src/symbolic/graph\_builder.py} accepts a list of event dictionaries and returns a
+\texttt{networkx.DiGraph} object whose nodes represent business entities (products, suppliers,
+regions, warehouses) and whose edges capture the relationships between them.
+
+\begin{lstlisting}[language=Python, caption={graph\_builder.py: build\_graph and anomaly normalization (excerpt)}]
+def build_graph(events: list[dict]) -> nx.DiGraph:
+    """Build a knowledge graph from a batch of business events.
+
+    Node types: product, supplier, region, warehouse
+    Edge types: supplies, sold_in, stored_at, ships_to
+    """
+    G = nx.DiGraph()
+
+    product_stats = defaultdict(lambda: {"total_sales": 0, "total_quantity": 0,
+                                          "event_count": 0, "stockouts": 0,
+                                          "demand_spikes": 0, "quality_issues": 0})
+    supplier_stats = defaultdict(lambda: {"delays": 0, "quality_issues": 0,
+                                           "shipments": 0})
+    edge_weights = defaultdict(float)
+
+    for event in events:
+        product, supplier = event["product"], event["supplier"]
+        region,  warehouse = event["region"],  event["warehouse"]
+        etype = event["event_type"]
+
+        for node, ntype, extras in [
+            (product,   "product",   {"events": 0, "anomaly_score": 0.0}),
+            (supplier,  "supplier",  {"events": 0, "reliability":   1.0}),
+            (region,    "region",    {"events": 0}),
+            (warehouse, "warehouse", {"events": 0, "anomaly_score": 0.0}),
+        ]:
+            if not G.has_node(node):
+                G.add_node(node, node_type=ntype, **extras)
+            G.nodes[node]["events"] += 1
+
+        _ensure_edge(G, supplier,  product,   "supplies",   edge_weights)
+        _ensure_edge(G, product,   region,    "sold_in",    edge_weights)
+        _ensure_edge(G, product,   warehouse, "stored_at",  edge_weights)
+        _ensure_edge(G, supplier,  warehouse, "ships_to",   edge_weights)
+
+        if etype == "stockout":
+            G.nodes[product]["anomaly_score"]   += 0.5
+            G.nodes[warehouse]["anomaly_score"] += 0.3
+        elif etype == "demand_spike":
+            G.nodes[product]["anomaly_score"] += (
+                0.3 * event.get("spike_factor", 1))
+
+    # Sigmoid normalisation: maps raw anomaly accumulation to [0, 1]
+    for node, data in G.nodes(data=True):
+        if "anomaly_score" in data and data.get("events", 0) > 0:
+            rate = data["anomaly_score"] / max(data["events"], 1)
+            data["anomaly_score"] = round(
+                min(1.0, max(0.0, 2.0 / (1.0 + math.exp(-5.0 * rate)) - 1.0)), 4)
+
+    _propagate_risk(G)
+    return G
+\end{lstlisting}
+
+Several design decisions embedded in this function are worth noting. First, every node receives a
+\texttt{node\_type} attribute at creation time; downstream modules use this attribute to apply
+type-specific importance weights without performing any additional graph traversal. Second,
+anomaly scores are accumulated as raw floats during event processing and then normalised via a
+sigmoid-like mapping before the function returns. This means the score for a product that
+experienced ten stockouts is not ten times the score for a product that experienced one; instead,
+the mapping applies diminishing returns so that a single severe event already pushes the score
+toward one. Third, the final call to \texttt{\_propagate\_risk} ensures that supplier
+reliability degradation cascades downstream to the products that supplier feeds, capturing the
+second-order effects that naive event counting would miss entirely.
+
+\section{Neural Layer}
+\label{sec:neural_layer}
+
+Once two consecutive graph snapshots are available, the neural layer computes the \emph{semantic
+delta}---the set of structural changes between the two graphs---and then scores each change by
+its business saliency. The scoring logic lives in \texttt{src/neural/saliency.py}. Rather than
+applying a flat threshold to every change type, the scorer combines three independent signals: a
+node-type weight (suppliers outrank products, which outrank warehouses and regions), a centrality
+boost derived from the current graph topology, and an attribute-level change magnitude. Only
+changes whose combined score exceeds \texttt{SALIENCY\_THRESHOLD} are forwarded to the
+distiller; the rest are silently discarded, forming the noise-filtering layer described in
+Section~\ref{sec:methodology_distillation}.
+
+\begin{lstlisting}[language=Python, caption={saliency.py: score\_delta with centrality boost (excerpt)}]
+NODE_TYPE_WEIGHTS = {
+    "supplier":  1.2,
+    "product":   1.0,
+    "warehouse": 0.8,
+    "region":    0.6,
+}
+
+def score_delta(delta: dict, g_curr: nx.DiGraph = None) -> list[dict]:
+    """Score each element of the semantic delta by structural saliency."""
+    scored   = []
+    centrality = {}
+
+    if g_curr is not None and g_curr.number_of_nodes() > 0:
+        try:
+            degree_cent  = nx.degree_centrality(g_curr)
+            betweenness  = nx.betweenness_centrality(g_curr)
+            for node in g_curr.nodes():
+                # Combined centrality scaled to [0, 1]
+                centrality[node] = min(
+                    1.0,
+                    (degree_cent.get(node, 0) + betweenness.get(node, 0)) / 2 * 3
+                )
+        except Exception:
+            pass
+
+    for item in delta["changed_nodes"]:
+        node        = item["node"]
+        node_weight = NODE_TYPE_WEIGHTS.get(item["node_type"], 0.5)
+        cent_boost  = 1.0 + centrality.get(node, 0) * 0.5  # up to 1.5x
+
+        max_change_score = max(
+            (_attribute_saliency(attr, vals)
+             for attr, vals in item["changes"].items()),
+            default=0
+        )
+        score = min(1.0, max_change_score * node_weight * cent_boost)
+
+        scored.append({
+            "type":       "changed_node",
+            "entity":     node,
+            "node_type":  item["node_type"],
+            "changes":    item["changes"],
+            "saliency":   round(score, 3),
+            "centrality": round(centrality.get(node, 0), 3),
+        })
+
+    # Broken edges are more critical than new ones
+    for item in delta["removed_edges"]:
+        src, tgt = item["source"], item["target"]
+        score = 0.4 + (centrality.get(src, 0.3) + centrality.get(tgt, 0.3)) * 0.3
+        scored.append({
+            "type":     "removed_edge",
+            "entity":   src,
+            "saliency": round(min(1.0, score), 3),
+            "reason":   f"Broken relationship: {src} -> {tgt}",
+        })
+
+    return scored
+\end{lstlisting}
+
+The centrality boost is the most consequential design choice in this module. A product node that
+sits at the intersection of many supplier-warehouse paths receives a higher weight than an
+isolated peripheral node showing the same absolute anomaly score. This mirrors how a supply chain
+analyst would naturally prioritise: a disruption at a hub product affects far more downstream
+operations than an equivalent disruption at a niche SKU. The betweenness centrality component
+captures this bridging role explicitly, and the degree centrality component captures sheer
+connectivity. Both are averaged and scaled to a boost factor that ranges from 1.0 (no topology
+contribution) to 1.5 (maximally central node), keeping the final score bounded to $[0, 1]$.
+
+\section{Agent Layer}
+\label{sec:agent_layer}
+
+The agent layer wraps Google Gemini API calls in a clean class hierarchy. \texttt{BaseAgent} in
+\texttt{src/agents/base\_agent.py} handles HTTP communication, exponential backoff on 429 and
+5xx errors, and token-usage accounting. Concrete agent subclasses inherit from \texttt{BaseAgent}
+and override only the system prompt and the task-specific method that formats the user turn.
+Three specialised agents are implemented: \texttt{AnalystAgent} for business risk and
+opportunity analysis, \texttt{RiskAgent} for quantified supply chain risk assessment, and
+\texttt{ForecastAgent} for short-term trend prediction.
+
+\begin{lstlisting}[language=Python, caption={analyst\_agent.py: AnalystAgent role definition and inference (excerpt)}]
+class AnalystAgent(BaseAgent):
+    """Business analyst that interprets distilled BI briefings."""
+
+    def __init__(self):
+        super().__init__(
+            name="Business Analyst",
+            role="analyst",
+            system_prompt=(
+                "You are a senior Business Intelligence analyst. You receive distilled "
+                "briefings about changes in the business knowledge graph. Your job is to:\n"
+                "1. Identify the most critical business risks\n"
+                "2. Spot opportunities hidden in the data\n"
+                "3. Recommend specific actions\n"
+                "4. Assess supply chain health\n\n"
+                "Be concise and actionable. Use bullet points. "
+                "Prioritize by business impact."
+            )
+        )
+
+    def analyze(self, briefing: str) -> dict:
+        """Analyze a distilled briefing and produce insights."""
+        prompt = (
+            f"Analyze this business intelligence briefing and provide:\n"
+            f"1. TOP RISKS (ranked by severity)\n"
+            f"2. OPPORTUNITIES\n"
+            f"3. RECOMMENDED ACTIONS\n"
+            f"4. SUPPLY CHAIN HEALTH SCORE (1-10)\n\n"
+            f"{briefing}"
+        )
+        return self.query(prompt, temperature=0.4)
+
+
+class RiskAgent(BaseAgent):
+    """Specialized risk assessment agent."""
+
+    def assess_risk(self, briefing: str) -> dict:
+        prompt = (
+            f"Assess the risks in this briefing. For each risk:\n"
+            f"- Likelihood (Low/Medium/High)\n"
+            f"- Impact (Low/Medium/High/Critical)\n"
+            f"- Recommended mitigation\n\n"
+            f"{briefing}"
+        )
+        return self.query(prompt, temperature=0.3)
+\end{lstlisting}
+
+The temperature values are set deliberately low (0.3--0.4) for the analyst and risk agents because
+reproducibility and factual grounding matter more than creative variation in a business
+intelligence context. The forecast agent uses a slightly higher temperature of 0.5 because
+plausible trend extrapolation benefits from a modest degree of generative diversity. All three
+agents receive the same distilled briefing text as their user turn, which means their outputs can
+be directly compared and, where appropriate, merged by the orchestrator into a single composite
+report. The orchestrator in \texttt{src/agents/orchestrator.py} coordinates this fan-out and
+fan-in pattern, invoking each agent in sequence and aggregating the results.
+
+\section{Streamlit Dashboard}
+\label{sec:dashboard}
+
+The Streamlit dashboard in \texttt{src/dashboard/app.py} provides an interactive four-page
+interface for exploring every stage of the pipeline. The \emph{Home} page presents the full
+pipeline as a live demonstration: the user selects an event count and anomaly ratio, the system
+generates a synthetic event batch, runs the complete distillation pipeline, and displays the
+resulting Business Intelligence Briefing alongside compression and latency metrics. The
+\emph{How It Works} page renders an annotated walkthrough of the data flow from raw events to
+distilled text. The \emph{Knowledge Graph} page renders the current digital twin as an
+interactive Plotly network diagram. The \emph{Comparison} page places the naive (baseline) and
+distilled approaches side by side, including the full raw context that the baseline would have
+sent to the LLM and the condensed briefing that the distilled approach sends instead.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{review_graph}
+  \caption{Knowledge graph visualization in the Streamlit dashboard. Nodes are colored by
+           type (product, supplier, warehouse, region) and sized by degree centrality.}
+  \label{fig:review_graph}
+\end{figure}
+
+The knowledge graph page shown in Figure~\ref{fig:review_graph} renders the \texttt{NetworkX}
+graph using Plotly's scatter-plus-line trace approach. Node positions are computed with the
+Kamada--Kawai layout algorithm, which tends to place well-connected hub nodes near the center
+and peripheral nodes toward the edges of the canvas---a spatial arrangement that visually
+reinforces the centrality-based scoring decisions made in the neural layer. Nodes are colored by
+type using a four-color scheme (teal for products, orange for suppliers, blue for warehouses,
+green for regions) and sized proportionally to their degree centrality, so high-risk hubs are
+immediately legible at a glance without requiring the user to inspect individual node metadata.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{review_livedemo_result}
+  \caption{Live pipeline demo page showing the distilled Business Intelligence Briefing
+           generated from a synthetic event batch.}
+  \label{fig:livedemo}
+\end{figure}
+
+Figure~\ref{fig:livedemo} shows the result panel of the live demo page after a complete pipeline
+run. The panel displays the distilled briefing text alongside four key metrics: total input
+tokens sent to the LLM, compression ratio relative to the naive baseline, end-to-end latency in
+seconds, and the share of raw events filtered out as noise. In a representative run with 500
+events at a 20\% anomaly ratio, the pipeline compressed the input from approximately 12\,400
+tokens (baseline) to 680 tokens (distilled), a compression ratio of $18.2\times$, while
+retaining all anomalous events in the briefing output.
+
+\section{Benchmark Framework}
+\label{sec:benchmark}
+
+Reproducible performance measurement requires a framework that runs multiple trials per
+configuration, averages results across runs to reduce variance, and serialises outputs to JSON
+for later analysis and figure generation. The benchmark runner in
+\texttt{src/benchmarks/runner.py} implements this framework. It sweeps across a configurable
+list of event counts (default: 100, 300, 500, 1000 events), executes three independent
+trials at each size, and computes per-trial comparisons as well as per-size averages. The
+\texttt{run\_baseline} function in \texttt{src/benchmarks/baseline.py} sends the full raw event
+list directly to the LLM; the \texttt{run\_distilled} function in
+\texttt{src/benchmarks/distilled.py} runs the complete neuro-symbolic pipeline and sends only
+the resulting briefing.
+
+\begin{lstlisting}[language=Python, caption={runner.py: multi-trial benchmark loop (excerpt)}]
+def run_benchmark(
+    event_counts:  list[int] = [100, 300, 500, 1000],
+    anomaly_ratio: float     = 0.2,
+    runs_per_size: int       = 3,
+) -> dict:
+    """Run benchmarks across different data sizes with multiple runs."""
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+    results = {"baseline": [], "distilled": [], "comparisons": [], "averaged": []}
+
+    for count in event_counts:
+        size_comparisons = []
+
+        for run in range(runs_per_size):
+            events_t0 = generate_batch(count, anomaly_ratio=0.05)
+            events_t1 = generate_batch(count, anomaly_ratio=anomaly_ratio)
+
+            baseline_result  = run_baseline(events_t1)
+            distilled_result = run_distilled(events_t0, events_t1)
+
+            comparison = {
+                "event_count":            count,
+                "run":                    run,
+                "baseline_input_tokens":  baseline_result["input_tokens"],
+                "distilled_input_tokens": distilled_result["input_tokens"],
+                "compression_ratio":      distilled_result["compression_ratio"],
+                "baseline_latency":       baseline_result["latency_seconds"],
+                "distilled_latency":      distilled_result["latency_seconds"],
+                "pipeline_overhead":      distilled_result["pipeline_processing_seconds"],
+                "noise_filtered_pct":     round(
+                    distilled_result["reduction_ratio"] * 100, 1),
+            }
+            results["comparisons"].append(comparison)
+            size_comparisons.append(comparison)
+            time.sleep(1)
+
+        avg = _average_comparisons(size_comparisons, count)
+        results["averaged"].append(avg)
+
+    results_path = os.path.join(RESULTS_DIR, "benchmark_results.json")
+    with open(results_path, "w") as f:
+        json.dump(results, f, indent=2, default=str)
+
+    generate_charts(results)
+    return results
+\end{lstlisting}
+
+The one-second \texttt{time.sleep} between calls is a deliberate rate-limit courtesy to the
+Gemini API; it does not affect wall-clock benchmark fairness because both the baseline and
+distilled calls are subject to the same pause. The call to \texttt{generate\_charts} at the end
+produces the bar charts and compression-ratio plots included in Chapter~\ref{ch:results}. The
+JSON output is also consumed by \texttt{scripts/generate\_report\_figures.py}, which regenerates
+all publication-quality PDF figures from the raw numeric results, making it straightforward to
+update figures whenever additional benchmark runs are completed.

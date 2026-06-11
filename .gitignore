@@ -84,6 +84,15 @@ ENV/
 *.jpg
 *.jpeg
 
+# Office presentations & archives
+# (intentional copies are force-added into archive/ and overleaf_papers/)
+*.pptx
+*.ppt
+*.zip
+
+# TensorFlow SavedModel export dirs (regenerable from training)
+*_saved_model/
+
 # Datasets (can be large)
 ml_model/data/raw/
 ml_model/data/processed/

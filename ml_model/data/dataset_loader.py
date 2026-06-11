@@ -1,145 +1,154 @@
 """
 Dataset loader for alcohol sensor data
-Integrates public datasets for BAC estimation model training
+Generates physiologically realistic synthetic data using Widmark pharmacokinetic model
 """
 
 import pandas as pd
 import numpy as np
 from typing import Tuple, Optional, List
 from pathlib import Path
-import requests
 from sklearn.model_selection import train_test_split
 
 
 class AlcoholDatasetLoader:
     """
-    Loads and preprocesses alcohol sensor datasets from public sources
-
-    Key datasets:
-    1. MMASH (Multilevel Monitoring of Activity and Sleep in Healthy people)
-    2. WESAD (Wearable Stress and Affect Detection)
-    3. AffectiveROAD (PPG and alcohol consumption data)
-    4. Synthetic transdermal alcohol data
+    Generates and preprocesses synthetic alcohol sensor datasets using
+    Widmark pharmacokinetic BAC curves with per-subject physiological baselines.
     """
 
     def __init__(self, data_dir: str = "./data/raw"):
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
-
-    def download_datasets(self):
-        """Download public datasets if not already present"""
-        print("Downloading public alcohol and physiological datasets...")
-
-        # Note: In practice, these would be real dataset URLs
-        # For now, we'll create synthetic data structure
-        datasets = {
-            'transdermal_alcohol': 'https://example.com/tac_data.csv',
-            'ppg_eda_combined': 'https://example.com/ppg_eda.csv',
-            'wesad_subset': 'https://example.com/wesad.csv'
-        }
-
-        print("Note: Using synthetic data for initial development.")
-        print("Real datasets require authentication/download from:")
-        print("- PhysioNet: https://physionet.org/")
-        print("- UCI ML Repository: https://archive.ics.uci.edu/")
-        print("- WESAD: https://ubicomp.eti.uni-siegen.de/")
+        self.scaler_params = None  # Will store mean/std after normalization
 
     def create_synthetic_dataset(
         self,
-        n_samples: int = 10000,
-        noise_level: float = 0.1
+        n_subjects: int = 50,
+        sessions_per_subject: int = 5,
+        noise_level: float = 0.05
     ) -> pd.DataFrame:
         """
-        Create synthetic alcohol sensor data for initial development
-        Based on physiological models of alcohol effects
+        Create synthetic alcohol sensor data using Widmark pharmacokinetic model.
+
+        Each subject has consistent physiological baselines and multiple drinking
+        sessions with diverse BAC profiles (light, moderate, heavy).
 
         Args:
-            n_samples: Number of samples to generate
-            noise_level: Amount of random noise to add
+            n_subjects: Number of simulated subjects
+            sessions_per_subject: Average sessions per subject (varies +-2)
+            noise_level: Sensor noise magnitude
 
         Returns:
             DataFrame with synthetic sensor data and BAC labels
         """
         np.random.seed(42)
 
-        # Generate time series (assuming 30-second intervals)
-        timestamps = pd.date_range('2024-01-01', periods=n_samples, freq='30S')
+        all_records = []
+        session_counter = 0
+        base_time = pd.Timestamp('2024-01-01')
 
-        # Simulate BAC levels (g/dL) - typical drinking scenario
-        # Absorption phase: 0-2 hours, Peak: 2-3 hours, Elimination: 3-8 hours
-        time_hours = np.linspace(0, 8, n_samples)
+        for subj_id in range(1, n_subjects + 1):
+            # Per-subject physiological baselines
+            is_male = np.random.random() < 0.5
+            body_weight = np.random.uniform(60, 95) if is_male else np.random.uniform(50, 80)
+            water_ratio = np.random.uniform(0.55, 0.68) if is_male else np.random.uniform(0.49, 0.58)
+            elimination_rate = np.random.normal(0.015, 0.003)  # g/dL per hour
+            elimination_rate = np.clip(elimination_rate, 0.010, 0.025)
 
-        # Widmark formula-inspired BAC curve
-        bac_true = np.zeros(n_samples)
-        for i, t in enumerate(time_hours):
-            if t < 2:  # Absorption
-                bac_true[i] = 0.04 * t  # Rising to ~0.08
-            elif t < 3:  # Peak
-                bac_true[i] = 0.08 + 0.01 * np.sin((t-2) * np.pi)
-            else:  # Elimination (0.015 g/dL per hour)
-                bac_true[i] = max(0, 0.09 - 0.015 * (t - 3))
+            # Subject-specific baselines
+            hr_baseline = np.random.uniform(62, 82)
+            eda_baseline = np.random.uniform(2.0, 5.0)
+            temp_baseline = np.random.uniform(32.5, 34.0)
 
-        # Add inter-individual variability
-        bac_true += np.random.normal(0, 0.005, n_samples)
-        bac_true = np.clip(bac_true, 0, 0.3)
+            n_sessions = max(3, sessions_per_subject + np.random.randint(-2, 3))
 
-        # Generate PPG (heart rate) - increases with alcohol
-        # Baseline: 60-80 bpm, Increase: +10-30 bpm with alcohol
-        hr_baseline = np.random.uniform(60, 80, n_samples)
-        hr_increase = bac_true * 150  # Alcohol effect
-        ppg_hr = hr_baseline + hr_increase + np.random.normal(0, 5, n_samples)
+            for sess_idx in range(n_sessions):
+                session_counter += 1
 
-        # PPG signal quality (decreases slightly with high BAC due to vasodilation)
-        ppg_quality = 0.95 - bac_true * 0.3 + np.random.normal(0, 0.05, n_samples)
-        ppg_quality = np.clip(ppg_quality, 0.5, 1.0)
+                # Choose drinking profile
+                profile = np.random.choice(
+                    ['sober', 'light', 'moderate', 'heavy'],
+                    p=[0.15, 0.25, 0.35, 0.25]
+                )
 
-        # EDA (electrodermal activity) - increases with alcohol
-        # Baseline: 2-10 µS, Increase with alcohol
-        eda_baseline = np.random.uniform(2, 5, n_samples)
-        eda_increase = bac_true * 20  # Alcohol effect
-        eda_value = eda_baseline + eda_increase + np.random.normal(0, 0.5, n_samples)
-        eda_value = np.clip(eda_value, 1, 20)
+                # Alcohol dose in grams based on profile
+                if profile == 'sober':
+                    alcohol_grams = 0.0
+                elif profile == 'light':
+                    alcohol_grams = np.random.uniform(10, 25)   # ~1-2 drinks
+                elif profile == 'moderate':
+                    alcohol_grams = np.random.uniform(30, 55)   # ~2-4 drinks
+                else:  # heavy
+                    alcohol_grams = np.random.uniform(60, 100)  # ~4-7 drinks
 
-        # Skin temperature - increases slightly with alcohol (vasodilation)
-        # Baseline: 32-34°C, Increase: +0.5-2°C
-        temp_baseline = np.random.uniform(32, 34, n_samples)
-        temp_increase = bac_true * 5
-        temperature = temp_baseline + temp_increase + np.random.normal(0, 0.3, n_samples)
+                # Session duration: 4-8 hours at 30-second intervals
+                duration_hours = np.random.uniform(4, 8)
+                n_points = int(duration_hours * 3600 / 30)  # 30-second intervals
+                time_hours = np.linspace(0, duration_hours, n_points)
+                timestamps = [base_time + pd.Timedelta(seconds=30 * i + session_counter * 50000)
+                              for i in range(n_points)]
 
-        # Environmental factors
-        ambient_temp = np.random.uniform(20, 30, n_samples)  # Room temperature
-        humidity = np.random.uniform(30, 70, n_samples)  # Humidity %
+                # Widmark BAC curve
+                if alcohol_grams == 0:
+                    bac = np.zeros(n_points)
+                else:
+                    peak_bac = alcohol_grams / (water_ratio * body_weight * 10)
+                    # Absorption phase (exponential rise, ~30-90 min to peak)
+                    absorption_time = np.random.uniform(0.5, 1.5)  # hours to peak
+                    absorption_rate = 1.0 / absorption_time
 
-        # Add noise
-        ppg_hr += np.random.normal(0, noise_level * 10, n_samples)
-        eda_value += np.random.normal(0, noise_level, n_samples)
-        temperature += np.random.normal(0, noise_level * 0.5, n_samples)
+                    bac = np.zeros(n_points)
+                    for i, t in enumerate(time_hours):
+                        absorbed = peak_bac * (1 - np.exp(-absorption_rate * t))
+                        eliminated = elimination_rate * t
+                        bac[i] = max(0, absorbed - eliminated)
 
-        # Create DataFrame
-        df = pd.DataFrame({
-            'timestamp': timestamps,
-            'ppg_heart_rate': ppg_hr,
-            'ppg_quality': ppg_quality,
-            'eda_value': eda_value,
-            'skin_temperature': temperature,
-            'ambient_temperature': ambient_temp,
-            'humidity': humidity,
-            'bac_true': bac_true,
-            'subject_id': np.random.randint(1, 50, n_samples),  # 50 subjects
-            'session_id': np.random.randint(1, 100, n_samples)
-        })
+                # Add small per-sample physiological noise to BAC
+                bac += np.random.normal(0, 0.002, n_points)
+                bac = np.clip(bac, 0, 0.35)
 
+                # Generate correlated physiological signals
+                # PPG heart rate: baseline + alcohol effect + noise
+                hr = hr_baseline + bac * 120 + np.random.normal(0, noise_level * 5, n_points)
+                hr = np.clip(hr, 50, 160)
+
+                # PPG quality: decreases with intoxication (motion artifacts)
+                ppg_quality = 0.95 - bac * 2.5 + np.random.normal(0, noise_level * 0.3, n_points)
+                ppg_quality = np.clip(ppg_quality, 0.5, 1.0)
+
+                # EDA: increases with sympathetic activation from alcohol
+                eda = eda_baseline + bac * 80 + np.random.normal(0, noise_level * 3, n_points)
+                eda = np.clip(eda, 1.0, 20.0)
+
+                # Skin temperature: increases with vasodilation
+                skin_temp = temp_baseline + bac * 15 + np.random.normal(0, noise_level * 2, n_points)
+                skin_temp = np.clip(skin_temp, 31.0, 38.0)
+
+                # Environmental factors (stable within session, slight drift)
+                ambient_temp = np.random.uniform(18, 32) + np.random.normal(0, 0.5, n_points).cumsum() * 0.01
+                ambient_temp = np.clip(ambient_temp, 15, 40)
+                humidity = np.random.uniform(25, 75) + np.random.normal(0, 0.3, n_points).cumsum() * 0.01
+                humidity = np.clip(humidity, 15, 90)
+
+                session_df = pd.DataFrame({
+                    'timestamp': timestamps,
+                    'ppg_heart_rate': hr,
+                    'ppg_quality': ppg_quality,
+                    'eda_value': eda,
+                    'skin_temperature': skin_temp,
+                    'ambient_temperature': ambient_temp,
+                    'humidity': humidity,
+                    'bac_true': bac,
+                    'subject_id': subj_id,
+                    'session_id': session_counter,
+                    'profile': profile,
+                })
+                all_records.append(session_df)
+
+        df = pd.concat(all_records, ignore_index=True)
+        print(f"Generated {len(df)} samples across {session_counter} sessions, "
+              f"{n_subjects} subjects")
         return df
-
-    def load_real_datasets(self) -> Optional[pd.DataFrame]:
-        """
-        Load real transdermal alcohol and physiological datasets
-        This would integrate actual research data when available
-        """
-        # Placeholder for real dataset integration
-        print("Real dataset loading not yet implemented.")
-        print("Using synthetic data for initial development.")
-        return None
 
     def preprocess_data(
         self,
@@ -148,11 +157,11 @@ class AlcoholDatasetLoader:
         remove_outliers: bool = True
     ) -> pd.DataFrame:
         """
-        Preprocess sensor data for model training
+        Preprocess sensor data for model training.
 
         Args:
             df: Raw sensor data
-            normalize: Whether to normalize features
+            normalize: Whether to z-score normalize the 6 model input features
             remove_outliers: Whether to remove statistical outliers
 
         Returns:
@@ -173,28 +182,22 @@ class AlcoholDatasetLoader:
                     (df_clean[col] <= upper_bound)
                 ]
 
-        # Feature engineering
-        df_clean['ppg_eda_ratio'] = df_clean['ppg_heart_rate'] / df_clean['eda_value']
-        df_clean['temp_ambient_diff'] = (
-            df_clean['skin_temperature'] - df_clean['ambient_temperature']
-        )
-
-        # Time-based features
-        df_clean['hour'] = df_clean['timestamp'].dt.hour
-        df_clean['minute'] = df_clean['timestamp'].dt.minute
-
-        # Normalize if requested
+        # Z-score normalize only the 6 model input features
         if normalize:
-            from sklearn.preprocessing import StandardScaler
-
             feature_cols = [
                 'ppg_heart_rate', 'ppg_quality', 'eda_value',
                 'skin_temperature', 'ambient_temperature', 'humidity',
-                'ppg_eda_ratio', 'temp_ambient_diff'
             ]
+            means = df_clean[feature_cols].mean()
+            stds = df_clean[feature_cols].std()
+            stds = stds.replace(0, 1)  # avoid division by zero
 
-            scaler = StandardScaler()
-            df_clean[feature_cols] = scaler.fit_transform(df_clean[feature_cols])
+            self.scaler_params = {
+                'mean': {col: float(means[col]) for col in feature_cols},
+                'std': {col: float(stds[col]) for col in feature_cols},
+            }
+
+            df_clean[feature_cols] = (df_clean[feature_cols] - means) / stds
 
         return df_clean
 
@@ -205,7 +208,7 @@ class AlcoholDatasetLoader:
         target_col: str = 'bac_true'
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Create sequences for time-series model training
+        Create sequences for time-series model training, grouped by session.
 
         Args:
             df: Preprocessed data
@@ -223,11 +226,10 @@ class AlcoholDatasetLoader:
         X_sequences = []
         y_targets = []
 
-        # Group by session to maintain temporal continuity
         for session_id in df['session_id'].unique():
             session_data = df[df['session_id'] == session_id].sort_values('timestamp')
 
-            if len(session_data) < sequence_length:
+            if len(session_data) < sequence_length + 1:
                 continue
 
             for i in range(len(session_data) - sequence_length):
@@ -243,12 +245,10 @@ class AlcoholDatasetLoader:
         self,
         X: np.ndarray,
         y: np.ndarray,
-        test_size: float = 0.2,
-        val_size: float = 0.1
+        test_size: float = 0.15,
+        val_size: float = 0.15
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """
-        Split data into train, validation, and test sets
-        """
+        """Split data into train, validation, and test sets."""
         # First split: train+val vs test
         X_temp, X_test, y_temp, y_test = train_test_split(
             X, y, test_size=test_size, random_state=42
@@ -263,24 +263,18 @@ class AlcoholDatasetLoader:
         return X_train, X_val, X_test, y_train, y_val, y_test
 
 
-# Example usage
 if __name__ == "__main__":
-    # Initialize loader
     loader = AlcoholDatasetLoader()
 
-    # Create synthetic dataset
-    print("Creating synthetic dataset...")
-    df = loader.create_synthetic_dataset(n_samples=10000)
+    print("Creating synthetic dataset with Widmark curves...")
+    df = loader.create_synthetic_dataset(n_subjects=50, sessions_per_subject=5)
 
-    # Preprocess
-    print("Preprocessing data...")
-    df_processed = loader.preprocess_data(df)
+    print("\nPreprocessing data...")
+    df_processed = loader.preprocess_data(df, normalize=True)
 
-    # Create sequences
     print("Creating sequences...")
     X, y = loader.create_sequences(df_processed, sequence_length=10)
 
-    # Split data
     print("Splitting data...")
     X_train, X_val, X_test, y_train, y_val, y_test = loader.get_train_test_split(X, y)
 
@@ -290,3 +284,4 @@ if __name__ == "__main__":
     print(f"Test samples: {len(X_test)}")
     print(f"Input shape: {X_train.shape}")
     print(f"BAC range: {y_train.min():.4f} - {y_train.max():.4f}")
+    print(f"BAC > 0.08 ratio: {(y_train > 0.08).mean():.2%}")

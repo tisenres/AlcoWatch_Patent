@@ -1,0 +1,63 @@
+\begin{tikzpicture}[
+  node distance=0.35cm,
+  >=Latex,
+  font=\scriptsize,
+  block/.style={draw, rounded corners=2pt, align=center, minimum width=1.8cm, minimum height=0.55cm, inner sep=2pt, line width=0.4pt},
+  main/.style={block, fill=blue!10},
+  attn/.style={block, fill=orange!10},
+  dense/.style={block, fill=green!10},
+  link/.style={->, line width=0.5pt},
+  shape/.style={font=\tiny, text=gray},
+]
+
+% Main pathway
+\node[main] (input) {Input};
+\node[shape, right=0.1cm of input] {$[B, 10, 6]$};
+
+\node[main, below=of input] (bilstm) {BiLSTM (64)};
+\node[shape, right=0.1cm of bilstm] {$[B, 10, 128]$};
+
+\node[block, fill=gray!10, below=of bilstm] (drop1) {Dropout (0.3)};
+
+% Attention branch
+\node[attn, below left=0.5cm and -0.2cm of drop1] (attn_dense) {Dense(1)\\tanh};
+\node[attn, below=of attn_dense] (softmax) {Softmax};
+\node[shape, left=0.1cm of softmax] {$[B, 10]$};
+
+% Multiply
+\node[block, fill=yellow!10, below right=0.5cm and -0.2cm of drop1] (multiply) {$\otimes$ Multiply};
+
+% Sum
+\node[block, fill=yellow!10, below=0.4cm of multiply] (sum) {$\Sigma$ Sum};
+\node[shape, right=0.1cm of sum] {$[B, 128]$};
+
+% Dense layers
+\node[dense, below=of sum] (d1) {Dense (32, ReLU)};
+\node[block, fill=gray!10, below=of d1] (drop2) {Dropout (0.3)};
+\node[dense, below=of drop2] (d2) {Dense (16, ReLU)};
+\node[dense, below=of d2] (output) {Output (1, Linear)};
+\node[shape, right=0.1cm of output] {BAC (g/dL)};
+
+% Arrows - main path
+\draw[link] (input) -- (bilstm);
+\draw[link] (bilstm) -- (drop1);
+\draw[link] (drop1) -| (multiply);
+
+% Attention arrows
+\draw[link] (drop1) -| (attn_dense);
+\draw[link] (attn_dense) -- (softmax);
+\draw[link] (softmax) |- (multiply);
+
+% Continue
+\draw[link] (multiply) -- (sum);
+\draw[link] (sum) -- (d1);
+\draw[link] (d1) -- (drop2);
+\draw[link] (drop2) -- (d2);
+\draw[link] (d2) -- (output);
+
+% Brace for attention mechanism
+\draw[decorate, decoration={brace, amplitude=3pt, mirror}, line width=0.3pt, gray]
+  ([xshift=-0.3cm]attn_dense.north west) -- ([xshift=-0.3cm]softmax.south west)
+  node[midway, left=0.15cm, font=\tiny, text=gray, align=center] {Temporal\\Attention};
+
+\end{tikzpicture}
