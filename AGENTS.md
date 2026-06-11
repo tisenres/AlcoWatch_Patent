@@ -23,15 +23,21 @@ Smartwatch Sensors (PPG/EDA/Temp)
 2. **Wear OS App** (`wear_os_app/`): Sensor collection, on-device inference, BLE peripheral (Kotlin)
 3. **Arduino Module** (`arduino/firmware/`): BLE central, ignition control with relay-based fail-safe (C++)
 
-## Research Papers
+## Research Paper
 
-Located in `overleaf_papers/` (LaTeX source files for Overleaf):
+The canonical patent paper (LaTeX source for Overleaf) lives in `overleaf_papers/`:
 
 | Paper | Purpose | File |
 |-------|---------|------|
-| **NTCC Paper** | University submission (Amity) - simpler format | `Anastasiia_NTCC.tex` |
-| **IEEE Paper** | Journal publication - formal IEEE format | `AlcoWatch_IEEE_Paper.tex` |
-| **IEEE Humanized** | IEEE paper with improved readability | `AlcoWatch_IEEE_Paper_Humanized.tex` |
+| **AlcoWatch / PhysioWatch-BAC** | Journal submission (Wiley NJD / Bentham format) | `overleaf_papers/wileyNJDv5_AMA.tex` |
+
+Upload/compile the full `overleaf_papers/` project in Overleaf. Provisional patent
+documents are in `research_papers/` (`ACN1408 Prov._Patent_130625.docx`,
+`Smartwatch Alcohol Prevention Patent (1).docx`).
+
+> **Archive:** Earlier work built in this repo — the completed NTCC university paper and
+> the Stress Detection "Major Project" — is frozen under `archive/` and is **not** part of
+> the alcohol patent. See `archive/ntcc-paper/` and `archive/stress-major-project/`.
 
 ## Common Commands
 
@@ -77,7 +83,7 @@ Scenarios: 1=Sober (ALLOW), 2=Intoxicated (BLOCK), 3=Watch removed (BLOCK), 6=Al
 
 - **Input:** `[batch, 10 timesteps, 6 features]` (PPG value, PPG quality, EDA, skin temp, ambient temp, humidity)
 - **Output:** BAC value (g/dL)
-- **Custom loss:** 5x penalty for false negatives (line ~110 in `bac_estimation_model.py`)
+- **Custom loss:** 30x penalty for false negatives (asymmetric loss, ~line 101 in `bac_estimation_model.py`)
 - **Target metrics:** MAE < 0.01 g/dL, Accuracy > 95%, False Negative Rate < 1%
 - **Climate calibration:** `ClimateAdaptiveModel` class supports region-specific adjustments
 
