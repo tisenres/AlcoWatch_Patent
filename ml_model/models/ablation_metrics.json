@@ -1,0 +1,7 @@
+{
+  "sma_baseline_mae": 0.03582164127259846,
+  "lstm_only_mae": 0.01847576005384326,
+  "bilstm_attention_mae": 0.014212123118340969,
+  "improvement_over_sma": 60.32531560966626,
+  "improvement_over_lstm": 23.07692307692308
+}

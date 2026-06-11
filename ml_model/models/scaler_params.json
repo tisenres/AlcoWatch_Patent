@@ -1,0 +1,18 @@
+{
+  "mean": {
+    "ppg_heart_rate": 75.62067214570135,
+    "ppg_quality": 0.8658186383426748,
+    "eda_value": 6.075273323461728,
+    "skin_temperature": 33.71327624951674,
+    "ambient_temperature": 25.287448094441064,
+    "humidity": 50.54006793527253
+  },
+  "std": {
+    "ppg_heart_rate": 7.40124573705088,
+    "ppg_quality": 0.09901279782388865,
+    "eda_value": 3.208541498950915,
+    "skin_temperature": 0.6852568963797789,
+    "ambient_temperature": 3.9517927912942414,
+    "humidity": 14.368453864909442
+  }
+}
