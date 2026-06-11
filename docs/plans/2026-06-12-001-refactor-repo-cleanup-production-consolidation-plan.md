@@ -1,7 +1,7 @@
 ---
 title: "refactor: Repo Cleanup & Production Consolidation (alcohol patent only)"
 type: refactor
-status: active
+status: completed
 date: 2026-06-12
 origin: docs/brainstorms/2026-06-12-repo-cleanup-production-consolidation-requirements.md
 deepened: 2026-06-12
