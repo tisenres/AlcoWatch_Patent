@@ -352,8 +352,7 @@
 \ProcessOptions
 \LoadClass[twoside,fleqn,onecolumn]{article}%
 
-\usepackage{etex}%
-\reserveinserts{28}% included etex package and \reserveinserts{...} to avoid no room for \newinserts, \newcounts or \newskips etc.
+%%% etex and \reserveinserts removed — no longer needed on TeX Live 2022+
 \RequirePackage{graphicx,multicol}%
 \RequirePackage{multirow}%
 \RequirePackage{cuted}%

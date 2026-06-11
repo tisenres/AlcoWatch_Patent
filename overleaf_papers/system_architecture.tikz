@@ -1,0 +1,59 @@
+\begin{tikzpicture}[
+  node distance=0.3cm and 0.4cm,
+  >=Latex,
+  font=\scriptsize,
+  block/.style={draw, rounded corners=2pt, align=center, text width=1.6cm, minimum height=0.65cm, inner sep=2pt, line width=0.4pt},
+  sensor/.style={block, fill=blue!8},
+  proc/.style={block, fill=green!8},
+  comm/.style={block, fill=orange!8},
+  vehicle/.style={block, fill=red!8},
+  group/.style={draw, dashed, rounded corners=4pt, inner sep=4pt, line width=0.3pt, gray},
+  link/.style={->, line width=0.5pt},
+  datalabel/.style={font=\tiny, text=gray, midway, above, sloped},
+]
+
+% === Wear OS Smartwatch ===
+% Sensor layer
+\node[sensor] (ppg) {PPG\\(64 Hz)};
+\node[sensor, right=of ppg] (eda) {EDA\\(estimated)};
+\node[sensor, right=of eda] (temp) {Skin Temp\\Ambient};
+
+% Processing layer
+\node[proc, below=0.5cm of eda] (feat) {Feature\\extraction};
+\node[proc, below=0.4cm of feat] (lstm) {BiLSTM +\\Attention};
+\node[proc, right=of lstm] (cal) {Climate\\calibration};
+
+% Group: Smartwatch
+\node[group, fit=(ppg)(eda)(temp)(feat)(lstm)(cal), label={[font=\tiny\bfseries]above:Wear OS Smartwatch}] (watch) {};
+
+% === BLE Communication ===
+\node[comm, right=1.0cm of cal] (ble) {BLE GATT\\(20 bytes)};
+
+% === Arduino Vehicle Module ===
+\node[vehicle, right=1.0cm of ble] (fsm) {Ignition\\FSM};
+\node[vehicle, above=0.3cm of fsm] (parse) {Packet\\validation};
+\node[vehicle, below=0.3cm of fsm] (relay) {Relay\\control};
+
+% Group: Arduino
+\node[group, fit=(parse)(fsm)(relay), label={[font=\tiny\bfseries]above:Arduino Nano 33 BLE}] (arduino) {};
+
+% === Output ===
+\node[block, fill=gray!10, right=0.5cm of relay] (ign) {Ignition\\allow/block};
+
+% === Arrows ===
+\draw[link] (ppg) -- (feat);
+\draw[link] (eda) -- (feat);
+\draw[link] (temp) |- (feat);
+\draw[link] (feat) -- (lstm);
+\draw[link] (lstm) -- node[datalabel] {BAC} (cal);
+\draw[link] (cal) -- node[datalabel] {status} (ble);
+\draw[link] (ble) -- (parse);
+\draw[link] (parse) -- (fsm);
+\draw[link] (fsm) -- (relay);
+\draw[link] (relay) -- (ign);
+
+% Data annotations
+\node[font=\tiny, text=gray, below=0.1cm of lstm] {22 KB TFLite};
+\node[font=\tiny, text=gray, below=0.05cm of ble] {AES-256, 30s};
+
+\end{tikzpicture}
