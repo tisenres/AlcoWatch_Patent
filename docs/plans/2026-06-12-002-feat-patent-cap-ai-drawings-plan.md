@@ -1,7 +1,7 @@
 ---
 title: "feat: Patent CAP (ACN1408) AI framework, model diagram & 2D-line drawings package"
 type: feat
-status: active
+status: completed
 date: 2026-06-12
 origin: docs/brainstorms/2026-06-12-patent-cap-ai-disclosure-requirements.md
 deepened: 2026-06-12
