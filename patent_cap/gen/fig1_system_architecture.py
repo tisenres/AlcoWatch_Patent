@@ -16,7 +16,11 @@ OUT = HERE.parent / "figures"
 
 
 def build():
-    fig, ax = ps.new_sheet(9.5, 6.0)
+    fig, ax = ps.new_sheet(9.5, 6.2)
+
+    ps.label(ax, 50, 99,
+             "AI-based alcohol detection & vehicle ignition prevention system (%d)"
+             % ps.n("system"), fontsize=8.5)
 
     # --- Wearable smartwatch (110) ---
     ps.box(ax, 2, 46, 34, 46, "", ps.n("smartwatch"))
