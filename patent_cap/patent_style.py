@@ -60,9 +60,43 @@ NUMERALS: dict[str, int] = {
     "override": 180,
 }
 
+# Human-readable component descriptions for the reference-numeral table (single source).
+DESCRIPTIONS: dict[str, str] = {
+    "system": "AI-based alcohol detection & vehicle ignition prevention system",
+    "smartwatch": "Wearable smartwatch device",
+    "ppg": "Photoplethysmography (PPG) sensor",
+    "eda": "Electrodermal activity (EDA), estimated/derived (no dedicated EDA sensor)",
+    "temp": "Skin / ambient temperature sensor",
+    "ondevice": "On-device inference engine (quantized TFLite)",
+    "ai_module": "AI / ML module performing on-device BAC estimation",
+    "preproc": "Signal preprocessing and 10-timestep windowing",
+    "features": "Feature tensor of shape [10 timesteps x 6 features]",
+    "bilstm": "Bidirectional LSTM (64 units) temporal-encoding stage",
+    "attention": "Temporal attention mechanism (Dense-tanh score, softmax, weighted sum)",
+    "dense_head": "Dense regression head (32 -> 16 -> 1) producing the BAC estimate",
+    "calibration": "Climate-adaptive calibration (post-inference correction; not a network layer)",
+    "ble": "Secure Bluetooth Low Energy link (AES-256 per specification)",
+    "vehicle_ctrl": "Vehicle control module",
+    "ble_rx": "BLE receiver",
+    "safety_logic": "Fail-safe decision / safety logic (default: ignition blocked)",
+    "relay": "Relay / MOSFET ignition switch",
+    "ignition": "Ignition system / OBD-II / ECU interface",
+    "indicators": "Status indicators (LED / buzzer)",
+    "override": "Manual override button",
+}
+
 # Labels forbidden in figure scripts and disclosure text (stale / not-as-built).
 # The compliance check (U8) greps for these; kept here as the shared definition.
 FORBIDDEN_LABELS = ("22 KB", "5x", "5×")  # AES-256 allowed only as "per spec"
+
+
+def numeral_table() -> str:
+    """Render the reference-numeral lookup table as Markdown (sorted by numeral)."""
+    rows = sorted(NUMERALS.items(), key=lambda kv: kv[1])
+    out = ["| Reference numeral | Component |", "|---|---|"]
+    for key, num in rows:
+        out.append(f"| {num} | {DESCRIPTIONS.get(key, key)} |")
+    return "\n".join(out)
 
 
 def validate() -> None:
