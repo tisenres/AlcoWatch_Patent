@@ -95,5 +95,5 @@ OVERRIDE_ACTIVE state that automatically reverts to IGNITION_BLOCKED.
 - The model is trained on **physiologically-modeled synthetic data** in the present
   embodiment.
 - The 0.08 g/dL threshold is a fixed legal threshold in the present embodiment.
-- The secure link (140) is specified to use AES-256; see `provisional_reconciliation.md`
-  for the implementation status.
+- The secure link (140) uses AES-256 per spec; its implementation status is addressed in
+  `provisional_reconciliation.md`.

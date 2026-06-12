@@ -1,9 +1,9 @@
 """Figure 1 — System architecture (2D line, ACN1408 CAP).
 
 Compliant redraw of the photo-based provisional Figure 1. Pure black line art; no
-photographs; no stale '22 KB' / 'AES-256 (as implemented)' labels (the BLE link is
+photographs; no stale model-size or as-implemented encryption labels (the BLE link is
 labelled 'secure ... AES-256 per spec'). No biometric-authentication block (not in
-the embodiment — see provisional_reconciliation.md).
+the embodiment -- see provisional_reconciliation.md).
 """
 import sys
 import pathlib
