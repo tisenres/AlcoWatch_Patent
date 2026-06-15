@@ -10,6 +10,23 @@ import pathlib
 from docx import Document
 from docx.shared import Inches, Mm, Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from PIL import Image
+
+# Each figure must fit ON ITS OWN A4 sheet without overflowing (the cause of the
+# "figures pile on each other" issue): constrain by BOTH width and height.
+MAX_W_IN = 6.4
+MAX_H_IN = 7.8
+
+
+def fit_width(png_path):
+    """Return the display width (Inches) that fits the image within MAX_W x MAX_H."""
+    w, h = Image.open(png_path).size
+    ar = w / h
+    disp_w = MAX_W_IN
+    if disp_w / ar > MAX_H_IN:      # too tall -> constrain by height
+        disp_w = MAX_H_IN * ar
+    return Inches(disp_w)
+
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -49,9 +66,10 @@ def build():
         crun.bold = True
         crun.font.size = Pt(11)
 
+        png = FIG_DIR / f"{fname}.png"
         img = doc.add_paragraph()
         img.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        img.add_run().add_picture(str(FIG_DIR / f"{fname}.png"), width=Inches(6.3))
+        img.add_run().add_picture(str(png), width=fit_width(png))
 
     # closing applicant block on the last sheet
     doc.add_paragraph()
