@@ -1,0 +1,14 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryBorderColor':'#000000','primaryTextColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','lineColor':'#000000','noteBkgColor':'#ffffff','noteBorderColor':'#000000','noteTextColor':'#000000','actorBkg':'#ffffff','actorBorder':'#000000','actorTextColor':'#000000','signalColor':'#000000','signalTextColor':'#000000','labelBoxBkgColor':'#ffffff','labelBoxBorderColor':'#000000','clusterBkg':'#ffffff','clusterBorder':'#000000','fontFamily':'Arial','fontSize':'15px'}}}%%
+flowchart TB
+  IN["Input [B, 10, 6] (124)"] --> BL
+  BL["Bidirectional LSTM (64)<br/>to [B, 10, 128] (126)"] --> DR1
+  DR1["Dropout (0.3)"] --> ATT
+  subgraph ATT["Temporal attention (128)"]
+    direction TB
+    AD["Dense (1), tanh"] --> SM["Softmax [B, 10]"] --> WS["Weighted sum over timesteps"]
+  end
+  ATT --> CTX["Attention context [B, 128]"]
+  CTX --> D32["Dense (32), ReLU (130)"]
+  D32 --> DR2["Dropout (0.3)"]
+  DR2 --> D16["Dense (16), ReLU"]
+  D16 --> OUT["Dense (1), linear to BAC (g/dL)"]

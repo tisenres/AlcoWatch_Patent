@@ -1,0 +1,23 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryBorderColor':'#000000','primaryTextColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','lineColor':'#000000','noteBkgColor':'#ffffff','noteBorderColor':'#000000','noteTextColor':'#000000','actorBkg':'#ffffff','actorBorder':'#000000','actorTextColor':'#000000','signalColor':'#000000','signalTextColor':'#000000','labelBoxBkgColor':'#ffffff','labelBoxBorderColor':'#000000','clusterBkg':'#ffffff','clusterBorder':'#000000','fontFamily':'Arial','fontSize':'15px'}}}%%
+flowchart LR
+  subgraph SW["Wearable smartwatch (110)"]
+    direction TB
+    PPG["PPG sensor (112)"]
+    EDA["EDA, estimated (114)"]
+    TMP["Skin / ambient temperature (116)"]
+    AI["AI module: on-device<br/>BAC estimation (120)"]
+    PPG --> AI
+    EDA --> AI
+    TMP --> AI
+  end
+  AI -->|"Secure BLE link,<br/>AES-256 per spec (140)"| RX
+  subgraph VC["Vehicle control module (150)"]
+    direction TB
+    RX["BLE receiver (152)"]
+    LOGIC["Safety logic<br/>fail-safe, default BLOCK (154)"]
+    RELAY["Relay / MOSFET switch (156)"]
+    RX --> LOGIC --> RELAY
+  end
+  RELAY --> IGN["Ignition / OBD-II / ECU (160)"]
+  LOGIC --> IND["LED / buzzer (170)"]
+  OVR["Override button (180)"] --> LOGIC

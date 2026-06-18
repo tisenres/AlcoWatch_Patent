@@ -1,0 +1,15 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryBorderColor':'#000000','primaryTextColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','lineColor':'#000000','noteBkgColor':'#ffffff','noteBorderColor':'#000000','noteTextColor':'#000000','actorBkg':'#ffffff','actorBorder':'#000000','actorTextColor':'#000000','signalColor':'#000000','signalTextColor':'#000000','labelBoxBkgColor':'#ffffff','labelBoxBorderColor':'#000000','clusterBkg':'#ffffff','clusterBorder':'#000000','fontFamily':'Arial','fontSize':'15px'}}}%%
+stateDiagram-v2
+  [*] --> BLOCKED
+  BLOCKED: IGNITION_BLOCKED (default, fail-safe) (154)
+  ALLOWED: IGNITION_ALLOWED
+  WAIT: WAITING_FOR_DATA
+  LOST: CONNECTION_LOST
+  OVR: OVERRIDE_ACTIVE (180)
+  WAIT --> BLOCKED: init
+  BLOCKED --> ALLOWED: BAC under 0.08, worn, recent
+  ALLOWED --> BLOCKED: BAC at/above 0.08, removed, or stale
+  BLOCKED --> LOST: 60 s timeout
+  LOST --> BLOCKED: reconnect
+  BLOCKED --> OVR: 5 s hold
+  OVR --> BLOCKED: 5 min, logged

@@ -1,0 +1,12 @@
+%%{init: {'theme':'base','themeVariables':{'background':'#ffffff','primaryColor':'#ffffff','primaryBorderColor':'#000000','primaryTextColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff','lineColor':'#000000','noteBkgColor':'#ffffff','noteBorderColor':'#000000','noteTextColor':'#000000','actorBkg':'#ffffff','actorBorder':'#000000','actorTextColor':'#000000','signalColor':'#000000','signalTextColor':'#000000','labelBoxBkgColor':'#ffffff','labelBoxBorderColor':'#000000','clusterBkg':'#ffffff','clusterBorder':'#000000','fontFamily':'Arial','fontSize':'15px'}}}%%
+flowchart TB
+  PPG["PPG (112)"] --> PRE
+  EDA["EDA, estimated (114)"] --> PRE
+  TMP["Temperature (116)"] --> PRE
+  PRE["Preprocessing and<br/>10-timestep windowing (122)"] --> FEAT
+  FEAT["Feature tensor 10 x 6 (124)"] --> MODEL
+  MODEL["BiLSTM + temporal attention<br/>trained on-device model (126)"] --> CAL
+  CAL["Climate-adaptive calibration<br/>POST-inference correction,<br/>not a network layer (132)"] --> DEC
+  DEC["Decision logic: BAC vs 0.08 g/dL (154)"] --> BLE
+  BLE["Secure BLE status packet (140)"] --> IGN
+  IGN["Vehicle ignition control (160)"]

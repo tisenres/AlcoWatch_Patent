@@ -30,7 +30,7 @@ def fit_width(png_path):
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
-FIG_DIR = ROOT / "figures"
+FIG_DIR = ROOT / "mermaid"   # Mermaid (library) renders — professional, not hand-drawn
 
 APPLICANT = "Amity University"
 SHEETS = [
