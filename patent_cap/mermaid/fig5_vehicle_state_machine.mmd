@@ -7,9 +7,14 @@ stateDiagram-v2
   LOST: CONNECTION_LOST
   OVR: OVERRIDE_ACTIVE (180)
   WAIT --> BLOCKED: init
-  BLOCKED --> ALLOWED: BAC under 0.08, worn, recent
-  ALLOWED --> BLOCKED: BAC at/above 0.08, removed, or stale
+  BLOCKED --> ALLOWED: permit
+  ALLOWED --> BLOCKED: revoke
   BLOCKED --> LOST: 60 s timeout
   LOST --> BLOCKED: reconnect
   BLOCKED --> OVR: 5 s hold
   OVR --> BLOCKED: 5 min, logged
+  note right of ALLOWED
+    permit: BAC under 0.08 g/dL, watch worn,
+    recent update, active BLE link.
+    revoke: BAC at/above 0.08, watch removed, or stale.
+  end note
